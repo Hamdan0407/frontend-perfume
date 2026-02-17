@@ -27,13 +27,13 @@ export default function DemoIntro({ onComplete }) {
 
     return (
         <div
-            className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-950 transition-opacity duration-700 ${stage === 2 ? 'opacity-0' : 'opacity-100'
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-white transition-opacity duration-700 ${stage === 2 ? 'opacity-0' : 'opacity-100'
                 }`}
         >
             <div className={`flex flex-col items-center gap-4 transition-all duration-1000 transform ${stage >= 1 ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90'
                 }`}>
-                <img src="/muwas-logo-nobg.png" alt="MUWAS" className="w-48 sm:w-64 h-auto object-contain" />
-                <p className="text-slate-400 tracking-widest text-sm uppercase">Luxury Fragrances</p>
+                <img src="/muwas-logo-nobg.png" alt="MUWAS" className="w-56 sm:w-72 h-auto object-contain" />
+                <p className="text-gray-400 tracking-widest text-sm uppercase">Luxury Fragrances</p>
             </div>
         </div>
     );
