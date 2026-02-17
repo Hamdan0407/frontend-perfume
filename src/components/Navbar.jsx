@@ -136,10 +136,10 @@ export default function Navbar() {
               Home
             </Link>
 
-            {/* Perfume Dropdown */}
+            {/* Fragrance Dropdown */}
             <div className="relative group">
               <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Perfume
+                Fragrance
                 <ChevronDown className="h-4 w-4" />
               </button>
               <div className="absolute left-0 top-full mt-2 w-40 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
