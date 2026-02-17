@@ -32,7 +32,7 @@ export default function DemoIntro({ onComplete }) {
         >
             <div className={`flex flex-col items-center gap-4 transition-all duration-1000 transform ${stage >= 1 ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90'
                 }`}>
-                <img src="/muwas-logo.jfif" alt="MUWAS" className="w-48 sm:w-64 h-auto object-contain" />
+                <img src="/muwas-logo-nobg.png" alt="MUWAS" className="w-48 sm:w-64 h-auto object-contain" />
                 <p className="text-slate-400 tracking-widest text-sm uppercase">Luxury Fragrances</p>
             </div>
         </div>
