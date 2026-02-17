@@ -82,7 +82,7 @@ export default function AdminPanel() {
     supportPhone: '+91 98765 43210',
     currency: 'INR',
     taxRate: '18',
-    freeShippingThreshold: '2000',
+    freeShippingThreshold: '899',
     defaultShippingCost: '99'
   });
 

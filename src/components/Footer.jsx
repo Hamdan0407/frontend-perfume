@@ -73,23 +73,25 @@ export default function Footer() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Social Media */}
-        <div className="border-t border-gray-200 mt-8 pt-8">
+      {/* Follow Us / Copyright - Dark Section */}
+      <div className="bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Follow Us</h4>
+              <h4 className="font-semibold text-white mb-4">Follow Us</h4>
               <div className="flex gap-4">
-                <a href="https://instagram.com/muwasperfumes" target="_blank" rel="noopener noreferrer" className="bg-gray-100 hover:bg-amber-500 hover:text-white p-3 rounded-full transition-colors text-gray-600">
+                <a href="https://instagram.com/muwasperfumes" target="_blank" rel="noopener noreferrer" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
                   <Instagram className="h-5 w-5" />
                 </a>
-                <a href="#" className="bg-gray-100 hover:bg-amber-500 hover:text-white p-3 rounded-full transition-colors text-gray-600">
+                <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
                   <Facebook className="h-5 w-5" />
                 </a>
-                <a href="#" className="bg-gray-100 hover:bg-amber-500 hover:text-white p-3 rounded-full transition-colors text-gray-600">
+                <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
                   <Twitter className="h-5 w-5" />
                 </a>
-                <a href="#" className="bg-gray-100 hover:bg-amber-500 hover:text-white p-3 rounded-full transition-colors text-gray-600">
+                <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
                   <Linkedin className="h-5 w-5" />
                 </a>
               </div>
@@ -98,8 +100,8 @@ export default function Footer() {
             <div className="text-center text-sm text-gray-400">
               <p>&copy; 2026 MUWAS. All rights reserved.</p>
               <p className="mt-2">
-                <a href="#" className="hover:text-amber-500">Privacy Policy</a> •
-                <a href="#" className="hover:text-amber-500 mx-2">Terms of Service</a>
+                <a href="#" className="hover:text-amber-400">Privacy Policy</a> •
+                <a href="#" className="hover:text-amber-400 mx-2">Terms of Service</a>
               </p>
             </div>
           </div>

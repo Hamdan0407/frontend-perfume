@@ -248,7 +248,7 @@ export default function Home() {
                 <Truck className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Fast Delivery</h3>
-              <p className="text-muted-foreground">Free shipping on orders over ₹2000 • 3-5 business days</p>
+              <p className="text-muted-foreground">Free shipping on orders over ₹899 • 3-5 business days</p>
             </div>
 
             <div className="text-center space-y-4 sm:col-span-2 lg:col-span-1">
@@ -284,7 +284,7 @@ export default function Home() {
               },
               {
                 question: "How long does delivery take?",
-                answer: "Standard delivery takes 3-5 business days across India. Express delivery (1-2 days) is available for selected locations. All orders are carefully packed to ensure the fragrance arrives in perfect condition. Free shipping on orders above ₹2000."
+                answer: "Standard delivery takes 3-5 business days across India. Express delivery (1-2 days) is available for selected locations. All orders are carefully packed to ensure the fragrance arrives in perfect condition. Free shipping on orders above ₹899."
               },
               {
                 question: "Can I return or exchange a product?",
@@ -363,7 +363,7 @@ export default function Home() {
                 {
                   step: "4",
                   title: "Fast Delivery",
-                  desc: "Free shipping on orders above ₹2000"
+                  desc: "Free shipping on orders above ₹899"
                 }
               ].map((item, idx) => (
                 <div key={idx} className="bg-slate-800/50 border border-amber-600/30 rounded-lg p-6 hover:bg-slate-800/70 transition-colors">
