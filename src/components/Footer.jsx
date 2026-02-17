@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-amber-400">✨ Parfumé</h3>
+            <img src="/muwas-logo.jfif" alt="MUWAS" className="h-10 w-auto object-contain mb-4" />
             <p className="text-gray-300 text-sm leading-relaxed">
               Your destination for luxury fragrances. Discover the perfect scent for every occasion.
             </p>
@@ -96,7 +96,7 @@ export default function Footer() {
             </div>
 
             <div className="text-center text-sm text-gray-400">
-              <p>&copy; 2026 Parfumé. All rights reserved.</p>
+              <p>&copy; 2026 MUWAS. All rights reserved.</p>
               <p className="mt-2">
                 <a href="#" className="hover:text-amber-400">Privacy Policy</a> •
                 <a href="#" className="hover:text-amber-400 mx-2">Terms of Service</a>

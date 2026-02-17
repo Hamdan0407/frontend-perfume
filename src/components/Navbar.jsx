@@ -71,8 +71,7 @@ export default function Navbar() {
                 <SheetContent side="left" className="w-[300px] sm:w-[400px]">
                   <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-accent" />
-                      Parfumé
+                      <img src="/muwas-logo.jfif" alt="MUWAS" className="h-8 w-auto object-contain" />
                     </SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-4 mt-8">
@@ -123,9 +122,8 @@ export default function Navbar() {
             </div>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 font-bold text-xl text-foreground">
-              <Sparkles className="h-5 w-5 text-accent" />
-              <span>Parfumé</span>
+            <Link to="/" className="flex items-center">
+              <img src="/muwas-logo.jfif" alt="MUWAS" className="h-10 w-auto object-contain" />
             </Link>
           </div>
 
