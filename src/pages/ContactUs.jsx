@@ -62,7 +62,7 @@ export default function ContactUs() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg">+91 9876 543 210</p>
+                        <p className="text-lg">+91-9894722186</p>
                         <p className="text-sm text-muted-foreground mt-1">
                             Mon-Sat: 9:00 AM - 8:00 PM IST
                         </p>
@@ -77,7 +77,7 @@ export default function ContactUs() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg">muwas2021@gmail.com</p>
+                        <p className="text-lg">muwas2021@yahoo.com</p>
                         <p className="text-sm text-muted-foreground mt-1">
                             We'll respond within 24 hours
                         </p>

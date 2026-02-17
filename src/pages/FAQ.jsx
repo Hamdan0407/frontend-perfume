@@ -20,7 +20,7 @@ const faqs = [
             },
             {
                 q: 'Can I change my delivery address?',
-                a: 'You can change your address before the order is shipped. Contact us immediately at muwas2021@gmail.com with your order number.'
+                a: 'You can change your address before the order is shipped. Contact us immediately at muwas2021@yahoo.com with your order number.'
             }
         ]
     },
@@ -33,7 +33,7 @@ const faqs = [
             },
             {
                 q: 'How do I initiate a return?',
-                a: 'Email us at muwas2021@gmail.com with your order number and reason for return. We\'ll guide you through the process.'
+                a: 'Email us at muwas2021@yahoo.com with your order number and reason for return. We\'ll guide you through the process.'
             },
             {
                 q: 'When will I receive my refund?',
@@ -169,13 +169,13 @@ export default function FAQ() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <a
-                            href="mailto:muwas2021@gmail.com"
+                            href="mailto:muwas2021@yahoo.com"
                             className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
                         >
                             Email Us
                         </a>
                         <a
-                            href="tel:+919876543210"
+                            href="tel:+919894722186"
                             className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition"
                         >
                             Call Us

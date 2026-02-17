@@ -11,7 +11,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
     city: 'Mumbai, Maharashtra 400001',
     country: 'India',
     phone: '+91 9894722186',
-    email: 'muwas2021@gmail.com',
+    email: 'muwas2021@yahoo.com',
     website: 'www.parfume.com',
     gst: 'GSTIN: 27AAAAA0000A1Z5',
     pan: 'PAN: AAAAA0000A',
@@ -58,7 +58,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
               </div>
             </div>
           </div>
-          
+
           {/* Invoice Info Card */}
           <div className="bg-secondary rounded-2xl p-6 shadow-sm border border-border">
             <div className="flex justify-end mb-3">
@@ -226,29 +226,29 @@ const Invoice = forwardRef(({ order, company }, ref) => {
                 <span className="font-medium">Subtotal:</span>
                 <span className="font-semibold text-foreground tabular-nums">{formatCurrency(calculateSubtotal())}</span>
               </div>
-              
+
               {order.shippingCharge > 0 && (
                 <div className="flex justify-between items-center py-2 text-muted-foreground">
                   <span className="font-medium">Shipping Charge:</span>
                   <span className="font-semibold text-foreground tabular-nums">{formatCurrency(order.shippingCharge)}</span>
                 </div>
               )}
-              
+
               {getDiscount() > 0 && (
                 <div className="flex justify-between items-center py-2 text-green-600 dark:text-green-400">
                   <span className="font-medium">Discount:</span>
                   <span className="font-semibold tabular-nums">- {formatCurrency(getDiscount())}</span>
                 </div>
               )}
-              
+
               <div className="flex justify-between items-center py-2 text-muted-foreground">
                 <span className="font-medium">GST (18%):</span>
                 <span className="font-semibold text-foreground tabular-nums">{formatCurrency(Math.round(calculateSubtotal() * 0.18))}</span>
               </div>
             </div>
-            
+
             <div className="border-t-2 border-border"></div>
-            
+
             <div className="bg-gradient-to-r from-primary via-primary to-slate-900 px-6 py-5">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -281,11 +281,10 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           </div>
           <div className="bg-background rounded-lg p-3 border border-border">
             <span className="text-muted-foreground block mb-1">Payment Status</span>
-            <span className={`inline-block font-bold text-sm px-3 py-1 rounded-full ${
-              order.paymentStatus === 'PAID' 
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+            <span className={`inline-block font-bold text-sm px-3 py-1 rounded-full ${order.paymentStatus === 'PAID'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                 : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-            }`}>
+              }`}>
               {order.paymentStatus}
             </span>
           </div>
@@ -315,7 +314,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
             </li>
           </ul>
         </div>
-        
+
         <div className="text-center pt-6 space-y-3">
           <div className="inline-block bg-primary text-white font-bold px-8 py-3 rounded-full shadow-lg">
             Thank you for shopping with us! 🎉
