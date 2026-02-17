@@ -32,13 +32,7 @@ export default function DemoIntro({ onComplete }) {
         >
             <div className={`flex flex-col items-center gap-4 transition-all duration-1000 transform ${stage >= 1 ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90'
                 }`}>
-                <div className="relative">
-                    <Sparkles className="w-16 h-16 text-amber-500 animate-pulse" />
-                    <div className="absolute inset-0 bg-amber-500 blur-xl opacity-30 animate-pulse"></div>
-                </div>
-                <h1 className="text-4xl sm:text-6xl font-bold text-white tracking-tighter">
-                    Parfum<span className="text-amber-500">é</span>
-                </h1>
+                <img src="/muwas-logo.jfif" alt="MUWAS" className="w-48 sm:w-64 h-auto object-contain" />
                 <p className="text-slate-400 tracking-widest text-sm uppercase">Luxury Fragrances</p>
             </div>
         </div>
