@@ -1,8 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Package, Shield, Sparkles, Heart, Search, BarChart3, ChevronDown, Settings, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, ChevronDown, Menu } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
-import { useWishlistStore } from '../store/wishlistStore';
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { Button } from './ui/button';
@@ -13,21 +12,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const { itemCount, setCart } = useCartStore();
-  const { getWishlistCount } = useWishlistStore();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-
-  const wishlistCount = getWishlistCount();
-
-  // Debug: Log user info when it changes
-  useEffect(() => {
-    console.log('Navbar - isAuthenticated:', isAuthenticated);
-    console.log('Navbar - user:', user);
-    console.log('Navbar - user?.role:', user?.role);
-  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -196,18 +185,7 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <>
-                {/* Desktop Wishlist & Cart */}
-                <Link to="/wishlist" className="relative hidden sm:flex">
-                  <Button variant="ghost" size="icon" className="relative">
-                    <Heart className="h-5 w-5" />
-                    {wishlistCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-red-500">
-                        {wishlistCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </Link>
-
+                {/* Cart */}
                 <Link to="/cart" className="relative">
                   <Button variant="ghost" size="icon" className="relative">
                     <ShoppingCart className="h-5 w-5" />

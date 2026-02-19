@@ -20,7 +20,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { clearCart } = useCartStore();
-  
+
   // Check if we're in demo mode
   const isDemoMode = razorpayOrderResponse.razorpayKeyId === 'rzp_test_demo_mode';
 
@@ -31,17 +31,17 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.async = true;
-      
+
       script.onload = () => {
         console.log('✅ Razorpay script loaded successfully');
         console.log('window.Razorpay available:', typeof window.Razorpay !== 'undefined');
       };
-      
+
       script.onerror = () => {
         console.error('❌ Failed to load Razorpay script from CDN');
         toast.error('Failed to load payment gateway. Please try again.');
       };
-      
+
       document.body.appendChild(script);
 
       return () => {
@@ -63,7 +63,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
     try {
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // In demo mode, directly confirm the order
       await api.post('/orders/verify-payment', {
         razorpayOrderId: razorpayOrderResponse.razorpayOrderId,
@@ -73,12 +73,12 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
 
       toast.success('Demo payment successful! Your order is confirmed.');
       clearCart();
-      
+
       // Navigate to order details page
       setTimeout(() => {
         navigate(`/orders/${razorpayOrderResponse.orderId}`);
       }, 1500);
-      
+
     } catch (error) {
       console.error('Demo payment failed:', error);
       toast.error('Demo payment failed. Please try again.');
@@ -97,7 +97,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
       console.log('Razorpay Key ID:', razorpayOrderResponse.razorpayKeyId);
       console.log('Amount (paise):', razorpayOrderResponse.amount);
       console.log('window.Razorpay exists?', typeof window.Razorpay !== 'undefined');
-      
+
       const options = {
         key: razorpayOrderResponse.razorpayKeyId, // Razorpay Public Key
         amount: razorpayOrderResponse.amount, // Amount in paise
@@ -105,14 +105,14 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
         order_id: razorpayOrderResponse.razorpayOrderId, // Razorpay Order ID
         name: 'Perfume Shop',
         description: `Order #${razorpayOrderResponse.orderNumber}`,
-        
+
         // Customer details
         prefill: {
           name: razorpayOrderResponse.customerName || '',
           email: razorpayOrderResponse.customerEmail || '',
           contact: razorpayOrderResponse.customerPhone || '',
         },
-        
+
         // Callback handlers
         handler: async function (response) {
           console.log('✅ PAYMENT SUCCESS - Response:', response);
@@ -212,7 +212,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
           </AlertDescription>
         </Alert>
       )}
-      
+
       {/* Payment Amount Summary */}
       <Card className="border-2 border-primary/30 bg-primary/5 shadow-md">
         <CardContent className="p-4 sm:p-6 space-y-3">
@@ -250,13 +250,13 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
           </>
         )}
       </Button>
-      
+
       {/* Security Info */}
       <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium bg-muted/50 p-3 rounded-lg">
         <CheckCircle2 className="h-5 w-5 text-green-600" />
         <span>
-          {isDemoMode 
-            ? '✓ Demo mode - No actual payment required' 
+          {isDemoMode
+            ? '✓ Demo mode - No actual payment required'
             : '✓ SSL Encrypted & Secured by Razorpay'}
         </span>
       </div>
@@ -283,7 +283,7 @@ export default function Checkout() {
     shippingZipCode: '',
     shippingPhone: ''
   });
-  
+
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -330,37 +330,37 @@ export default function Checkout() {
   // Validate form fields
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!shippingInfo.recipientName.trim()) {
       newErrors.recipientName = 'Recipient name is required';
     }
-    
+
     if (!shippingInfo.shippingAddress.trim()) {
       newErrors.shippingAddress = 'Address is required';
     } else if (shippingInfo.shippingAddress.trim().length < 10) {
       newErrors.shippingAddress = 'Please enter a complete address';
     }
-    
+
     if (!shippingInfo.shippingCity.trim()) {
       newErrors.shippingCity = 'City is required';
     }
-    
+
     if (!shippingInfo.shippingCountry.trim()) {
       newErrors.shippingCountry = 'Country is required';
     }
-    
+
     if (!shippingInfo.shippingZipCode.trim()) {
       newErrors.shippingZipCode = 'Zip code is required';
     } else if (!/^\d{5,6}$/.test(shippingInfo.shippingZipCode.trim())) {
       newErrors.shippingZipCode = 'Please enter a valid zip code';
     }
-    
+
     if (!shippingInfo.shippingPhone.trim()) {
       newErrors.shippingPhone = 'Phone number is required';
     } else if (!/^\+?[\d\s-]{10,}$/.test(shippingInfo.shippingPhone.trim())) {
       newErrors.shippingPhone = 'Please enter a valid phone number';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -431,7 +431,7 @@ export default function Checkout() {
    */
   const handleShippingSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
@@ -447,20 +447,20 @@ export default function Checkout() {
       console.log('Calling /orders/checkout API...');
       const checkoutPayload = {
         ...shippingInfo,
-        couponCode: appliedCoupon?.couponCode || null
+        couponCode: appliedCoupon?.coupon?.code || null
       };
       const { data } = await api.post('/orders/checkout', checkoutPayload);
       console.log('Checkout response:', data);
-      
+
       // Set Razorpay order response for payment form
       setRazorpayOrderResponse(data);
-      
+
       toast.success('Order created successfully! Proceed to payment.');
     } catch (error) {
       console.error('Order creation error:', error);
       console.error('Error response:', error.response?.data);
       console.error('Error status:', error.response?.status);
-      
+
       // Handle specific error cases
       if (error.response?.status === 400) {
         const errorMsg = error.response?.data?.message || error.response?.data?.error;
@@ -500,18 +500,16 @@ export default function Checkout() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                !razorpayOrderResponse ? 'bg-primary text-primary-foreground' : 'bg-primary/20 text-primary'
-              }`}>
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${!razorpayOrderResponse ? 'bg-primary text-primary-foreground' : 'bg-primary/20 text-primary'
+                }`}>
                 {!razorpayOrderResponse ? '1' : <CheckCircle2 className="h-4 w-4" />}
               </div>
               <span className="text-xs sm:text-sm font-medium hidden sm:inline">Shipping</span>
             </div>
             <div className="h-0.5 w-8 sm:w-16 bg-border" />
             <div className="flex items-center gap-2">
-              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                razorpayOrderResponse ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${razorpayOrderResponse ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                }`}>
                 2
               </div>
               <span className="text-xs sm:text-sm font-medium hidden sm:inline">Payment</span>
@@ -527,8 +525,8 @@ export default function Checkout() {
             Secure Checkout
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            {!razorpayOrderResponse 
-              ? 'Enter your shipping details to continue' 
+            {!razorpayOrderResponse
+              ? 'Enter your shipping details to continue'
               : 'Complete your payment to confirm order'}
           </p>
         </div>
@@ -778,11 +776,11 @@ export default function Checkout() {
                     </p>
                   </div>
 
-                  <RazorpayPaymentForm 
+                  <RazorpayPaymentForm
                     razorpayOrderResponse={razorpayOrderResponse}
                     onPaymentSuccess={handlePaymentSuccess}
                   />
-                  
+
                   <Button
                     variant="outline"
                     onClick={() => setRazorpayOrderResponse(null)}
@@ -811,8 +809,8 @@ export default function Checkout() {
                     <div key={item.id} className="flex gap-3">
                       <div className="h-16 w-16 rounded-md bg-muted overflow-hidden flex-shrink-0">
                         {item.product?.imageUrl && (
-                          <img 
-                            src={item.product.imageUrl} 
+                          <img
+                            src={item.product.imageUrl}
                             alt={item.product?.name}
                             className="h-full w-full object-cover"
                           />
@@ -846,7 +844,7 @@ export default function Checkout() {
                     <span className="text-muted-foreground">Shipping</span>
                     <span className="font-medium">₹{cart?.shippingCost?.toFixed(2) || '0.00'}</span>
                   </div>
-                  
+
                   {/* Discount Row */}
                   {discount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
@@ -854,10 +852,10 @@ export default function Checkout() {
                       <span className="font-medium">-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
-                  
+
                   <div className="flex justify-between text-base font-bold pt-2 border-t">
                     <span>Total</span>
-                    <span className="text-lg">₹{finalTotal().toFixed(2)}</span>
+                    <span className="text-lg">₹{razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : finalTotal().toFixed(2)}</span>
                   </div>
                 </div>
 

@@ -65,6 +65,7 @@ export default function AdminPanel() {
     minOrderAmount: '',
     maxDiscountAmount: '',
     usageLimit: '',
+    usageLimitPerUser: '1',
     validFrom: '',
     validUntil: '',
     active: true
@@ -595,7 +596,9 @@ export default function AdminPanel() {
       discountValue: '',
       minOrderAmount: '',
       maxDiscountAmount: '',
+      maxDiscountAmount: '',
       usageLimit: '100',
+      usageLimitPerUser: '1',
       validFrom: now.toISOString().slice(0, 16),
       validUntil: nextMonth.toISOString().slice(0, 16),
       active: true
@@ -613,7 +616,9 @@ export default function AdminPanel() {
       discountValue: coupon.discountValue?.toString() || '',
       minOrderAmount: coupon.minOrderAmount?.toString() || '',
       maxDiscountAmount: coupon.maxDiscountAmount?.toString() || '',
+      maxDiscountAmount: coupon.maxDiscountAmount?.toString() || '',
       usageLimit: coupon.usageLimit?.toString() || '',
+      usageLimitPerUser: coupon.usageLimitPerUser?.toString() || '1',
       validFrom: new Date(coupon.validFrom).toISOString().slice(0, 16),
       validUntil: new Date(coupon.validUntil).toISOString().slice(0, 16),
       active: coupon.active
@@ -632,7 +637,9 @@ export default function AdminPanel() {
       discountValue: parseFloat(couponForm.discountValue) || 0,
       minOrderAmount: couponForm.minOrderAmount ? parseFloat(couponForm.minOrderAmount) : null,
       maxDiscountAmount: couponForm.maxDiscountAmount ? parseFloat(couponForm.maxDiscountAmount) : null,
+      maxDiscountAmount: couponForm.maxDiscountAmount ? parseFloat(couponForm.maxDiscountAmount) : null,
       usageLimit: parseInt(couponForm.usageLimit, 10) || 100,
+      usageLimitPerUser: parseInt(couponForm.usageLimitPerUser, 10) || 1,
       validFrom: new Date(couponForm.validFrom).toISOString(),
       validUntil: new Date(couponForm.validUntil).toISOString(),
       active: couponForm.active !== false
@@ -772,7 +779,7 @@ export default function AdminPanel() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(32);
     doc.setFont('helvetica', 'bold');
-    doc.text('Parfumé', 20, 25);
+    doc.text('MUWAS', 20, 25);
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
@@ -802,11 +809,11 @@ export default function AdminPanel() {
     doc.rect(15, 62, pageWidth - 30, 18, 'F');
     doc.setTextColor(...grayColor);
     doc.setFontSize(8);
-    doc.text('📍 123 Perfume Lane, Mumbai, MH 400001', 18, 68);
-    doc.text('📞 +91 9894722186', 18, 73);
-    doc.text('✉ muwas2021@yahoo.com', 18, 78);
-    doc.text('🌐 www.parfume.com', pageWidth - 18, 68, { align: 'right' });
-    doc.text('GSTIN: 27AAAAA0000A1Z5', pageWidth - 18, 73, { align: 'right' });
+    doc.text('📍 No 3, Modi Ibrahim Street, Ambur, Tamil Nadu 635802', 18, 68);
+    doc.text('📞 +91 9629004158', 18, 73);
+    doc.text('✉ muwas2021@gmail.com', 18, 78);
+    doc.text('🌐 www.muwas.com', pageWidth - 18, 68, { align: 'right' });
+    doc.text('GSTIN: 33AAAAA0000A1Z5', pageWidth - 18, 73, { align: 'right' });
     doc.text('PAN: AAAAA0000A', pageWidth - 18, 78, { align: 'right' });
 
     // Bill To & Ship To Section
@@ -1152,7 +1159,7 @@ export default function AdminPanel() {
             <div className="logo-icon">
               <BarChart3 size={24} />
             </div>
-            {sidebarOpen && <span className="brand-text">PerfumeAdmin</span>}
+            {sidebarOpen && <span className="brand-text">Muwas Admin</span>}
           </div>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
@@ -2578,7 +2585,7 @@ export default function AdminPanel() {
                       value={couponForm.code}
                       onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
                       placeholder="e.g., WELCOME10"
-                      pattern="[A-Z0-9_-]+"
+                      pattern="[A-Z0-9_\\-]+"
                       title="Only uppercase letters, numbers, hyphens, and underscores"
                       required
                       style={{ textTransform: 'uppercase' }}
@@ -2586,15 +2593,28 @@ export default function AdminPanel() {
                     <small className="form-hint">Uppercase letters, numbers, - and _ only</small>
                   </div>
                   <div className="form-group">
-                    <label>Usage Limit *</label>
+                    <label>Total Usage Limit</label>
                     <input
                       type="number"
-                      min="1"
                       className="form-input"
                       value={couponForm.usageLimit}
                       onChange={(e) => setCouponForm({ ...couponForm, usageLimit: e.target.value })}
+                      min="1"
                       required
                     />
+                    <small className="form-text text-muted">Total number of times this coupon can be used by all users combined.</small>
+                  </div>
+                  <div className="form-group">
+                    <label>Limit Per User</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={couponForm.usageLimitPerUser}
+                      onChange={(e) => setCouponForm({ ...couponForm, usageLimitPerUser: e.target.value })}
+                      min="1"
+                      placeholder="e.g. 1"
+                    />
+                    <small className="form-text text-muted">Max uses per single customer account.</small>
                   </div>
                 </div>
 

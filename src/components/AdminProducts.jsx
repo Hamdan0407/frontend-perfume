@@ -22,30 +22,7 @@ export default function AdminProducts() {
   });
 
   useEffect(() => {
-    // Demo mode: Use mock product data
-    setProducts([
-      {
-        id: 1,
-        name: 'Gucci Bloom',
-        brand: 'Gucci',
-        category: 'Women',
-        price: 89.99,
-        stock: 25,
-        rating: 4.5,
-        description: 'A beautiful floral fragrance'
-      },
-      {
-        id: 2,
-        name: 'Dior Sauvage',
-        brand: 'Dior',
-        category: 'Men',
-        price: 129.99,
-        stock: 42,
-        rating: 4.8,
-        description: 'Fresh and spicy men\'s fragrance'
-      }
-    ]);
-    setLoading(false);
+    fetchProducts();
   }, []);
 
   const fetchProducts = async () => {

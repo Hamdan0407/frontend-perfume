@@ -1,19 +1,19 @@
 import { forwardRef } from 'react';
 import { format } from 'date-fns';
-import { Sparkles, Phone, Mail, MapPin, Globe, Package, User } from 'lucide-react';
+import { Phone, Mail, MapPin, Package, User } from 'lucide-react';
 import { Separator } from './ui/separator';
 
 const Invoice = forwardRef(({ order, company }, ref) => {
   const defaultCompany = {
-    name: 'Parfumé',
+    name: 'MUWAS',
     tagline: 'Luxury Fragrances & Premium Scents',
-    address: '123 Perfume Lane, Fragrance District',
-    city: 'Mumbai, Maharashtra 400001',
+    address: 'No 3, Modi Ibrahim Street, Ambur',
+    city: 'Ambur, Tamil Nadu 635802',
     country: 'India',
-    phone: '+91 9894722186',
-    email: 'muwas2021@yahoo.com',
-    website: 'www.parfume.com',
-    gst: 'GSTIN: 27AAAAA0000A1Z5',
+    phone: '+91 9629004158',
+    email: 'muwas2021@gmail.com',
+    website: 'www.muwas.com',
+    gst: 'GSTIN: 33AAAAA0000A1Z5',
     pan: 'PAN: AAAAA0000A',
     ...company
   };
@@ -47,39 +47,35 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           {/* Company Branding */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 mb-2">
-              <div className="bg-primary p-2.5 rounded-xl shadow-lg">
-                <Sparkles className="h-7 w-7 text-accent" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-primary">
-                  {defaultCompany.name}
-                </h1>
-                <p className="text-sm text-muted-foreground font-medium mt-0.5">{defaultCompany.tagline}</p>
-              </div>
+              <img
+                src="/muwas-logo.jfif"
+                alt="MUWAS"
+                className="h-16 w-auto object-contain"
+                style={{ maxWidth: '180px' }}
+              />
             </div>
+            <p className="text-sm text-muted-foreground font-medium">{defaultCompany.tagline}</p>
           </div>
 
-          {/* Invoice Info Card */}
-          <div className="bg-secondary rounded-2xl p-6 shadow-sm border border-border">
-            <div className="flex justify-end mb-3">
-              <div className="bg-primary text-white px-5 py-2 rounded-lg">
-                <h2 className="text-lg font-bold tracking-wide">TAX INVOICE</h2>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between items-center gap-6">
-                <span className="font-semibold text-muted-foreground">Invoice No:</span>
-                <span className="text-foreground font-bold font-mono">{order.orderNumber}</span>
-              </div>
-              <div className="flex justify-between items-center gap-6">
-                <span className="font-semibold text-muted-foreground">Date:</span>
-                <span className="text-foreground font-semibold">{formatDate(order.createdAt)}</span>
-              </div>
-              <div className="flex justify-between items-center gap-6">
-                <span className="font-semibold text-muted-foreground">Status:</span>
-                <span className="inline-block bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  {order.status.replace('_', ' ')}
-                </span>
+          {/* Invoice Info */}
+          <div className="text-right">
+            <h2 className="text-2xl font-extrabold tracking-widest text-primary uppercase mb-3">TAX INVOICE</h2>
+            <div className="bg-secondary rounded-2xl p-6 shadow-sm border border-border">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center gap-6">
+                  <span className="font-semibold text-muted-foreground">Invoice No:</span>
+                  <span className="text-foreground font-bold font-mono">{order.orderNumber}</span>
+                </div>
+                <div className="flex justify-between items-center gap-6">
+                  <span className="font-semibold text-muted-foreground">Date:</span>
+                  <span className="text-foreground font-semibold">{formatDate(order.createdAt)}</span>
+                </div>
+                <div className="flex justify-between items-center gap-6">
+                  <span className="font-semibold text-muted-foreground">Status:</span>
+                  <span className="inline-block bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                    {order.status.replace('_', ' ')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -106,7 +102,6 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           </div>
           <div className="space-y-1 text-right">
             <div className="flex items-center justify-end gap-2">
-              <Globe className="h-3.5 w-3.5 text-accent" />
               <span className="font-medium">{defaultCompany.website}</span>
             </div>
             <div className="text-xs">

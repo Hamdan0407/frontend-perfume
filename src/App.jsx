@@ -34,16 +34,7 @@ function App() {
   const { isAuthenticated } = useAuthStore();
   const { initWishlist } = useWishlistStore();
 
-  // Initialize session from localStorage on app load
-  useEffect(() => {
-    const { sessionInitialized, initializeSession } = useAuthStore.getState();
-
-    if (!sessionInitialized) {
-      console.log('🔄 Initializing session from localStorage...');
-      initializeSession();
-    }
-  }, []);
-
+  // Session is restored automatically by Zustand persist onRehydrateStorage
   // Initialize wishlist when user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
