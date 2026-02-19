@@ -174,13 +174,17 @@ export default function Login() {
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-accent" />
-              <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <div className="flex justify-center mb-6">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center p-2">
+                <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="w-full h-full object-contain" />
+              </div>
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Muwas.in
+              </CardTitle>
             </div>
           </div>
-          <CardDescription>Sign in to your account to continue</CardDescription>
+          <CardDescription className="text-center">Sign in to your account</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
