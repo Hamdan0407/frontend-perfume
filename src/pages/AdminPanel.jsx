@@ -1385,19 +1385,6 @@ export default function AdminPanel() {
                   Last updated: {lastUpdated.toLocaleTimeString('en-IN')}
                 </div>
                 <button
-                  onClick={refreshStats}
-                  disabled={loading}
-                  className="refresh-stats-btn"
-                  title="Manually refresh all statistics (requires double confirmation)"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    backgroundColor: '#7c3aed',
-                    color: 'white',
-                    border: 'none',
-                < button 
                   className="refresh-btn"
                   onClick={fetchDashboardData}
                   style={{
