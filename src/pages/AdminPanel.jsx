@@ -78,7 +78,7 @@ export default function AdminPanel() {
 
   // Settings form
   const [settingsForm, setSettingsForm] = useState({
-    storeName: 'Perfume Shop',
+    storeName: 'Muwas.in',
     storeEmail: 'admin@perfumeshop.com',
     supportPhone: '+91 98765 43210',
     currency: 'INR',
@@ -779,7 +779,7 @@ export default function AdminPanel() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(32);
     doc.setFont('helvetica', 'bold');
-    doc.text('MUWAS', 20, 25);
+    doc.text('MUWAS.IN', 20, 25);
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
@@ -1155,11 +1155,11 @@ export default function AdminPanel() {
       {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
         <div className="sidebar-brand">
-          <div className="brand-logo">
-            <div className="logo-icon">
-              <BarChart3 size={24} />
+          <div className="brand-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="logo-icon" style={{ width: '32px', height: '32px', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="/muwas-logo-nobg.png" alt="Muwas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            {sidebarOpen && <span className="brand-text">Muwas Admin</span>}
+            {sidebarOpen && <span className="brand-text">Muwas.in</span>}
           </div>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
@@ -1397,18 +1397,28 @@ export default function AdminPanel() {
                     backgroundColor: '#7c3aed',
                     color: 'white',
                     border: 'none',
+                < button 
+                  className="refresh-btn"
+                  onClick={fetchDashboardData}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    backgroundColor: '#7c3aed',
+                    color: 'white',
+                    border: 'none',
                     borderRadius: '8px',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.6 : 1,
+                    cursor: 'pointer',
                     fontSize: '14px',
                     fontWeight: '500',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#6d28d9')}
+                  onMouseEnter={(e) => (e.target.style.backgroundColor = '#6d28d9')}
                   onMouseLeave={(e) => (e.target.style.backgroundColor = '#7c3aed')}
                 >
-                  <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-                  {loading ? 'Refreshing...' : 'Refresh Stats'}
+                  <RefreshCw size={16} />
+                  Refresh Stats
                 </button>
               </div>
 
@@ -2114,657 +2124,675 @@ export default function AdminPanel() {
             </div>
           )}
         </div>
-      </main>
+      </main >
 
       {/* ==================== PRODUCT MODAL ==================== */}
-      {showProductModal && (
-        <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{modalMode === 'add' ? '➕ Add New Product' : '✏️ Edit Product'}</h2>
-              <button className="modal-close" onClick={() => setShowProductModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <form onSubmit={handleProductSubmit} className="modal-form">
-              <div className="modal-body">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Product Name *</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={productForm.name}
-                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Brand</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={productForm.brand}
-                      onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="product-description">Description</label>
-                  <textarea
-                    id="product-description"
-                    name="description"
-                    className="form-input"
-                    rows={3}
-                    value={productForm.description}
-                    onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  />
-                </div>
-
-                {/* Product Variants Section */}
-                <div className="form-group">
-
-                  <div className="variants-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {productVariants.map((variant, index) => (
-                      <div key={variant.id} className="variant-item" style={{
-                        border: productVariants.length > 1 ? '1px solid #ddd' : 'none',
-                        borderRadius: '8px',
-                        padding: productVariants.length > 1 ? '16px' : '0',
-                        backgroundColor: productVariants.length > 1 ? '#f9f9f9' : 'transparent'
-                      }}>
-                        {productVariants.length > 1 && (
-                          <div className="flex items-center justify-between mb-2">
-                            <span style={{ fontWeight: '600', color: '#333' }}>Variant {index + 1}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeVariant(variant.id)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#dc3545',
-                                cursor: 'pointer',
-                                padding: '4px'
-                              }}
-                              title="Remove variant"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        )}
-                        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                          <div>
-                            <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size (ml)</label>
-                            <input
-                              type="number"
-                              className="form-input"
-                              value={variant.size}
-                              onChange={(e) => updateVariant(variant.id, 'size', parseInt(e.target.value) || 0)}
-                              min="1"
-                              required
-                              style={{ width: '100%' }}
-                            />
-                          </div>
-                          <div>
-                            <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Price (₹)</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              className="form-input"
-                              value={variant.price}
-                              onChange={(e) => updateVariant(variant.id, 'price', e.target.value)}
-                              min="0"
-                              required
-                              style={{ width: '100%' }}
-                            />
-                          </div>
-                          <div>
-                            <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Stock</label>
-                            <input
-                              type="number"
-                              className="form-input"
-                              value={variant.stock}
-                              onChange={(e) => updateVariant(variant.id, 'stock', e.target.value)}
-                              min="0"
-                              required
-                              style={{ width: '100%' }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    className="btn-link mt-2"
-                    onClick={addVariant}
-                    style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <Plus size={14} />
-                    Add another size
-                  </button>
-                  <p style={{ fontSize: '13px', color: '#666', marginTop: '8px' }}>
-                    Add different sizes for this product. Each size can have its own price and stock level.
-                  </p>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Category *</label>
-                    <select
-                      className="form-input"
-                      value={productForm.category}
-                      onChange={(e) => {
-                        const newCategory = e.target.value;
-                        let defaultSize = '30ml'; // perfume default
-                        if (newCategory === 'attar') defaultSize = '6ml';
-                        else if (newCategory === 'aroma chemicals') defaultSize = '50ml';
-                        setProductForm({ ...productForm, category: newCategory, size: defaultSize });
-                      }}
-                      required
-                    >
-                      {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Type</label>
-                    <select
-                      className="form-input"
-                      value={productForm.type}
-                      onChange={(e) => setProductForm({ ...productForm, type: e.target.value })}
-                    >
-                      <option value="Eau de Parfum">Eau de Parfum</option>
-                      <option value="Eau de Toilette">Eau de Toilette</option>
-                      <option value="Eau de Cologne">Eau de Cologne</option>
-                      <option value="Parfum">Parfum</option>
-                      <option value="Eau Fraiche">Eau Fraiche</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Status</label>
-                    <select
-                      className="form-input"
-                      value={productForm.active ? 'active' : 'inactive'}
-                      onChange={(e) => setProductForm({ ...productForm, active: e.target.value === 'active' })}
-                    >
-                      <option value="active">✓ Active</option>
-                      <option value="inactive">✗ Inactive</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Product Image</label>
-
-                  {/* Upload Method Toggle */}
-                  <div className="upload-toggle">
-                    <button
-                      type="button"
-                      className={`toggle-btn ${uploadMethod === 'upload' ? 'active' : ''}`}
-                      onClick={() => setUploadMethod('upload')}
-                    >
-                      <Upload size={16} />
-                      Upload Image
-                    </button>
-                    <button
-                      type="button"
-                      className={`toggle-btn ${uploadMethod === 'url' ? 'active' : ''}`}
-                      onClick={() => setUploadMethod('url')}
-                    >
-                      <ImageIcon size={16} />
-                      Image URL
-                    </button>
-                  </div>
-
-                  {uploadMethod === 'upload' ? (
-                    <div className="image-upload-area">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="file-input-hidden"
-                        id="product-image-upload"
-                      />
-                      {!imagePreview && !productForm.imageUrl ? (
-                        <label htmlFor="product-image-upload" className="upload-dropzone">
-                          <Upload size={40} />
-                          <span className="upload-text">Click to upload image</span>
-                          <span className="upload-hint">PNG, JPG, WEBP up to 5MB</span>
-                        </label>
-                      ) : (
-                        <div className="uploaded-image-preview">
-                          <img
-                            src={imagePreview || productForm.imageUrl}
-                            alt="Preview"
-                          />
-                          <div className="image-overlay">
-                            <button type="button" className="remove-image-btn" onClick={removeImage}>
-                              <XCircle size={20} />
-                              Remove
-                            </button>
-                            <label htmlFor="product-image-upload" className="change-image-btn">
-                              <RefreshCw size={20} />
-                              Change
-                            </label>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <>
+      {
+        showProductModal && (
+          <div className="modal-overlay" onClick={() => setShowProductModal(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{modalMode === 'add' ? '➕ Add New Product' : '✏️ Edit Product'}</h2>
+                <button className="modal-close" onClick={() => setShowProductModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleProductSubmit} className="modal-form">
+                <div className="modal-body">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Product Name *</label>
                       <input
                         type="text"
                         className="form-input"
-                        placeholder="https://example.com/image.jpg"
-                        value={productForm.imageUrl}
-                        onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                        value={productForm.name}
+                        onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                        required
                       />
-                      {productForm.imageUrl && (
-                        <div className="image-preview">
-                          <img
-                            src={productForm.imageUrl}
-                            alt="Preview"
-                            onError={(e) => e.target.style.display = 'none'}
-                            onLoad={(e) => e.target.style.display = 'block'}
-                          />
+                    </div>
+                    <div className="form-group">
+                      <label>Brand</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={productForm.brand}
+                        onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="product-description">Description</label>
+                    <textarea
+                      id="product-description"
+                      name="description"
+                      className="form-input"
+                      rows={3}
+                      value={productForm.description}
+                      onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Product Variants Section */}
+                  <div className="form-group">
+
+                    <div className="variants-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {productVariants.map((variant, index) => (
+                        <div key={variant.id} className="variant-item" style={{
+                          border: productVariants.length > 1 ? '1px solid #ddd' : 'none',
+                          borderRadius: '8px',
+                          padding: productVariants.length > 1 ? '16px' : '0',
+                          backgroundColor: productVariants.length > 1 ? '#f9f9f9' : 'transparent'
+                        }}>
+                          {productVariants.length > 1 && (
+                            <div className="flex items-center justify-between mb-2">
+                              <span style={{ fontWeight: '600', color: '#333' }}>Variant {index + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeVariant(variant.id)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#dc3545',
+                                  cursor: 'pointer',
+                                  padding: '4px'
+                                }}
+                                title="Remove variant"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          )}
+                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                            <div>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size (ml)</label>
+                              <input
+                                type="number"
+                                className="form-input"
+                                value={variant.size}
+                                onChange={(e) => updateVariant(variant.id, 'size', parseInt(e.target.value) || 0)}
+                                min="1"
+                                required
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Price (₹)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="form-input"
+                                value={variant.price}
+                                onChange={(e) => updateVariant(variant.id, 'price', e.target.value)}
+                                min="0"
+                                required
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Stock</label>
+                              <input
+                                type="number"
+                                className="form-input"
+                                value={variant.stock}
+                                onChange={(e) => updateVariant(variant.id, 'stock', e.target.value)}
+                                min="0"
+                                required
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </>
-                  )}
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-link mt-2"
+                      onClick={addVariant}
+                      style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Plus size={14} />
+                      Add another size
+                    </button>
+                    <p style={{ fontSize: '13px', color: '#666', marginTop: '8px' }}>
+                      Add different sizes for this product. Each size can have its own price and stock level.
+                    </p>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Category *</label>
+                      <select
+                        className="form-input"
+                        value={productForm.category}
+                        onChange={(e) => {
+                          const newCategory = e.target.value;
+                          let defaultSize = '30ml'; // perfume default
+                          if (newCategory === 'attar') defaultSize = '6ml';
+                          else if (newCategory === 'aroma chemicals') defaultSize = '50ml';
+                          setProductForm({ ...productForm, category: newCategory, size: defaultSize });
+                        }}
+                        required
+                      >
+                        {categories.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Type</label>
+                      <select
+                        className="form-input"
+                        value={productForm.type}
+                        onChange={(e) => setProductForm({ ...productForm, type: e.target.value })}
+                      >
+                        <option value="Eau de Parfum">Eau de Parfum</option>
+                        <option value="Eau de Toilette">Eau de Toilette</option>
+                        <option value="Eau de Cologne">Eau de Cologne</option>
+                        <option value="Parfum">Parfum</option>
+                        <option value="Eau Fraiche">Eau Fraiche</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Status</label>
+                      <select
+                        className="form-input"
+                        value={productForm.active ? 'active' : 'inactive'}
+                        onChange={(e) => setProductForm({ ...productForm, active: e.target.value === 'active' })}
+                      >
+                        <option value="active">✓ Active</option>
+                        <option value="inactive">✗ Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Product Image</label>
+
+                    {/* Upload Method Toggle */}
+                    <div className="upload-toggle">
+                      <button
+                        type="button"
+                        className={`toggle-btn ${uploadMethod === 'upload' ? 'active' : ''}`}
+                        onClick={() => setUploadMethod('upload')}
+                      >
+                        <Upload size={16} />
+                        Upload Image
+                      </button>
+                      <button
+                        type="button"
+                        className={`toggle-btn ${uploadMethod === 'url' ? 'active' : ''}`}
+                        onClick={() => setUploadMethod('url')}
+                      >
+                        <ImageIcon size={16} />
+                        Image URL
+                      </button>
+                    </div>
+
+                    {uploadMethod === 'upload' ? (
+                      <div className="image-upload-area">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="file-input-hidden"
+                          id="product-image-upload"
+                        />
+                        {!imagePreview && !productForm.imageUrl ? (
+                          <label htmlFor="product-image-upload" className="upload-dropzone">
+                            <Upload size={40} />
+                            <span className="upload-text">Click to upload image</span>
+                            <span className="upload-hint">PNG, JPG, WEBP up to 5MB</span>
+                          </label>
+                        ) : (
+                          <div className="uploaded-image-preview">
+                            <img
+                              src={imagePreview || productForm.imageUrl}
+                              alt="Preview"
+                            />
+                            <div className="image-overlay">
+                              <button type="button" className="remove-image-btn" onClick={removeImage}>
+                                <XCircle size={20} />
+                                Remove
+                              </button>
+                              <label htmlFor="product-image-upload" className="change-image-btn">
+                                <RefreshCw size={20} />
+                                Change
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="https://example.com/image.jpg"
+                          value={productForm.imageUrl}
+                          onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                        />
+                        {productForm.imageUrl && (
+                          <div className="image-preview">
+                            <img
+                              src={productForm.imageUrl}
+                              alt="Preview"
+                              onError={(e) => e.target.style.display = 'none'}
+                              onLoad={(e) => e.target.style.display = 'block'}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowProductModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? 'Saving...' : (modalMode === 'add' ? 'Create Product' : 'Update Product')}
-                </button>
-              </div>
-            </form>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowProductModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? 'Saving...' : (modalMode === 'add' ? 'Create Product' : 'Update Product')}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* ==================== ORDER MODAL ==================== */}
-      {showOrderModal && selectedItem && (
-        <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>📦 Order #{selectedItem.id}</h2>
-              <button className="modal-close" onClick={() => setShowOrderModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="order-details">
-                <div className="detail-row">
-                  <span className="label">Customer:</span>
-                  <span className="value">
-                    {selectedItem.customerName ||
-                      (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
-                  </span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Email:</span>
-                  <span className="value">
-                    {selectedItem.customerEmail || selectedItem.user?.email || 'N/A'}
-                  </span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Ship To:</span>
-                  <span className="value">
-                    {selectedItem.shippingRecipientName ||
-                      selectedItem.customerName ||
-                      (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
-                  </span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Date:</span>
-                  <span className="value">{selectedItem.createdAt ? new Date(selectedItem.createdAt).toLocaleString() : 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Total:</span>
-                  <span className="value price">{formatINR(selectedItem.totalAmount)}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Status:</span>
-                  <select
-                    className={`status-select ${getStatusColor(selectedItem.status)}`}
-                    value={selectedItem.status || 'PENDING'}
-                    onChange={(e) => handleUpdateOrderStatus(selectedItem.id, e.target.value)}
-                  >
-                    {orderStatuses.map(status => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-                </div>
-                {selectedItem.shippingAddress && (
+      {
+        showOrderModal && selectedItem && (
+          <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>📦 Order #{selectedItem.id}</h2>
+                <button className="modal-close" onClick={() => setShowOrderModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="order-details">
                   <div className="detail-row">
-                    <span className="label">Shipping:</span>
-                    <span className="value">{selectedItem.shippingAddress}</span>
+                    <span className="label">Customer:</span>
+                    <span className="value">
+                      {selectedItem.customerName ||
+                        (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Email:</span>
+                    <span className="value">
+                      {selectedItem.customerEmail || selectedItem.user?.email || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Ship To:</span>
+                    <span className="value">
+                      {selectedItem.shippingRecipientName ||
+                        selectedItem.customerName ||
+                        (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Date:</span>
+                    <span className="value">{selectedItem.createdAt ? new Date(selectedItem.createdAt).toLocaleString() : 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Total:</span>
+                    <span className="value price">{formatINR(selectedItem.totalAmount)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Status:</span>
+                    <select
+                      className={`status-select ${getStatusColor(selectedItem.status)}`}
+                      value={selectedItem.status || 'PENDING'}
+                      onChange={(e) => handleUpdateOrderStatus(selectedItem.id, e.target.value)}
+                    >
+                      {orderStatuses.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {selectedItem.shippingAddress && (
+                    <div className="detail-row" style={{ alignItems: 'flex-start' }}>
+                      <span className="label">Shipping:</span>
+                      <span className="value">
+                        {selectedItem.shippingAddress}<br />
+                        {selectedItem.shippingCity}, {selectedItem.shippingCountry} - {selectedItem.shippingZipCode}<br />
+                        {selectedItem.shippingPhone && (
+                          <span className="text-muted-foreground text-sm block mt-1">
+                            Phone: {selectedItem.shippingPhone}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {selectedItem.items && selectedItem.items.length > 0 && (
+                  <div className="order-items">
+                    <h4>Order Items</h4>
+                    <table className="mini-table">
+                      <thead>
+                        <tr>
+                          <th>Product</th>
+                          <th>Qty</th>
+                          <th>Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedItem.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.product?.name || 'Product'}</td>
+                            <td>{item.quantity}</td>
+                            <td>{formatINR(item.price)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
-
-              {selectedItem.items && selectedItem.items.length > 0 && (
-                <div className="order-items">
-                  <h4>Order Items</h4>
-                  <table className="mini-table">
-                    <thead>
-                      <tr>
-                        <th>Product</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedItem.items.map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{item.productName || item.product?.name || 'Product'}</td>
-                          <td>{item.quantity}</td>
-                          <td>{formatINR(item.price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowOrderModal(false)}>
-                Close
-              </button>
-              <button className="invoice-download-btn" onClick={() => generateInvoicePDF(selectedItem)}>
-                <Download size={18} />
-                Download Invoice
-              </button>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowOrderModal(false)}>
+                  Close
+                </button>
+                <button className="invoice-download-btn" onClick={() => generateInvoicePDF(selectedItem)}>
+                  <Download size={18} />
+                  Download Invoice
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* ==================== USER MODAL ==================== */}
-      {showUserModal && selectedItem && (
-        <div className="modal-overlay" onClick={() => setShowUserModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>👤 User Details</h2>
-              <button className="modal-close" onClick={() => setShowUserModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="user-profile-card">
-                <div className="profile-avatar">
-                  {(selectedItem.firstName || 'U').charAt(0)}
-                </div>
-                <div className="profile-info">
-                  <h3>{selectedItem.firstName} {selectedItem.lastName}</h3>
-                  <p>{selectedItem.email}</p>
-                </div>
+      {
+        showUserModal && selectedItem && (
+          <div className="modal-overlay" onClick={() => setShowUserModal(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>👤 User Details</h2>
+                <button className="modal-close" onClick={() => setShowUserModal(false)}>
+                  <X size={20} />
+                </button>
               </div>
-
-              <div className="order-details">
-                <div className="detail-row">
-                  <span className="label">User ID:</span>
-                  <span className="value">#{selectedItem.id}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Phone:</span>
-                  <span className="value">{selectedItem.phoneNumber || 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Address:</span>
-                  <span className="value">{selectedItem.address || 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">City:</span>
-                  <span className="value">{selectedItem.city || 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Role:</span>
-                  <select
-                    className="form-input"
-                    value={selectedItem.role || 'CUSTOMER'}
-                    onChange={(e) => handleChangeUserRole(selectedItem.id, e.target.value)}
-                  >
-                    <option value="CUSTOMER">CUSTOMER</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Status:</span>
-                  <button
-                    className={`status-toggle ${selectedItem.active ? 'active' : 'inactive'}`}
-                    onClick={() => {
-                      handleToggleUserStatus(selectedItem.id, selectedItem.active);
-                      setSelectedItem({ ...selectedItem, active: !selectedItem.active });
-                    }}
-                  >
-                    {selectedItem.active ? <Check size={14} /> : <XCircle size={14} />}
-                    {selectedItem.active ? 'Active' : 'Inactive'}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowUserModal(false)}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ==================== COUPON MODAL ==================== */}
-      {showCouponModal && (
-        <div className="modal-overlay" onClick={() => setShowCouponModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{modalMode === 'add' ? '➕ Create Discount Coupon' : '✏️ Edit Coupon'}</h2>
-              <button className="modal-close" onClick={() => setShowCouponModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <form onSubmit={handleCouponSubmit} className="modal-form">
               <div className="modal-body">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Coupon Code *</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={couponForm.code}
-                      onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
-                      placeholder="e.g., WELCOME10"
-                      pattern="[A-Z0-9_\\-]+"
-                      title="Only uppercase letters, numbers, hyphens, and underscores"
-                      required
-                      style={{ textTransform: 'uppercase' }}
-                    />
-                    <small className="form-hint">Uppercase letters, numbers, - and _ only</small>
+                <div className="user-profile-card">
+                  <div className="profile-avatar">
+                    {(selectedItem.firstName || 'U').charAt(0)}
                   </div>
-                  <div className="form-group">
-                    <label>Total Usage Limit</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={couponForm.usageLimit}
-                      onChange={(e) => setCouponForm({ ...couponForm, usageLimit: e.target.value })}
-                      min="1"
-                      required
-                    />
-                    <small className="form-text text-muted">Total number of times this coupon can be used by all users combined.</small>
-                  </div>
-                  <div className="form-group">
-                    <label>Limit Per User</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={couponForm.usageLimitPerUser}
-                      onChange={(e) => setCouponForm({ ...couponForm, usageLimitPerUser: e.target.value })}
-                      min="1"
-                      placeholder="e.g. 1"
-                    />
-                    <small className="form-text text-muted">Max uses per single customer account.</small>
+                  <div className="profile-info">
+                    <h3>{selectedItem.firstName} {selectedItem.lastName}</h3>
+                    <p>{selectedItem.email}</p>
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Description *</label>
-                  <textarea
-                    className="form-input"
-                    rows={2}
-                    value={couponForm.description}
-                    onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })}
-                    placeholder="e.g., 10% off for new customers"
-                    required
-                  />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Discount Type *</label>
+                <div className="order-details">
+                  <div className="detail-row">
+                    <span className="label">User ID:</span>
+                    <span className="value">#{selectedItem.id}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Phone:</span>
+                    <span className="value">{selectedItem.phoneNumber || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Address:</span>
+                    <span className="value">{selectedItem.address || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">City:</span>
+                    <span className="value">{selectedItem.city || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Role:</span>
                     <select
                       className="form-input"
-                      value={couponForm.discountType}
-                      onChange={(e) => setCouponForm({ ...couponForm, discountType: e.target.value })}
-                      required
+                      value={selectedItem.role || 'CUSTOMER'}
+                      onChange={(e) => handleChangeUserRole(selectedItem.id, e.target.value)}
                     >
-                      <option value="PERCENTAGE">Percentage (%)</option>
-                      <option value="FIXED_AMOUNT">Fixed Amount (₹)</option>
+                      <option value="CUSTOMER">CUSTOMER</option>
+                      <option value="ADMIN">ADMIN</option>
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label>
-                      Discount Value *
-                      {couponForm.discountType === 'PERCENTAGE' ? ' (%)' : ' (₹)'}
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      max={couponForm.discountType === 'PERCENTAGE' ? '100' : undefined}
-                      className="form-input"
-                      value={couponForm.discountValue}
-                      onChange={(e) => setCouponForm({ ...couponForm, discountValue: e.target.value })}
-                      required
-                    />
+                  <div className="detail-row">
+                    <span className="label">Status:</span>
+                    <button
+                      className={`status-toggle ${selectedItem.active ? 'active' : 'inactive'}`}
+                      onClick={() => {
+                        handleToggleUserStatus(selectedItem.id, selectedItem.active);
+                        setSelectedItem({ ...selectedItem, active: !selectedItem.active });
+                      }}
+                    >
+                      {selectedItem.active ? <Check size={14} /> : <XCircle size={14} />}
+                      {selectedItem.active ? 'Active' : 'Inactive'}
+                    </button>
                   </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Min Order Amount (₹)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="form-input"
-                      value={couponForm.minOrderAmount}
-                      onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: e.target.value })}
-                      placeholder="Optional"
-                    />
-                    <small className="form-hint">Leave empty for no minimum</small>
-                  </div>
-                  <div className="form-group">
-                    <label>Max Discount Amount (₹)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="form-input"
-                      value={couponForm.maxDiscountAmount}
-                      onChange={(e) => setCouponForm({ ...couponForm, maxDiscountAmount: e.target.value })}
-                      placeholder="Optional"
-                    />
-                    <small className="form-hint">Leave empty for no cap</small>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Valid From *</label>
-                    <input
-                      type="datetime-local"
-                      className="form-input"
-                      value={couponForm.validFrom}
-                      onChange={(e) => setCouponForm({ ...couponForm, validFrom: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Valid Until *</label>
-                    <input
-                      type="datetime-local"
-                      className="form-input"
-                      value={couponForm.validUntil}
-                      onChange={(e) => setCouponForm({ ...couponForm, validUntil: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={couponForm.active}
-                      onChange={(e) => setCouponForm({ ...couponForm, active: e.target.checked })}
-                    />
-                    <span>Active (coupon can be used)</span>
-                  </label>
                 </div>
               </div>
-
               <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={() => setShowCouponModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Saving...' : (modalMode === 'add' ? 'Create Coupon' : 'Update Coupon')}
+                <button className="btn btn-secondary" onClick={() => setShowUserModal(false)}>
+                  Close
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
+
+      {/* ==================== COUPON MODAL ==================== */}
+      {
+        showCouponModal && (
+          <div className="modal-overlay" onClick={() => setShowCouponModal(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{modalMode === 'add' ? '➕ Create Discount Coupon' : '✏️ Edit Coupon'}</h2>
+                <button className="modal-close" onClick={() => setShowCouponModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleCouponSubmit} className="modal-form">
+                <div className="modal-body">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Coupon Code *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={couponForm.code}
+                        onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                        placeholder="e.g., WELCOME10"
+                        pattern="[A-Z0-9_\\-]+"
+                        title="Only uppercase letters, numbers, hyphens, and underscores"
+                        required
+                        style={{ textTransform: 'uppercase' }}
+                      />
+                      <small className="form-hint">Uppercase letters, numbers, - and _ only</small>
+                    </div>
+                    <div className="form-group">
+                      <label>Total Usage Limit</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={couponForm.usageLimit}
+                        onChange={(e) => setCouponForm({ ...couponForm, usageLimit: e.target.value })}
+                        min="1"
+                        required
+                      />
+                      <small className="form-text text-muted">Total number of times this coupon can be used by all users combined.</small>
+                    </div>
+                    <div className="form-group">
+                      <label>Limit Per User</label>
+                      <input
+                        type="number"
+                        className="form-input"
+                        value={couponForm.usageLimitPerUser}
+                        onChange={(e) => setCouponForm({ ...couponForm, usageLimitPerUser: e.target.value })}
+                        min="1"
+                        placeholder="e.g. 1"
+                      />
+                      <small className="form-text text-muted">Max uses per single customer account.</small>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Description *</label>
+                    <textarea
+                      className="form-input"
+                      rows={2}
+                      value={couponForm.description}
+                      onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })}
+                      placeholder="e.g., 10% off for new customers"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Discount Type *</label>
+                      <select
+                        className="form-input"
+                        value={couponForm.discountType}
+                        onChange={(e) => setCouponForm({ ...couponForm, discountType: e.target.value })}
+                        required
+                      >
+                        <option value="PERCENTAGE">Percentage (%)</option>
+                        <option value="FIXED_AMOUNT">Fixed Amount (₹)</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>
+                        Discount Value *
+                        {couponForm.discountType === 'PERCENTAGE' ? ' (%)' : ' (₹)'}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        max={couponForm.discountType === 'PERCENTAGE' ? '100' : undefined}
+                        className="form-input"
+                        value={couponForm.discountValue}
+                        onChange={(e) => setCouponForm({ ...couponForm, discountValue: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Min Order Amount (₹)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="form-input"
+                        value={couponForm.minOrderAmount}
+                        onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: e.target.value })}
+                        placeholder="Optional"
+                      />
+                      <small className="form-hint">Leave empty for no minimum</small>
+                    </div>
+                    <div className="form-group">
+                      <label>Max Discount Amount (₹)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="form-input"
+                        value={couponForm.maxDiscountAmount}
+                        onChange={(e) => setCouponForm({ ...couponForm, maxDiscountAmount: e.target.value })}
+                        placeholder="Optional"
+                      />
+                      <small className="form-hint">Leave empty for no cap</small>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Valid From *</label>
+                      <input
+                        type="datetime-local"
+                        className="form-input"
+                        value={couponForm.validFrom}
+                        onChange={(e) => setCouponForm({ ...couponForm, validFrom: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Valid Until *</label>
+                      <input
+                        type="datetime-local"
+                        className="form-input"
+                        value={couponForm.validUntil}
+                        onChange={(e) => setCouponForm({ ...couponForm, validUntil: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={couponForm.active}
+                        onChange={(e) => setCouponForm({ ...couponForm, active: e.target.checked })}
+                      />
+                      <span>Active (coupon can be used)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="modal-footer">
+                  <button type="button" className="btn-cancel" onClick={() => setShowCouponModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary" disabled={loading}>
+                    {loading ? 'Saving...' : (modalMode === 'add' ? 'Create Coupon' : 'Update Coupon')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
 
       {/* ==================== DELETE CONFIRMATION ==================== */}
-      {showDeleteConfirm && (
-        <div className="confirm-modal" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="icon-danger">
-              <AlertCircle size={32} />
-            </div>
-            <h3>Delete {selectedItem?.code ? 'Coupon' : 'Product'}?</h3>
-            <p>
-              Are you sure you want to delete <strong>"{selectedItem?.name || selectedItem?.code}"</strong>?
-              This action cannot be undone.
-            </p>
-            <div className="confirm-actions">
-              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-danger"
-                onClick={selectedItem?.code ? handleDeleteCoupon : handleDeleteProduct}
-                disabled={loading}
-              >
-                {loading ? 'Deleting...' : 'Delete'}
-              </button>
+      {
+        showDeleteConfirm && (
+          <div className="confirm-modal" onClick={() => setShowDeleteConfirm(false)}>
+            <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+              <div className="icon-danger">
+                <AlertCircle size={32} />
+              </div>
+              <h3>Delete {selectedItem?.code ? 'Coupon' : 'Product'}?</h3>
+              <p>
+                Are you sure you want to delete <strong>"{selectedItem?.name || selectedItem?.code}"</strong>?
+                This action cannot be undone.
+              </p>
+              <div className="confirm-actions">
+                <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-danger"
+                  onClick={selectedItem?.code ? handleDeleteCoupon : handleDeleteProduct}
+                  disabled={loading}
+                >
+                  {loading ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

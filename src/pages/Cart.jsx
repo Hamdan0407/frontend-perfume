@@ -186,7 +186,7 @@ export default function Cart() {
                     <span className="font-medium text-foreground">₹{cart.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax (10%)</span>
+                    <span className="text-muted-foreground">Tax (18% GST)</span>
                     <span className="font-medium text-foreground">₹{cart.tax.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
