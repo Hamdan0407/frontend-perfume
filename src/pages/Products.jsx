@@ -38,17 +38,17 @@ export default function Products() {
     setLoading(true);
     try {
       let url = `/products?page=${page}&size=12&sortBy=${sortBy}&sortDir=${sortDir}`;
-      
+
       // Add price range if specified
       const params = new URLSearchParams();
       params.append('page', page);
       params.append('size', 12);
       params.append('sortBy', sortBy);
       params.append('sortDir', sortDir);
-      
+
       if (minPrice) params.append('minPrice', minPrice);
       if (maxPrice) params.append('maxPrice', maxPrice);
-      
+
       if (search) {
         url = `/products/search?query=${search}&${params.toString()}`;
       } else if (category) {
@@ -59,16 +59,16 @@ export default function Products() {
         url = `/products?${params.toString()}`;
       }
 
-      const { data } = await api.get(url);
-      
+      // Standardize response content
+      let content = Array.isArray(data.content) ? data.content : Array.isArray(data) ? data : [];
+
       // Filter by stock if checkbox is checked
-      let filteredProducts = data.content;
       if (inStockOnly) {
-        filteredProducts = filteredProducts.filter(p => p.stockQuantity > 0);
+        content = content.filter(p => p.stock > 0);
       }
-      
-      setProducts(filteredProducts);
-      setTotalPages(data.totalPages);
+
+      setProducts(content);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {
@@ -78,8 +78,8 @@ export default function Products() {
 
   const fetchBrands = async () => {
     try {
-      const { data } = await api.get('/products/brands');
-      setBrands(data);
+      const response = await api.get('/products/brands');
+      setBrands(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Failed to fetch brands:', error);
     }
@@ -206,9 +206,9 @@ export default function Products() {
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
-                  <Button 
-                    size="sm" 
-                    className="w-full" 
+                  <Button
+                    size="sm"
+                    className="w-full"
                     onClick={handlePriceFilter}
                     disabled={!minPrice && !maxPrice}
                   >
@@ -259,8 +259,8 @@ export default function Products() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map((product) => (
-                    <ProductCard 
-                      key={product.id} 
+                    <ProductCard
+                      key={product.id}
                       product={product}
                       onQuickView={(product) => {
                         setQuickViewProduct(product);
@@ -309,7 +309,7 @@ export default function Products() {
           </div>
         </div>
       </div>
-      
+
       {/* Quick View Modal */}
       <ProductQuickView
         product={quickViewProduct}

@@ -31,7 +31,7 @@ const productAPI = {
    */
   getProducts: async (params = {}) => {
     const response = await api.get('/products', { params });
-    return response.data.data;
+    return response.data;
   },
 
   /**
@@ -50,7 +50,7 @@ const productAPI = {
    */
   getProductById: async (productId) => {
     const response = await api.get(`/products/${productId}`);
-    return response.data.data;
+    return response.data;
   },
 
   /**
@@ -62,7 +62,7 @@ const productAPI = {
    */
   searchProducts: async (searchParams) => {
     const response = await api.get('/products/search', { params: searchParams });
-    return response.data.data;
+    return response.data;
   },
 
   /**
@@ -97,7 +97,7 @@ const productAPI = {
    */
   filterProducts: async (filters) => {
     const response = await api.post('/products/filter', filters);
-    return response.data.data;
+    return response.data;
   },
 };
 

@@ -16,8 +16,8 @@ const RecentlyViewed = () => {
   const fetchRecentlyViewed = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/products/recently-viewed?limit=8');
-      setRecentProducts(response.data);
+      const response = await api.get('/products/recently-viewed?limit=8');
+      setRecentProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching recently viewed:', error);
       setRecentProducts([]);
@@ -61,9 +61,9 @@ const RecentlyViewed = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {recentProducts.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
+            <ProductCard
+              key={product.id}
+              product={product}
               onQuickView={handleQuickView}
             />
           ))}

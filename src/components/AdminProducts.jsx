@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Search, Filter } from 'lucide-react';
 import { toast } from 'react-toastify';
+import api from '../api/axios';
 import '../styles/AdminProducts.css';
 
 export default function AdminProducts() {
@@ -28,28 +29,17 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
-
       // Try admin endpoint first, fall back to public products endpoint
-      let response = await fetch('http://localhost:8080/api/admin/products?size=100', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await api.get('/admin/products?size=100').catch(async (err) => {
+        // Fallback to public if admin fails
+        return await api.get('/products?size=100');
       });
 
-      // If admin endpoint fails, use public products endpoint
-      if (!response.ok) {
-        response = await fetch('http://localhost:8080/api/products?size=100', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      }
-
-      if (response.ok) {
-        const data = await response.json();
+      if (response.data) {
+        const data = response.data;
         setProducts(data.content || data || []);
-      } else {
+      }
+      else {
         console.warn('Failed to load products, using empty list');
         setProducts([]);
       }
@@ -106,17 +96,9 @@ export default function AdminProducts() {
 
       console.log('Payload:', payload);
 
-      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8080/api/admin/products', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      const response = await api.post('/admin/products', payload);
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         toast.success('Product added!');
         setShowModal(false);
         resetForm();
@@ -151,18 +133,10 @@ export default function AdminProducts() {
       // Remove from UI immediately
       setProducts(prev => prev.filter(p => p.id !== id));
 
-      const response = await fetch(`http://localhost:8080/api/admin/products/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Delete response status:', response.status);
+      const response = await api.delete(`/admin/products/${id}`);
 
       // Accept 200, 204, or any 2xx response
-      if (response.ok || response.status === 204) {
+      if (response.status === 200 || response.status === 204) {
         console.log('Product deleted successfully');
         toast.success('Product deleted successfully');
       } else if (response.status === 401) {

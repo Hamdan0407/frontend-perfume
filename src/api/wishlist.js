@@ -1,58 +1,41 @@
-import axios from 'axios';
+import api from './axios';
 
-const API_URL = 'http://localhost:8080/api/wishlist';
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+const API_URL = '/wishlist';
 
 export const wishlistAPI = {
   // Get user's wishlist
   getWishlist: async () => {
-    const response = await axios.get(API_URL, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.get(API_URL);
     return response.data;
   },
 
   // Get wishlist product IDs (for quick check)
   getWishlistProductIds: async () => {
-    const response = await axios.get(`${API_URL}/product-ids`, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.get(`${API_URL}/product-ids`);
     return response.data;
   },
 
   // Add product to wishlist
   addToWishlist: async (productId) => {
-    const response = await axios.post(`${API_URL}/${productId}`, {}, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.post(`${API_URL}/${productId}`);
     return response.data;
   },
 
   // Remove product from wishlist
   removeFromWishlist: async (productId) => {
-    const response = await axios.delete(`${API_URL}/${productId}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.delete(`${API_URL}/${productId}`);
     return response.data;
   },
 
   // Check if product is in wishlist
   checkInWishlist: async (productId) => {
-    const response = await axios.get(`${API_URL}/check/${productId}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.get(`${API_URL}/check/${productId}`);
     return response.data.inWishlist;
   },
 
   // Get wishlist count
   getWishlistCount: async () => {
-    const response = await axios.get(`${API_URL}/count`, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.get(`${API_URL}/count`);
     return response.data.count;
   },
 };
