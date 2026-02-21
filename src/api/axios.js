@@ -5,7 +5,8 @@ import { useAuthStore } from '../store/authStore';
 // Vite proxy in dev mode or Nginx in production will route to backend
 // In development: /api is proxied to http://localhost:8080 by Vite
 // In production: /api is routed by Nginx reverse proxy
-const API_URL = '/api';
+// Use environment variable for API URL in production, fallback to /api for dev/proxy
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Axios instance for API calls with JWT authentication
@@ -57,7 +58,7 @@ const processQueue = (error, token = null) => {
       prom.resolve(token);
     }
   });
-  
+
   isRefreshing = false;
   failedQueue = [];
 };
@@ -69,11 +70,11 @@ api.interceptors.request.use(
   (config) => {
     // Get token from localStorage (stored by axios interceptor or auth store)
     const accessToken = localStorage.getItem('accessToken') || localStorage.getItem('token');
-    
+
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
-    
+
     return config;
   },
   (error) => {
@@ -98,7 +99,7 @@ api.interceptors.response.use(
     }
     const { config, response } = error;
     const originalRequest = config;
-    
+
     /**
      * Handle 401 Unauthorized
      * Attempts to refresh token if available, otherwise redirects to login
@@ -106,15 +107,15 @@ api.interceptors.response.use(
      */
     if (response?.status === 401 && !originalRequest._retry) {
       // Don't try to refresh tokens for login/register - these are initial auth attempts
-      const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || 
-                            originalRequest.url?.includes('/auth/register') ||
-                            originalRequest.url?.includes('/auth/refresh-token');
-      
+      const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
+        originalRequest.url?.includes('/auth/register') ||
+        originalRequest.url?.includes('/auth/refresh-token');
+
       if (isAuthEndpoint) {
         // Let the auth component handle the error directly
         return Promise.reject(error);
       }
-      
+
       if (isRefreshing) {
         // Token refresh already in progress - queue this request
         return new Promise((resolve, reject) => {
@@ -128,12 +129,12 @@ api.interceptors.response.use(
             return Promise.reject(err);
           });
       }
-      
+
       originalRequest._retry = true;
       isRefreshing = true;
-      
+
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
       if (refreshToken) {
         // Attempt to refresh the access token
         return axios
@@ -145,14 +146,14 @@ api.interceptors.response.use(
           })
           .then((res) => {
             const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = res.data;
-            
+
             // Update tokens in localStorage
             localStorage.setItem('accessToken', newAccessToken);
             localStorage.setItem('token', newAccessToken); // For backward compatibility
             if (newRefreshToken) {
               localStorage.setItem('refreshToken', newRefreshToken);
             }
-            
+
             // Update auth store tokens
             try {
               const authStore = useAuthStore.getState();
@@ -165,11 +166,11 @@ api.interceptors.response.use(
                 console.debug('Auth store update failed during token refresh:', e);
               }
             }
-            
+
             // Update original request header and retry
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             processQueue(null, newAccessToken);
-            
+
             return api(originalRequest);
           })
           .catch((err) => {
@@ -180,7 +181,7 @@ api.interceptors.response.use(
             localStorage.removeItem('user');
             localStorage.removeItem('tokenExpiresAt');
             localStorage.removeItem('auth-storage');
-            
+
             // Clear auth store
             try {
               const authStore = useAuthStore.getState();
@@ -193,9 +194,9 @@ api.interceptors.response.use(
                 console.debug('Auth store logout failed:', e);
               }
             }
-            
+
             processQueue(err, null);
-            
+
             // Redirect to login with session expired message
             window.location.href = '/login?session=expired';
             return Promise.reject(err);
@@ -208,7 +209,7 @@ api.interceptors.response.use(
         localStorage.removeItem('user');
         localStorage.removeItem('tokenExpiresAt');
         localStorage.removeItem('auth-storage');
-        
+
         try {
           const authStore = useAuthStore.getState();
           if (authStore.logout) {
@@ -220,12 +221,12 @@ api.interceptors.response.use(
             console.debug('Auth store logout failed:', e);
           }
         }
-        
+
         window.location.href = '/login?session=expired';
         return Promise.reject(error);
       }
     }
-    
+
     /**
      * Handle 403 Forbidden
      * User is authenticated but lacks permissions for this resource
@@ -233,11 +234,11 @@ api.interceptors.response.use(
     if (response?.status === 403) {
       const message = response.data?.message || 'You do not have permission to access this resource';
       console.warn('Access forbidden:', message);
-      
+
       // Optionally redirect to unauthorized page
       // window.location.href = '/unauthorized';
     }
-    
+
     /**
      * Handle 404 Not Found
      * Requested resource does not exist
@@ -246,7 +247,7 @@ api.interceptors.response.use(
       const message = response.data?.message || 'The requested resource was not found';
       console.warn('Resource not found:', message);
     }
-    
+
     /**
      * Handle 409 Conflict
      * Resource already exists or constraints violated (e.g., duplicate email, insufficient stock)
@@ -255,7 +256,7 @@ api.interceptors.response.use(
       const message = response.data?.message || 'A conflict occurred';
       console.warn('Conflict:', message);
     }
-    
+
     /**
      * Handle 400 Bad Request
      * Validation errors or business logic violations
@@ -266,7 +267,7 @@ api.interceptors.response.use(
       const fieldErrors = response.data?.fieldErrors || {};
       console.warn('Bad request:', message, fieldErrors);
     }
-    
+
     /**
      * Handle 500 Internal Server Error
      * Server-side error
@@ -275,7 +276,7 @@ api.interceptors.response.use(
       const message = response.data?.message || 'An error occurred on the server';
       console.error('Server error:', message);
     }
-    
+
     // Return error for component-level handling
     return Promise.reject(error);
   }
