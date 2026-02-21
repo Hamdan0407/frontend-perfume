@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer 
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { 
-  TrendingUp, DollarSign, ShoppingCart, Package, 
-  Calendar, Award, ArrowUp, ArrowDown, RefreshCw 
+import {
+  TrendingUp, DollarSign, ShoppingCart, Package,
+  Calendar, Award, ArrowUp, ArrowDown, RefreshCw
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -26,28 +26,28 @@ export default function Dashboard() {
   const [refreshCount, setRefreshCount] = useState(0);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchAnalyticsData();
   }, [timeRange]);
 
   const handleRefresh = async () => {
     const firstConfirm = window.confirm(
       '⚠️ FIRST CONFIRMATION\n\nAre you sure you want to DELETE ALL ORDERS from the database?\n\n🔴 THIS WILL PERMANENTLY DELETE:\n• All order records\n• All order history\n• All revenue data\n\n❌ THIS CANNOT BE UNDONE!'
     );
-    
+
     if (!firstConfirm) return;
-    
+
     const secondConfirm = window.confirm(
       '⚠️ FINAL WARNING\n\nYou are about to PERMANENTLY DELETE all orders from the database!\n\nType carefully and click OK ONLY if you are absolutely sure.\n\n🚨 THIS ACTION IS IRREVERSIBLE!'
     );
-    
+
     if (!secondConfirm) return;
-    
+
     setRefreshing(true);
-    
+
     try {
       // Call backend to delete all orders from database
       await api.delete('/admin/analytics/reset');
-      
+
       // Clear frontend data
       setStats({
         totalRevenue: 0,
@@ -58,10 +58,10 @@ export default function Dashboard() {
       setDailySales([]);
       setMonthlySales([]);
       setTopProducts([]);
-      
+
       setLastRefreshed(new Date());
       setRefreshCount(prev => prev + 1);
-      
+
       toast.success(`✓ All orders deleted from database! (Reset #${refreshCount + 1})`);
     } catch (error) {
       console.error('Reset failed:', error);
@@ -71,16 +71,16 @@ export default function Dashboard() {
     }
   };
 
-  const fetchDashboardData = async (forceRefresh = false) => {
+  const fetchAnalyticsData = async (forceRefresh = false) => {
     setLoading(true);
     try {
       // Add cache-busting parameter when forcing refresh
       const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
-      
+
       if (forceRefresh) {
         console.log('🚀 Fetching with cache-buster:', cacheBuster);
       }
-      
+
       // Fetch stats first
       const statsRes = await api.get(`/admin/stats?refresh=true${cacheBuster}`);
       console.log('📈 Stats fetched:', statsRes.data);
@@ -98,7 +98,7 @@ export default function Dashboard() {
         console.log('📊 Daily sales:', dailyRes.data);
         console.log('📊 Monthly sales:', monthlyRes.data);
         console.log('📊 Top products:', topProductsRes.data);
-        
+
         setDailySales(dailyRes.data || []);
         setMonthlySales(monthlyRes.data || []);
         setTopProducts(topProductsRes.data || []);
@@ -185,11 +185,11 @@ export default function Dashboard() {
   }
 
   // Calculate totals from analytics data or use stats as fallback
-  const totalRevenue = dailySales.length > 0 
+  const totalRevenue = dailySales.length > 0
     ? dailySales.reduce((sum, day) => sum + parseFloat(day.revenue || 0), 0)
     : (stats?.totalRevenue || 0);
   const totalOrders = dailySales.length > 0
-    ? dailySales.reduce((sum, day) => sum + (day.orderCount || 0), 0) 
+    ? dailySales.reduce((sum, day) => sum + (day.orderCount || 0), 0)
     : (stats?.totalOrders || 0);
 
   return (
@@ -234,11 +234,10 @@ export default function Dashboard() {
             <button
               key={days}
               onClick={() => setTimeRange(days)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                timeRange === days
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${timeRange === days
                   ? 'bg-primary text-white'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+                }`}
             >
               {days} Days
             </button>
@@ -288,22 +287,22 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={dailySales}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="label" 
+                  <XAxis
+                    dataKey="label"
                     tick={{ fontSize: 12 }}
                     stroke="#6b7280"
                   />
-                  <YAxis 
+                  <YAxis
                     tick={{ fontSize: 12 }}
                     stroke="#6b7280"
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="orderCount" 
+                  <Line
+                    type="monotone"
+                    dataKey="orderCount"
                     name="Orders"
-                    stroke="#3b82f6" 
+                    stroke="#3b82f6"
                     strokeWidth={2}
                     dot={{ fill: '#3b82f6', r: 4 }}
                     activeDot={{ r: 6 }}
@@ -326,21 +325,21 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={dailySales}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="label" 
+                  <XAxis
+                    dataKey="label"
                     tick={{ fontSize: 12 }}
                     stroke="#6b7280"
                   />
-                  <YAxis 
+                  <YAxis
                     tick={{ fontSize: 12 }}
                     stroke="#6b7280"
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
-                  <Bar 
-                    dataKey="revenue" 
+                  <Bar
+                    dataKey="revenue"
                     name="Revenue (₹)"
-                    fill="#10b981" 
+                    fill="#10b981"
                     radius={[8, 8, 0, 0]}
                   />
                 </BarChart>
@@ -362,17 +361,17 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={monthlySales}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="label" 
+                <XAxis
+                  dataKey="label"
                   tick={{ fontSize: 12 }}
                   stroke="#6b7280"
                 />
-                <YAxis 
+                <YAxis
                   yAxisId="left"
                   tick={{ fontSize: 12 }}
                   stroke="#6b7280"
                 />
-                <YAxis 
+                <YAxis
                   yAxisId="right"
                   orientation="right"
                   tick={{ fontSize: 12 }}
@@ -380,18 +379,18 @@ export default function Dashboard() {
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Bar 
+                <Bar
                   yAxisId="left"
-                  dataKey="revenue" 
+                  dataKey="revenue"
                   name="Revenue (₹)"
-                  fill="#3b82f6" 
+                  fill="#3b82f6"
                   radius={[8, 8, 0, 0]}
                 />
-                <Bar 
+                <Bar
                   yAxisId="right"
-                  dataKey="orderCount" 
+                  dataKey="orderCount"
                   name="Orders"
-                  fill="#f59e0b" 
+                  fill="#f59e0b"
                   radius={[8, 8, 0, 0]}
                 />
               </BarChart>
@@ -411,16 +410,16 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               {topProducts.map((product, index) => (
-                <Link 
-                  key={product.id} 
+                <Link
+                  key={product.id}
                   to={`/products/${product.id}`}
                   className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary hover:shadow-md transition-all"
                 >
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">
                     {index + 1}
                   </div>
-                  <img 
-                    src={product.imageUrl || 'https://via.placeholder.com/80'} 
+                  <img
+                    src={product.imageUrl || 'https://via.placeholder.com/80'}
                     alt={product.name}
                     className="w-16 h-16 object-cover rounded-md"
                   />
@@ -436,7 +435,7 @@ export default function Dashboard() {
                       ₹{parseFloat(product.revenue).toFixed(2)}
                     </p>
                   </div>
-                  <Badge 
+                  <Badge
                     variant={product.stock < 10 ? 'destructive' : 'secondary'}
                     className="ml-2"
                   >

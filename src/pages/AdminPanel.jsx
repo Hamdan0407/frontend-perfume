@@ -1386,7 +1386,7 @@ export default function AdminPanel() {
                 </div>
                 <button
                   className="refresh-btn"
-                  onClick={fetchDashboardData}
+                  onClick={refreshStats}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
