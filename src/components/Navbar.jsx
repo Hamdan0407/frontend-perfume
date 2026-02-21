@@ -160,6 +160,8 @@ export default function Navbar() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
+                id="search-desktop"
+                name="search"
                 type="text"
                 placeholder="Search perfumes..."
                 value={searchQuery}
@@ -275,6 +277,8 @@ export default function Navbar() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
+                  id="search-mobile"
+                  name="search"
                   type="text"
                   placeholder="Search perfumes..."
                   value={searchQuery}
