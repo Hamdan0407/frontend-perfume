@@ -6,19 +6,20 @@ import { useAuthStore } from '../store/authStore';
 // In development: /api is proxied to http://localhost:8080 by Vite
 // In production: /api is routed by Nginx reverse proxy
 // Use environment variable for API URL in production, fallback to /api for dev/proxy
+const PROD_API_URL = 'https://backend-perfumes-production.up.railway.app/api';
 const VITE_API_URL = import.meta.env.VITE_API_URL || '';
-// Robust API URL construction
-let API_URL = VITE_API_URL;
-if (!API_URL) {
-  API_URL = '/api/';
-} else {
-  // Ensure absolute URL ends with /api/
-  if (!API_URL.includes('/api')) {
-    API_URL = API_URL.endsWith('/') ? `${API_URL}api/` : `${API_URL}/api/`;
-  } else if (!API_URL.endsWith('/')) {
-    API_URL = `${API_URL}/`;
-  }
+
+// Use production URL if in production mode, otherwise use the env var or fallback
+let API_URL = import.meta.env.MODE === 'production'
+  ? PROD_API_URL
+  : (VITE_API_URL || '/api');
+
+// Normalize API_URL (ensure no trailing slash for consistent joining)
+if (API_URL.endsWith('/')) {
+  API_URL = API_URL.slice(0, -1);
 }
+
+console.log('🌐 API Base URL:', API_URL);
 
 /**
  * Axios instance for API calls with JWT authentication
