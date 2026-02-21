@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, Sparkles, UserPlus } from 'lucide-react';
 import authAPI from '../api/authAPI';
+import { useToast } from '../context/ToastContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 
 export default function Register() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -60,7 +61,7 @@ export default function Register() {
     // Password validation
     if (formData.password.length < 6) newErrors.password = 'Password must be 6+ characters';
     if (!/^(?=.*[A-Za-z])(?=.*[\d@$!%*?&])/.test(formData.password))
-      newErrors.password = 'Password must contain letters and at least one digit or special character (@$!%*?&)';
+      newErrors.password = 'Password must contain letters and at least one digit or special character';
 
     // Confirm password validation
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords don\'t match';
@@ -70,7 +71,6 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
-    // CRITICAL: Prevent default form submission
     e.preventDefault();
     e.stopPropagation();
 
@@ -85,52 +85,36 @@ export default function Register() {
         lastName: formData.lastName
       });
 
-      console.log('✅ Registration response:', response);
+      console.log('✅ Registration success:', response);
+      toast.success('Account created successfully! Please login.');
 
-      if (response?.token || response?.email) {
-        // Account created successfully - redirect to login page
-        // DO NOT auto-login - user must manually login
-        toast.success('Account created successfully! Please login with your credentials.');
+      // Clear local storage for clean state
+      localStorage.clear();
 
-        // Clear any previous tokens to ensure clean login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('tokenExpiresAt');
-        localStorage.removeItem('auth-storage');
-
-        // Redirect to login page with slight delay to show success message
-        setTimeout(() => {
-          console.log('🔄 Redirecting to login page...');
-          navigate('/login', { replace: true });
-        }, 1500);
-      } else {
-        toast.error('Registration failed - no token received');
-        setLoading(false);
-      }
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 2000);
     } catch (error) {
       console.error('❌ Registration error:', error);
 
-      // Extract detailed error message from backend
-      let errorMsg = 'Registration failed';
+      let errorMsg = 'Registration failed. Please try again.';
 
-      if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
-      } else if (error.response?.data?.fieldErrors) {
-        // Multiple field errors
-        errorMsg = Object.values(error.response.data.fieldErrors).join(', ');
-      } else if (error.response?.data?.error) {
-        errorMsg = error.response.data.error;
+      if (error.response?.data) {
+        const data = error.response.data;
+        // Handle explicit message (Password policy, etc)
+        if (data.message) {
+          errorMsg = data.message;
+        }
+        // Handle field level errors
+        else if (data.fieldErrors) {
+          errorMsg = Object.values(data.fieldErrors)[0];
+        }
+        else if (data.error) {
+          errorMsg = data.error;
+        }
       } else if (error.message) {
         errorMsg = error.message;
       }
-
-      console.error('Error details:', {
-        status: error.response?.status,
-        message: errorMsg,
-        data: error.response?.data
-      });
 
       toast.error(errorMsg);
       setLoading(false);
