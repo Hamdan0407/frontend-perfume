@@ -27,7 +27,7 @@ const authAPI = {
    */
   login: async (email, password) => {
     console.log('📤 authAPI.login called with:', email);
-    const response = await api.post('auth/login', { email, password });
+    const response = await api.post('auth/login/', { email, password });
     console.log('📥 authAPI.login response.data:', response.data);
     return response.data;
   },
@@ -53,7 +53,7 @@ const authAPI = {
    * - 409: Email already exists (CONFLICT)
    */
   register: async (userData) => {
-    const response = await api.post('auth/register', userData);
+    const response = await api.post('auth/register/', userData);
     return response.data;
   },
 
@@ -74,7 +74,7 @@ const authAPI = {
    * - 401: Invalid or expired refresh token
    */
   refreshToken: async (refreshToken) => {
-    const response = await api.post('auth/refresh-token', { refreshToken });
+    const response = await api.post('auth/refresh-token/', { refreshToken });
     return response.data;
   },
 

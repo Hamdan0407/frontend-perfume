@@ -141,7 +141,7 @@ api.interceptors.response.use(
       if (refreshToken) {
         // Attempt to refresh the access token
         return axios
-          .post(`${API_URL}/auth/refresh-token`, null, {
+          .post(`${API_URL.endsWith('/') ? API_URL : API_URL + '/'}auth/refresh-token/`, null, {
             params: { refreshToken },
             headers: {
               'Content-Type': 'application/json',
