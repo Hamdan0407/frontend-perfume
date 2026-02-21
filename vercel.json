@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://muwas-backend.railway.app/api/:path*"
+            "destination": "https://backend-perfumes-production.up.railway.app/api/:path*"
         },
         {
             "source": "/(.*)",
