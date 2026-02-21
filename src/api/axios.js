@@ -14,9 +14,9 @@ let API_URL = import.meta.env.MODE === 'production'
   ? PROD_API_URL
   : (VITE_API_URL || '/api');
 
-// Normalize API_URL (ensure no trailing slash for consistent joining)
-if (API_URL.endsWith('/')) {
-  API_URL = API_URL.slice(0, -1);
+// Normalize API_URL (ensure it ends with / for consistent joining with relative paths)
+if (!API_URL.endsWith('/')) {
+  API_URL = `${API_URL}/`;
 }
 
 console.log('🌐 API Base URL:', API_URL);

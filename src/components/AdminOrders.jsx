@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, CheckCircle, Clock, X as XIcon, Edit, Save, X } from 'lucide-react';
-import { toast } from 'react-toastify';
-import '../styles/AdminOrders.css';
+import api from '../api/axios';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -11,45 +8,14 @@ export default function AdminOrders() {
   const [editForm, setEditForm] = useState({ status: '', notes: '' });
 
   useEffect(() => {
-    // Demo mode: Use mock orders data
-    setOrders([
-      {
-        id: 'ORD-001',
-        customerName: 'John Doe',
-        email: 'john@example.com',
-        status: 'Delivered',
-        total: 299.99,
-        date: '2024-01-15',
-        items: 3
-      },
-      {
-        id: 'ORD-002',
-        customerName: 'Jane Smith',
-        email: 'jane@example.com',
-        status: 'Processing',
-        total: 189.50,
-        date: '2024-01-20',
-        items: 2
-      }
-    ]);
-    setLoading(false);
+    fetchOrders();
   }, []);
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/admin/orders?size=50', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data.content || []);
-      } else {
-        // Gracefully handle auth errors - show empty list
-        console.warn('Failed to load admin orders, showing empty list');
-        setOrders([]);
-      }
+      setLoading(true);
+      const response = await api.get('admin/orders?size=50');
+      setOrders(response.data.content || response.data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setOrders([]);
@@ -58,12 +24,12 @@ export default function AdminOrders() {
     }
   };
 
-  const filteredOrders = filter === 'All' 
-    ? orders 
+  const filteredOrders = filter === 'All'
+    ? orders
     : orders.filter(o => {
-        const status = o.status?.toUpperCase() || '';
-        return status === filter.toUpperCase();
-      });
+      const status = o.status?.toUpperCase() || '';
+      return status === filter.toUpperCase();
+    });
 
   const getStatusIcon = (status) => {
     const statusUpper = status?.toUpperCase() || '';
@@ -108,17 +74,10 @@ export default function AdminOrders() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/orders/${editingOrder}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(editForm)
-      });
+      const response = await api.put(`admin/orders/${editingOrder}/status`, editForm);
 
-      if (response.ok) {
-        const updatedOrder = await response.json();
+      if (response.status === 200) {
+        const updatedOrder = response.data;
         setOrders(orders.map(order =>
           order.id === editingOrder ? updatedOrder : order
         ));
@@ -182,7 +141,7 @@ export default function AdminOrders() {
                       <div className="status-edit-container">
                         <select
                           value={editForm.status}
-                          onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                          onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                           className="status-select"
                         >
                           <option value="PLACED">Placed</option>
@@ -195,7 +154,7 @@ export default function AdminOrders() {
                         </select>
                         <textarea
                           value={editForm.notes}
-                          onChange={(e) => setEditForm({...editForm, notes: e.target.value})}
+                          onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                           placeholder="Add notes (optional)"
                           className="notes-textarea"
                           rows="2"
