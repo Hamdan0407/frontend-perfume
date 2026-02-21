@@ -72,15 +72,7 @@ export default function Login() {
     try {
       console.log('🔐 Attempting login with:', formData.email);
 
-      // Direct fetch to bypass any axios interceptor issues
-      const fetchResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, password: formData.password })
-      });
-
-      console.log('📡 Fetch response status:', fetchResponse.status);
-      const response = await fetchResponse.json();
+      const response = await authAPI.login(formData.email, formData.password);
       console.log('📦 Login response:', response);
 
       if (response?.token) {

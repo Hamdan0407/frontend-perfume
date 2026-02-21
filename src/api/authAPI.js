@@ -27,7 +27,7 @@ const authAPI = {
    */
   login: async (email, password) => {
     console.log('📤 authAPI.login called with:', email);
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('auth/login', { email, password });
     console.log('📥 authAPI.login response.data:', response.data);
     return response.data;
   },
@@ -53,7 +53,7 @@ const authAPI = {
    * - 409: Email already exists (CONFLICT)
    */
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
+    const response = await api.post('auth/register', userData);
     return response.data;
   },
 
@@ -74,7 +74,7 @@ const authAPI = {
    * - 401: Invalid or expired refresh token
    */
   refreshToken: async (refreshToken) => {
-    const response = await api.post('/auth/refresh-token', { refreshToken });
+    const response = await api.post('auth/refresh-token', { refreshToken });
     return response.data;
   },
 
@@ -95,7 +95,7 @@ const authAPI = {
    * @returns {Promise} - User profile data
    */
   getProfile: async () => {
-    const response = await api.get('/users/profile');
+    const response = await api.get('users/profile');
     return response.data.data;
   },
 
@@ -105,7 +105,7 @@ const authAPI = {
    * @returns {Promise} - Updated user data
    */
   updateProfile: async (userData) => {
-    const response = await api.put('/users/profile', userData);
+    const response = await api.put('users/profile', userData);
     return response.data.data;
   },
 
@@ -116,7 +116,7 @@ const authAPI = {
    * @returns {Promise} - Success message
    */
   changePassword: async (currentPassword, newPassword) => {
-    const response = await api.post('/users/password/change', {
+    const response = await api.post('users/password/change', {
       currentPassword,
       newPassword,
     });
@@ -129,7 +129,7 @@ const authAPI = {
    * @returns {Promise} - Auth response with tokens
    */
   loginWithGoogle: async (token) => {
-    const response = await api.post('/auth/google', { token });
+    const response = await api.post('auth/google', { token });
     return response.data;
   },
 };

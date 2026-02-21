@@ -38,7 +38,7 @@ const orderAPI = {
    * - 409: Some items out of stock
    */
   createOrder: async (checkoutData) => {
-    const response = await api.post('/orders', checkoutData);
+    const response = await api.post('orders', checkoutData);
     return response.data.data;
   },
 
@@ -62,7 +62,7 @@ const orderAPI = {
    * - 401: Not authenticated
    */
   getOrders: async (params = {}) => {
-    const response = await api.get('/orders', { params });
+    const response = await api.get('orders', { params });
     return response.data.data;
   },
 
@@ -89,7 +89,7 @@ const orderAPI = {
    * - 403: User doesn't have permission to view this order
    */
   getOrderById: async (orderId) => {
-    const response = await api.get(`/orders/${orderId}`);
+    const response = await api.get(`orders/${orderId}`);
     return response.data.data;
   },
 
@@ -107,7 +107,7 @@ const orderAPI = {
    * - 403: User doesn't have permission
    */
   cancelOrder: async (orderId, reason = '') => {
-    const response = await api.post(`/orders/${orderId}/cancel`, { reason });
+    const response = await api.post(`orders/${orderId}/cancel`, { reason });
     return response.data.data;
   },
 
@@ -131,7 +131,7 @@ const orderAPI = {
    * - 401: Not authenticated
    */
   getOrderStatus: async (orderId) => {
-    const response = await api.get(`/orders/${orderId}/status`);
+    const response = await api.get(`orders/${orderId}/status`);
     return response.data.data;
   },
 
@@ -151,7 +151,7 @@ const orderAPI = {
    * Note: Public endpoint, does not require authentication
    */
   trackOrder: async (trackingNumber) => {
-    const response = await api.get(`/orders/track/${trackingNumber}`);
+    const response = await api.get(`orders/track/${trackingNumber}`);
     return response.data.data;
   },
 };

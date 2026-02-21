@@ -1,6 +1,6 @@
 import api from './axios';
 
-const API_URL = '/wishlist';
+const API_URL = 'wishlist';
 
 export const wishlistAPI = {
   // Get user's wishlist

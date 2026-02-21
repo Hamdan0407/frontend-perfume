@@ -6,7 +6,10 @@ import { useAuthStore } from '../store/authStore';
 // In development: /api is proxied to http://localhost:8080 by Vite
 // In production: /api is routed by Nginx reverse proxy
 // Use environment variable for API URL in production, fallback to /api for dev/proxy
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+const API_URL = VITE_API_URL
+  ? (VITE_API_URL.endsWith('/') ? VITE_API_URL : `${VITE_API_URL}/`)
+  : '/api/';
 
 /**
  * Axios instance for API calls with JWT authentication

@@ -30,7 +30,7 @@ const productAPI = {
    * }
    */
   getProducts: async (params = {}) => {
-    const response = await api.get('/products', { params });
+    const response = await api.get('products', { params });
     return response.data;
   },
 
@@ -49,7 +49,7 @@ const productAPI = {
    * - 404: Product not found
    */
   getProductById: async (productId) => {
-    const response = await api.get(`/products/${productId}`);
+    const response = await api.get(`products/${productId}`);
     return response.data;
   },
 
@@ -61,7 +61,7 @@ const productAPI = {
    * @returns {Promise} - Search results
    */
   searchProducts: async (searchParams) => {
-    const response = await api.get('/products/search', { params: searchParams });
+    const response = await api.get('products/search', { params: searchParams });
     return response.data;
   },
 
@@ -71,7 +71,7 @@ const productAPI = {
    * @returns {Promise} - Featured products list
    */
   getFeaturedProducts: async (limit = 8) => {
-    const response = await api.get('/products/featured', { params: { limit } });
+    const response = await api.get('products/featured', { params: { limit } });
     return response.data;
   },
 
@@ -82,7 +82,7 @@ const productAPI = {
    * @returns {Promise} - Products in category
    */
   getProductsByCategory: async (category, params = {}) => {
-    const response = await api.get(`/products/category/${category}`, { params });
+    const response = await api.get(`products/category/${category}`, { params });
     return response.data;
   },
 
@@ -96,7 +96,7 @@ const productAPI = {
    * @returns {Promise} - Filtered products
    */
   filterProducts: async (filters) => {
-    const response = await api.post('/products/filter', filters);
+    const response = await api.post('products/filter', filters);
     return response.data;
   },
 };
