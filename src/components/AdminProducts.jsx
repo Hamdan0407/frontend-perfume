@@ -104,7 +104,7 @@ export default function AdminProducts() {
         resetForm();
         fetchProducts();
       } else {
-        const data = await response.json().catch(() => null);
+        const data = response.data;
         if (data?.errors) {
           data.errors.forEach((e, i) => setTimeout(() => toast.error(e), i * 300));
         } else {
@@ -149,7 +149,7 @@ export default function AdminProducts() {
       } else {
         // Restore product on error
         fetchProducts();
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = response.data || {};
         toast.error(errorData.message || `Failed to delete product (${response.status})`);
       }
     } catch (error) {
