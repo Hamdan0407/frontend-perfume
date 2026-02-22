@@ -22,8 +22,8 @@ export default function UserManagement() {
       const response = await api.get('admin/users', {
         params: { page, size: 10 },
       });
-      setUsers(response.data.content);
-      setTotalPages(response.data.totalPages);
+      setUsers(Array.isArray(response.data.content) ? response.data.content : []);
+      setTotalPages(response.data.totalPages || 0);
       setError(null);
     } catch (err) {
       console.error('Error fetching users:', err);

@@ -220,7 +220,7 @@ export default function Home() {
                 </Button>
               </AlertDescription>
             </Alert>
-          ) : featuredProducts.length > 0 ? (
+          ) : (Array.isArray(featuredProducts) && featuredProducts.length > 0) ? (
             <div
               ref={scrollContainerRef}
               className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 snap-x snap-mandatory xl:grid xl:grid-cols-4 xl:gap-8 xl:overflow-visible xl:pb-0 xl:mx-0 xl:px-0 scrollbar-hide"

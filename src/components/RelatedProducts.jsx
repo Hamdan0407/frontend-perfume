@@ -14,7 +14,7 @@ const RelatedProducts = ({ productId }) => {
       try {
         setLoading(true);
         const response = await api.get(`products/${productId}/related?limit=4`);
-        setRelatedProducts(response.data.content || []);
+        setRelatedProducts(Array.isArray(response.data.content) ? response.data.content : []);
       } catch (error) {
         console.error('Error fetching related products:', error);
         setRelatedProducts([]);
@@ -50,7 +50,7 @@ const RelatedProducts = ({ productId }) => {
     );
   }
 
-  if (!relatedProducts || relatedProducts.length === 0) {
+  if (!Array.isArray(relatedProducts) || relatedProducts.length === 0) {
     return null;
   }
 

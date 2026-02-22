@@ -31,8 +31,8 @@ export default function ProductManagement() {
       const response = await api.get('admin/products', {
         params: { page, size: 10 },
       });
-      setProducts(response.data.content);
-      setTotalPages(response.data.totalPages);
+      setProducts(Array.isArray(response.data.content) ? response.data.content : []);
+      setTotalPages(response.data.totalPages || 0);
       setError(null);
     } catch (err) {
       console.error('Error fetching products:', err);
