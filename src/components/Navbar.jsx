@@ -111,8 +111,9 @@ export default function Navbar() {
             </div>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center gap-1">
               <img src="/muwas-logo.jfif" alt="MUWAS" className="h-10 w-auto object-contain" />
+              <span className="text-[10px] font-bold text-accent border border-accent px-1 rounded opacity-50">v2.1</span>
             </Link>
           </div>
 
