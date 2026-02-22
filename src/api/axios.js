@@ -6,13 +6,11 @@ import { useAuthStore } from '../store/authStore';
 // In development: /api is proxied to http://localhost:8080 by Vite
 // In production: /api is routed by Nginx reverse proxy
 // Use environment variable for API URL in production, fallback to /api for dev/proxy
-const PROD_API_URL = 'https://backend-perfumes-production.up.railway.app/api';
 const VITE_API_URL = import.meta.env.VITE_API_URL || '';
 
-// Use production URL if in production mode, otherwise use the env var or fallback
-let API_URL = import.meta.env.MODE === 'production'
-  ? PROD_API_URL
-  : (VITE_API_URL || '/api');
+// Use relative path /api for all environments to leverage Vercel rewrites/proxy
+// This resolves CORS issues on mobile and ensures same-origin requests
+const API_URL = '/api';
 
 // Normalize API_URL (ensure it ends with / for consistent joining with relative paths)
 if (!API_URL.endsWith('/')) {
