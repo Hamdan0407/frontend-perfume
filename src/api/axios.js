@@ -99,13 +99,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     // Success: Return response as-is
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log('✅ API Response:', response.config?.url, response.status);
     }
     return response;
   },
   (error) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('❌ API Error:', error.config?.url, error.response?.status);
     }
     const { config, response } = error;
@@ -173,7 +173,7 @@ api.interceptors.response.use(
               }
             } catch (e) {
               // Silent fail if auth store not initialized
-              if (process.env.NODE_ENV === 'development') {
+              if (import.meta.env.DEV) {
                 console.debug('Auth store update failed during token refresh:', e);
               }
             }
@@ -201,7 +201,7 @@ api.interceptors.response.use(
               }
             } catch (e) {
               // Silent fail if auth store not initialized
-              if (process.env.NODE_ENV === 'development') {
+              if (import.meta.env.DEV) {
                 console.debug('Auth store logout failed:', e);
               }
             }
@@ -228,7 +228,7 @@ api.interceptors.response.use(
           }
         } catch (e) {
           // Silent fail if auth store not initialized
-          if (process.env.NODE_ENV === 'development') {
+          if (import.meta.env.DEV) {
             console.debug('Auth store logout failed:', e);
           }
         }
