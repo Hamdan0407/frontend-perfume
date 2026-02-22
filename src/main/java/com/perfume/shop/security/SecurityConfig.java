@@ -162,21 +162,30 @@ public class SecurityConfig {
                 // Collect and merge origins/patterns for flexible environment support
                 java.util.List<String> origins = new java.util.ArrayList<>();
                 if (corsOrigins != null && !corsOrigins.isEmpty()) {
-                        origins.addAll(Arrays.asList(corsOrigins.split(",")));
+                        // Use trim() to avoid issues with spaces in configuration
+                        java.util.List<String> configuredOrigins = Arrays.stream(corsOrigins.split(","))
+                                        .map(String::trim)
+                                        .filter(s -> !s.isEmpty())
+                                        .collect(java.util.stream.Collectors.toList());
+                        origins.addAll(configuredOrigins);
                 }
 
-                // Add essential patterns to ensure Vercel branch deployments and local dev work
-                // flawlessly
+                // Add essential patterns for Vercel and local dev
                 origins.addAll(Arrays.asList(
                                 "http://localhost:[*]",
+                                "http://127.0.0.1:[*]",
                                 "https://*.vercel.app",
                                 "https://muwas.in",
                                 "https://www.muwas.in",
                                 "https://muwas.com",
                                 "https://www.muwas.com"));
 
-                // Use OriginPatterns for robust wildcard support (required for branch-based
-                // Vercel URLs)
+                // Remove duplicates if any
+                origins = origins.stream().distinct().collect(java.util.stream.Collectors.toList());
+
+                log.info("🔐 Configuring CORS with allowed origin patterns: {}", origins);
+
+                // Use OriginPatterns for robust wildcard support
                 configuration.setAllowedOriginPatterns(origins);
 
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
