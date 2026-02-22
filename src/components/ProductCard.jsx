@@ -127,6 +127,5 @@ export default function ProductCard({ product, onQuickView }) {
         </div>
       </Link>
     </Card>
-    </Card >
   );
 }
