@@ -302,7 +302,7 @@ export default function ProductManagement() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {products.map((product) => (
+            {Array.isArray(products) && products.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 text-sm text-gray-900">{product.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-600">{product.brand}</td>

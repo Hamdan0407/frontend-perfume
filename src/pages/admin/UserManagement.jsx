@@ -143,7 +143,7 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {users.map((user) => (
+            {Array.isArray(users) && users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</td>
                 <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>

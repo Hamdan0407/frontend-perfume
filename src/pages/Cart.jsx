@@ -77,7 +77,7 @@ export default function Cart() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Card>
@@ -105,7 +105,7 @@ export default function Cart() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cart.items.map((item) => (
+            {Array.isArray(cart.items) && cart.items.map((item) => (
               <Card key={item.id}>
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row gap-4">

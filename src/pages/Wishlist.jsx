@@ -23,7 +23,7 @@ export default function Wishlist() {
   const fetchWishlist = async () => {
     try {
       const data = await wishlistAPI.getWishlist();
-      const products = data.map(item => item.product);
+      const products = Array.isArray(data) ? data.map(item => item.product) : [];
       setWishlistProducts(products);
     } catch (error) {
       toast.error('Failed to load wishlist');
@@ -81,7 +81,7 @@ export default function Wishlist() {
 
       {/* Wishlist Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {wishlistProducts.map((product) => {
+        {Array.isArray(wishlistProducts) && wishlistProducts.map((product) => {
           const hasDiscount = product.discountedPrice && product.discountedPrice < product.price;
           const discountPercent = hasDiscount
             ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)
@@ -97,7 +97,7 @@ export default function Wishlist() {
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
                   onClick={() => navigate(`/products/${product.id}`)}
                 />
-                
+
                 {/* Remove Button */}
                 <button
                   onClick={() => handleRemove(product.id)}
