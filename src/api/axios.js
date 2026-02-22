@@ -10,7 +10,7 @@ const VITE_API_URL = import.meta.env.VITE_API_URL || '';
 
 // Use relative path /api for all environments to leverage Vercel rewrites/proxy
 // This resolves CORS issues on mobile and ensures same-origin requests
-const API_URL = '/api';
+let API_URL = '/api';
 
 // Normalize API_URL (ensure it ends with / for consistent joining with relative paths)
 if (!API_URL.endsWith('/')) {
