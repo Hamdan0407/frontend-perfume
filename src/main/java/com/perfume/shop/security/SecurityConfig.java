@@ -158,17 +158,27 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
+
+                // Collect and merge origins/patterns for flexible environment support
+                java.util.List<String> origins = new java.util.ArrayList<>();
                 if (corsOrigins != null && !corsOrigins.isEmpty()) {
-                        configuration.setAllowedOrigins(Arrays.asList(corsOrigins.split(",")));
-                } else {
-                        configuration.setAllowedOriginPatterns(Arrays.asList(
-                                        "http://localhost:[*]",
-                                        "https://*.vercel.app",
-                                        "https://muwas.in",
-                                        "https://www.muwas.in",
-                                        "https://muwas.com",
-                                        "https://www.muwas.com"));
+                        origins.addAll(Arrays.asList(corsOrigins.split(",")));
                 }
+
+                // Add essential patterns to ensure Vercel branch deployments and local dev work
+                // flawlessly
+                origins.addAll(Arrays.asList(
+                                "http://localhost:[*]",
+                                "https://*.vercel.app",
+                                "https://muwas.in",
+                                "https://www.muwas.in",
+                                "https://muwas.com",
+                                "https://www.muwas.com"));
+
+                // Use OriginPatterns for robust wildcard support (required for branch-based
+                // Vercel URLs)
+                configuration.setAllowedOriginPatterns(origins);
+
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                 configuration.setAllowedHeaders(
                                 Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin",
@@ -176,6 +186,7 @@ public class SecurityConfig {
                 configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
                 configuration.setAllowCredentials(true);
                 configuration.setMaxAge(corsMaxAge);
+
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
                 return source;
