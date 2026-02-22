@@ -61,8 +61,8 @@ export default function Products() {
 
       const { data } = await api.get(url);
 
-      // Standardize response content
-      let content = Array.isArray(data.content) ? data.content : [];
+      // Standardize response content - handle both paginated content and direct list
+      let content = data.content || (Array.isArray(data) ? data : []);
 
       // Filter by stock if checkbox is checked
       if (inStockOnly) {

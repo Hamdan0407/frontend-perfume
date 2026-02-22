@@ -420,7 +420,7 @@ export default function Checkout() {
   }
 
   // Redirect if cart is empty (after loading is complete)
-  if (!cart || !cart.items || cart.items.length === 0) {
+  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
     navigate('/cart');
     return null;
   }
@@ -805,7 +805,7 @@ export default function Checkout() {
               <CardContent className="space-y-4">
                 {/* Cart Items */}
                 <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {cart?.items?.map((item) => (
+                  {Array.isArray(cart?.items) && cart.items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="h-16 w-16 rounded-md bg-muted overflow-hidden flex-shrink-0">
                         {item.product?.imageUrl && (

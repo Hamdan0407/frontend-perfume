@@ -24,10 +24,8 @@ const productAPI = {
    * @returns {Promise} - Paginated products list
    * 
    * Response:
-   * {
-   *   data: [{ id, name, description, price, image, rating }, ...],
-   *   pagination: { total, page, limit, pages }
-   * }
+   * Paginated endpoints: { content: [...], totalPages, totalElements, ... }
+   * Direct list endpoints: [{ id, name, ... }, ...]
    */
   getProducts: async (params = {}) => {
     const response = await api.get('products', { params });

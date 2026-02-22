@@ -22,8 +22,8 @@ export default function OrderManagement() {
       const response = await api.get('admin/orders', {
         params: { page, size: 10 },
       });
-      setOrders(response.data.content);
-      setTotalPages(response.data.totalPages);
+      setOrders(Array.isArray(response.data.content) ? response.data.content : []);
+      setTotalPages(response.data.totalPages || 0);
       setError(null);
     } catch (err) {
       console.error('Error fetching orders:', err);

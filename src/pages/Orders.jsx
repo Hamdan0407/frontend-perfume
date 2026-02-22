@@ -29,7 +29,7 @@ export default function Orders() {
         }
       });
       // Extract content from paginated response
-      setOrders(data.content || data);
+      setOrders(Array.isArray(data.content) ? data.content : Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error('Failed to load orders');
     } finally {
@@ -65,9 +65,9 @@ export default function Orders() {
     return classes[status] || 'bg-gray-100 text-gray-800 border-gray-300';
   };
 
-  const filteredOrders = orders.filter(order =>
+  const filteredOrders = Array.isArray(orders) ? orders.filter(order =>
     filterStatus === 'ALL' || order.status === filterStatus
-  );
+  ) : [];
 
   if (loading) {
     return (

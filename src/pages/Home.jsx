@@ -55,7 +55,8 @@ export default function Home() {
 
     try {
       const data = await productAPI.getFeaturedProducts(8);
-      setFeaturedProducts(Array.isArray(data.content) ? data.content : []);
+      // Backend returns a direct List<ProductResponse> for featured products
+      setFeaturedProducts(Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : []));
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to load featured products';
       setError(message);
