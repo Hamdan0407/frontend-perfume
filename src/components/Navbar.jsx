@@ -26,7 +26,7 @@ export default function Navbar() {
 
   const fetchCart = async () => {
     try {
-      const { data } = await api.get('/cart');
+      const { data } = await api.get('cart');
       setCart(data);
     } catch (error) {
       console.error('Failed to fetch cart:', error);

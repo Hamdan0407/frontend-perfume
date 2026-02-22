@@ -30,9 +30,9 @@ export default function AdminProducts() {
     try {
       setLoading(true);
       // Try admin endpoint first, fall back to public products endpoint
-      const response = await api.get('/admin/products?size=100').catch(async (err) => {
+      const response = await api.get('admin/products?size=100').catch(async (err) => {
         // Fallback to public if admin fails
-        return await api.get('/products?size=100');
+        return await api.get('products?size=100');
       });
 
       if (response.data) {
@@ -96,7 +96,7 @@ export default function AdminProducts() {
 
       console.log('Payload:', payload);
 
-      const response = await api.post('/admin/products', payload);
+      const response = await api.post('admin/products', payload);
 
       if (response.status === 200 || response.status === 201) {
         toast.success('Product added!');
@@ -133,7 +133,7 @@ export default function AdminProducts() {
       // Remove from UI immediately
       setProducts(prev => prev.filter(p => p.id !== id));
 
-      const response = await api.delete(`/admin/products/${id}`);
+      const response = await api.delete(`admin/products/${id}`);
 
       // Accept 200, 204, or any 2xx response
       if (response.status === 200 || response.status === 204) {

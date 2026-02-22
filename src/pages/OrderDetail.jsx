@@ -29,7 +29,7 @@ export default function OrderDetail() {
 
   const fetchOrder = async () => {
     try {
-      const { data } = await api.get(`/orders/${id}`);
+      const { data } = await api.get(`orders/${id}`);
       setOrder(data);
     } catch (error) {
       toast.error('Failed to load order');
@@ -41,7 +41,7 @@ export default function OrderDetail() {
   const handleDownloadInvoice = async () => {
     setDownloading(true);
     try {
-      const response = await api.get(`/orders/${id}/invoice`, {
+      const response = await api.get(`orders/${id}/invoice`, {
         responseType: 'blob'
       });
 

@@ -20,7 +20,7 @@ export default function Cart() {
 
   const fetchCart = async () => {
     try {
-      const { data } = await api.get('/cart');
+      const { data } = await api.get('cart');
       setCart(data);
     } catch (error) {
       toast.error('Failed to load cart');
@@ -31,7 +31,7 @@ export default function Cart() {
 
   const updateQuantity = async (itemId, quantity) => {
     try {
-      const { data } = await api.put(`/cart/items/${itemId}?quantity=${quantity}`);
+      const { data } = await api.put(`cart/items/${itemId}?quantity=${quantity}`);
       setCart(data);
       toast.success('Cart updated');
     } catch (error) {
@@ -41,7 +41,7 @@ export default function Cart() {
 
   const removeItem = async (itemId) => {
     try {
-      const { data } = await api.delete(`/cart/items/${itemId}`);
+      const { data } = await api.delete(`cart/items/${itemId}`);
       setCart(data);
       toast.success('Item removed');
     } catch (error) {

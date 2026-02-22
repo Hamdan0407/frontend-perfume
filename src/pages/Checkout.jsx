@@ -65,7 +65,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // In demo mode, directly confirm the order
-      await api.post('/orders/verify-payment', {
+      await api.post('orders/verify-payment', {
         razorpayOrderId: razorpayOrderResponse.razorpayOrderId,
         razorpayPaymentId: 'demo_payment_' + Date.now(),
         razorpaySignature: 'demo_signature',
@@ -121,7 +121,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
             setLoading(true);
             toast.info('Verifying payment...');
 
-            const verificationResult = await api.post('/orders/verify-payment', {
+            const verificationResult = await api.post('orders/verify-payment', {
               razorpayOrderId: options.order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
@@ -294,7 +294,7 @@ export default function Checkout() {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const { data } = await api.get('/cart');
+        const { data } = await api.get('cart');
         setCart(data);
       } catch (error) {
         toast.error('Failed to load cart. Please try again.');
@@ -304,7 +304,7 @@ export default function Checkout() {
     // Load user profile to pre-fill shipping info
     const fetchUserProfile = async () => {
       try {
-        const { data } = await api.get('/users/profile');
+        const { data } = await api.get('users/profile');
         // Pre-fill shipping with user's saved profile
         setShippingInfo(prev => ({
           ...prev,
@@ -374,7 +374,7 @@ export default function Checkout() {
 
     setCouponLoading(true);
     try {
-      const { data } = await api.post('/coupons/validate', {
+      const { data } = await api.post('coupons/validate', {
         code: couponCode.trim(),
         orderAmount: cart?.subtotal || 0
       });
@@ -449,7 +449,7 @@ export default function Checkout() {
         ...shippingInfo,
         couponCode: appliedCoupon?.coupon?.code || null
       };
-      const { data } = await api.post('/orders/checkout', checkoutPayload);
+      const { data } = await api.post('orders/checkout', checkoutPayload);
       console.log('Checkout response:', data);
 
       // Set Razorpay order response for payment form

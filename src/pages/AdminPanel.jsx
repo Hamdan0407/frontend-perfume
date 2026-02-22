@@ -193,7 +193,7 @@ export default function AdminPanel() {
   const fetchProducts = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/products?size=100');
+      const { data } = await api.get('products?size=100');
       setProducts(data.content || data || []);
     } catch (err) {
       console.error('Error loading products:', err);
@@ -207,13 +207,13 @@ export default function AdminPanel() {
   const fetchOrders = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/orders?size=100');
+      const { data } = await api.get('admin/orders?size=100');
       setOrders(data.content || data || []);
     } catch (err) {
       console.error('Error loading orders:', err);
       // Try alternate endpoint
       try {
-        const { data } = await api.get('/orders?size=100');
+        const { data } = await api.get('orders?size=100');
         setOrders(data.content || data || []);
       } catch (e) {
         console.error('Alternate orders endpoint failed:', e);
@@ -250,9 +250,9 @@ export default function AdminPanel() {
 
       // Fetch all data without individual loading states
       const [productsRes, ordersRes, usersRes] = await Promise.all([
-        api.get(`/products${cacheBuster}`),
-        api.get(`/admin/orders${cacheBuster}`).catch(() => api.get(`/orders${cacheBuster}`)),
-        api.get(`/admin/users${cacheBuster}`)
+        api.get(`products${cacheBuster}`),
+        api.get(`admin/orders${cacheBuster}`).catch(() => api.get(`orders${cacheBuster}`)),
+        api.get(`admin/users${cacheBuster}`)
       ]);
 
       setProducts(productsRes.data.content || productsRes.data || []);
@@ -273,7 +273,7 @@ export default function AdminPanel() {
   const fetchUsers = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/users?size=100');
+      const { data } = await api.get('admin/users?size=100');
       setUsers(data.content || data || []);
     } catch (err) {
       console.error('Error loading users:', err);
@@ -287,7 +287,7 @@ export default function AdminPanel() {
   const fetchCoupons = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/coupons');
+      const { data } = await api.get('admin/coupons');
       setCoupons(data || []);
     } catch (err) {
       console.error('Error loading coupons:', err);
@@ -312,9 +312,9 @@ export default function AdminPanel() {
         // Silent refresh without loading spinner
         try {
           const [productsRes, ordersRes, usersRes] = await Promise.allSettled([
-            api.get('/products?size=100'),
-            api.get('/admin/orders?size=100').catch(() => api.get('/orders?size=100')),
-            api.get('/admin/users?size=100')
+            api.get('products?size=100'),
+            api.get('admin/orders?size=100').catch(() => api.get('orders?size=100')),
+            api.get('admin/users?size=100')
           ]);
 
           if (productsRes.status === 'fulfilled') {
@@ -468,10 +468,10 @@ export default function AdminPanel() {
 
     try {
       if (modalMode === 'add') {
-        await api.post('/admin/products', productData);
+        await api.post('admin/products', productData);
         toast.success('Product created successfully!');
       } else {
-        await api.put(`/admin/products/${selectedItem.id}`, productData);
+        await api.put(`admin/products/${selectedItem.id}`, productData);
         toast.success('Product updated successfully!');
       }
       setShowProductModal(false);
@@ -522,7 +522,7 @@ export default function AdminPanel() {
   const handleDeleteProduct = async () => {
     setLoading(true);
     try {
-      await api.delete(`/admin/products/${selectedItem.id}`);
+      await api.delete(`admin/products/${selectedItem.id}`);
       toast.success('Product deleted successfully!');
       setShowDeleteConfirm(false);
       fetchProducts();
@@ -543,7 +543,7 @@ export default function AdminPanel() {
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
+      await api.put(`admin/orders/${orderId}/status`, { status: newStatus });
       toast.success(`Order status updated to ${newStatus}`);
       fetchOrders();
       setShowOrderModal(false);
@@ -562,7 +562,7 @@ export default function AdminPanel() {
 
   const handleToggleUserStatus = async (userId, currentStatus) => {
     try {
-      await api.put(`/admin/users/${userId}/status`, { active: !currentStatus });
+      await api.put(`admin/users/${userId}/status`, { active: !currentStatus });
       toast.success(`User ${currentStatus ? 'deactivated' : 'activated'} successfully`);
       fetchUsers();
     } catch (err) {
@@ -573,7 +573,7 @@ export default function AdminPanel() {
 
   const handleChangeUserRole = async (userId, newRole) => {
     try {
-      await api.put(`/admin/users/${userId}/role`, { role: newRole });
+      await api.put(`admin/users/${userId}/role`, { role: newRole });
       toast.success(`User role updated to ${newRole}`);
       fetchUsers();
       setShowUserModal(false);
@@ -647,10 +647,10 @@ export default function AdminPanel() {
 
     try {
       if (modalMode === 'add') {
-        await api.post('/admin/coupons', couponData);
+        await api.post('admin/coupons', couponData);
         toast.success('Coupon created successfully!');
       } else {
-        await api.put(`/admin/coupons/${selectedItem.id}`, couponData);
+        await api.put(`admin/coupons/${selectedItem.id}`, couponData);
         toast.success('Coupon updated successfully!');
       }
       setShowCouponModal(false);
@@ -674,7 +674,7 @@ export default function AdminPanel() {
   const handleDeleteCoupon = async () => {
     setLoading(true);
     try {
-      await api.delete(`/admin/coupons/${selectedItem.id}`);
+      await api.delete(`admin/coupons/${selectedItem.id}`);
       toast.success('Coupon deleted successfully!');
       setShowDeleteConfirm(false);
       fetchCoupons();
@@ -688,7 +688,7 @@ export default function AdminPanel() {
 
   const handleToggleCouponStatus = async (couponId) => {
     try {
-      await api.patch(`/admin/coupons/${couponId}/toggle`);
+      await api.patch(`admin/coupons/${couponId}/toggle`);
       toast.success('Coupon status updated!');
       fetchCoupons();
     } catch (err) {

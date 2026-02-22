@@ -46,7 +46,7 @@ export default function Dashboard() {
 
     try {
       // Call backend to delete all orders from database
-      await api.delete('/admin/analytics/reset');
+      await api.delete('admin/analytics/reset');
 
       // Clear frontend data
       setStats({
@@ -82,7 +82,7 @@ export default function Dashboard() {
       }
 
       // Fetch stats first
-      const statsRes = await api.get(`/admin/stats?refresh=true${cacheBuster}`);
+      const statsRes = await api.get(`admin/stats?refresh=true${cacheBuster}`);
       console.log('📈 Stats fetched:', statsRes.data);
       setStats(statsRes.data);
 
@@ -90,9 +90,9 @@ export default function Dashboard() {
       try {
         const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
         const [dailyRes, monthlyRes, topProductsRes] = await Promise.all([
-          api.get(`/admin/analytics/daily-sales?days=${timeRange}${cacheBuster}`),
-          api.get(`/admin/analytics/monthly-sales?months=12${cacheBuster}`),
-          api.get(`/admin/analytics/top-products?limit=5&days=${timeRange}${cacheBuster}`)
+          api.get(`admin/analytics/daily-sales?days=${timeRange}${cacheBuster}`),
+          api.get(`admin/analytics/monthly-sales?months=12${cacheBuster}`),
+          api.get(`admin/analytics/top-products?limit=5&days=${timeRange}${cacheBuster}`)
         ]);
 
         console.log('📊 Daily sales:', dailyRes.data);
@@ -235,8 +235,8 @@ export default function Dashboard() {
               key={days}
               onClick={() => setTimeRange(days)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${timeRange === days
-                  ? 'bg-primary text-white'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                ? 'bg-primary text-white'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
             >
               {days} Days

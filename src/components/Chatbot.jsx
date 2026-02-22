@@ -57,7 +57,7 @@ export default function Chatbot() {
    */
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
+
     if (!input.trim()) return;
 
     // Hide suggestions after first message
@@ -78,7 +78,7 @@ export default function Chatbot() {
 
     try {
       // Send to backend with conversationId to maintain state
-      const response = await axios.post('/chatbot/chat', {
+      const response = await axios.post('chatbot/chat', {
         message: userInput,
         conversationId: conversationId  // CRITICAL: Send conversationId to maintain session
       });
@@ -114,7 +114,7 @@ export default function Chatbot() {
   const handleQuickSuggestion = async (type) => {
     setShowSuggestions(false);
     setLoading(true);
-    
+
     const suggestionText = {
       'price': 'Show me products under ₹5000',
       'stock': 'What products are in stock?',
@@ -132,7 +132,7 @@ export default function Chatbot() {
         timestamp: new Date()
       };
 
-      const response = await axios.post('/chatbot/chat', {
+      const response = await axios.post('chatbot/chat', {
         message: suggestionText,
         conversationId: conversationId
       });
@@ -236,20 +236,18 @@ export default function Chatbot() {
                 className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs px-4 py-3 rounded-lg prose prose-sm ${
-                    message.type === 'user'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-br-none'
-                      : 'bg-white border border-amber-200 text-gray-800 rounded-bl-none'
-                  }`}
+                  className={`max-w-xs px-4 py-3 rounded-lg prose prose-sm ${message.type === 'user'
+                    ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-br-none'
+                    : 'bg-white border border-amber-200 text-gray-800 rounded-bl-none'
+                    }`}
                   style={{
                     wordWrap: 'break-word',
                     overflowWrap: 'break-word'
                   }}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                  <span className={`text-xs mt-1 block ${
-                    message.type === 'user' ? 'text-amber-100' : 'text-amber-600'
-                  }`}>
+                  <span className={`text-xs mt-1 block ${message.type === 'user' ? 'text-amber-100' : 'text-amber-600'
+                    }`}>
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -260,8 +258,8 @@ export default function Chatbot() {
                 <div className="bg-white border border-amber-200 text-gray-800 px-4 py-3 rounded-lg rounded-bl-none">
                   <div className="flex space-x-2">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '100ms'}}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '200ms'}}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '100ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
                   </div>
                 </div>
               </div>

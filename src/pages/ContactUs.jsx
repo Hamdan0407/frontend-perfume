@@ -25,7 +25,7 @@ export default function ContactUs() {
         setLoading(true);
 
         try {
-            const response = await api.post('/contact', formData);
+            const response = await api.post('contact', formData);
 
             if (response.data.success) {
                 toast.success(response.data.message);

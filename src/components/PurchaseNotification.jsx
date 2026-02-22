@@ -21,7 +21,7 @@ const lastNames = [
 ];
 
 const cities = [
-    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad',
     'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Patna', 'Vadodara', 'Surat'
 ];
 
@@ -35,7 +35,7 @@ export default function PurchaseNotification() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get('/api/products');
+                const response = await axios.get('products');
                 if (response.data && response.data.length > 0) {
                     setProducts(response.data);
                 }
@@ -81,8 +81,8 @@ export default function PurchaseNotification() {
             // Mark this index as used
             usedIndicesRef.current.push(randomIndex);
 
-            setNotifications(prev => [...prev, { 
-                id, 
+            setNotifications(prev => [...prev, {
+                id,
                 name: `${firstName} ${lastName}`,
                 city,
                 brand: product.brand,

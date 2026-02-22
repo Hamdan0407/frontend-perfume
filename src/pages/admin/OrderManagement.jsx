@@ -19,7 +19,7 @@ export default function OrderManagement() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/orders', {
+      const response = await api.get('admin/orders', {
         params: { page, size: 10 },
       });
       setOrders(response.data.content);
@@ -35,7 +35,7 @@ export default function OrderManagement() {
 
   const handleViewDetails = async (orderId) => {
     try {
-      const response = await api.get(`/admin/orders/${orderId}`);
+      const response = await api.get(`admin/orders/${orderId}`);
       setSelectedOrder(response.data);
       setShowDetail(true);
     } catch (err) {
@@ -47,14 +47,14 @@ export default function OrderManagement() {
   const handleUpdateStatus = async (orderId, status) => {
     try {
       setUpdatingStatus(orderId);
-      await api.patch(`/admin/orders/${orderId}/status`, { status });
-      
+      await api.patch(`admin/orders/${orderId}/status`, { status });
+
       // Update the order in detail view
       if (selectedOrder && selectedOrder.id === orderId) {
-        const response = await api.get(`/admin/orders/${orderId}`);
+        const response = await api.get(`admin/orders/${orderId}`);
         setSelectedOrder(response.data);
       }
-      
+
       // Refresh orders list
       fetchOrders();
       setUpdatingStatus(null);
@@ -250,11 +250,10 @@ export default function OrderManagement() {
                           key={status}
                           onClick={() => handleUpdateStatus(selectedOrder.id, status)}
                           disabled={updatingStatus === selectedOrder.id || status === selectedOrder.status}
-                          className={`w-full px-4 py-2 rounded-lg font-medium transition ${
-                            status === selectedOrder.status
-                              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
-                          }`}
+                          className={`w-full px-4 py-2 rounded-lg font-medium transition ${status === selectedOrder.status
+                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
                         >
                           {updatingStatus === selectedOrder.id ? 'Updating...' : `Change to ${status}`}
                         </button>

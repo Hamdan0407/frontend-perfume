@@ -39,7 +39,7 @@ const reviewAPI = {
    * }
    */
   getProductReviews: async (productId, params = {}) => {
-    const response = await api.get(`/products/${productId}/reviews`, { params });
+    const response = await api.get(`products/${productId}/reviews`, { params });
     return response.data.data;
   },
 
@@ -61,7 +61,7 @@ const reviewAPI = {
    * - 401: Not authenticated
    */
   getUserReviews: async (params = {}) => {
-    const response = await api.get('/reviews/my-reviews', { params });
+    const response = await api.get('reviews/my-reviews', { params });
     return response.data.data;
   },
 
@@ -71,7 +71,7 @@ const reviewAPI = {
    * @returns {Promise} - Review details
    */
   getReviewById: async (reviewId) => {
-    const response = await api.get(`/reviews/${reviewId}`);
+    const response = await api.get(`reviews/${reviewId}`);
     return response.data.data;
   },
 
@@ -103,13 +103,13 @@ const reviewAPI = {
    * - 409: Already reviewed this product
    */
   addReview: async (productId, reviewData) => {
-    const response = await api.post(`/products/${productId}/reviews`, reviewData);
+    const response = await api.post(`products/${productId}/reviews`, reviewData);
     return response.data.data;
   },
 
   // Simple wrapper for backend /api/reviews endpoint
   createReview: async (productId, rating, comment) => {
-    const response = await api.post('/reviews', {
+    const response = await api.post('reviews', {
       productId,
       rating,
       comment,
@@ -134,7 +134,7 @@ const reviewAPI = {
    * - 404: Review not found
    */
   updateReview: async (reviewId, reviewData) => {
-    const response = await api.put(`/reviews/${reviewId}`, reviewData);
+    const response = await api.put(`reviews/${reviewId}`, reviewData);
     return response.data.data;
   },
 
@@ -150,7 +150,7 @@ const reviewAPI = {
    * - 404: Review not found
    */
   deleteReview: async (reviewId) => {
-    await api.delete(`/reviews/${reviewId}`);
+    await api.delete(`reviews/${reviewId}`);
     return true;
   },
 
@@ -161,7 +161,7 @@ const reviewAPI = {
    * @returns {Promise} - Updated helpful count
    */
   markHelpful: async (reviewId) => {
-    const response = await api.post(`/reviews/${reviewId}/helpful`);
+    const response = await api.post(`reviews/${reviewId}/helpful`);
     return response.data.data;
   },
 
@@ -172,7 +172,7 @@ const reviewAPI = {
    * @returns {Promise} - Updated not helpful count
    */
   markNotHelpful: async (reviewId) => {
-    const response = await api.post(`/reviews/${reviewId}/not-helpful`);
+    const response = await api.post(`reviews/${reviewId}/not-helpful`);
     return response.data.data;
   },
 
@@ -190,7 +190,7 @@ const reviewAPI = {
    * }
    */
   getReviewStats: async (productId) => {
-    const response = await api.get(`/products/${productId}/reviews/stats`);
+    const response = await api.get(`products/${productId}/reviews/stats`);
     return response.data.data;
   },
 };

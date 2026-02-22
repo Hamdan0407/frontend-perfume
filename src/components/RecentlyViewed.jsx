@@ -16,7 +16,7 @@ const RecentlyViewed = () => {
   const fetchRecentlyViewed = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/products/recently-viewed?limit=8');
+      const response = await api.get('products/recently-viewed?limit=8');
       setRecentProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching recently viewed:', error);

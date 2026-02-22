@@ -26,7 +26,7 @@ export default function ProductManagement() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/products', {
+      const response = await api.get('admin/products', {
         params: { page, size: 10 },
       });
       setProducts(response.data.content);
@@ -47,7 +47,7 @@ export default function ProductManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.name || !formData.brand || !formData.price || !formData.stock || !formData.category || !formData.description) {
       setError('❌ Please fill in all required fields: Name, Brand, Price, Stock, Category, and Description');
@@ -63,9 +63,9 @@ export default function ProductManagement() {
 
     try {
       if (editingProduct) {
-        await api.put(`/admin/products/${editingProduct.id}`, submitData);
+        await api.put(`admin/products/${editingProduct.id}`, submitData);
       } else {
-        await api.post('/admin/products', submitData);
+        await api.post('admin/products', submitData);
       }
       setShowForm(false);
       setEditingProduct(null);
@@ -82,7 +82,7 @@ export default function ProductManagement() {
       setError(null);
     } catch (err) {
       console.error('Error saving product:', err);
-      
+
       // Show backend validation errors
       if (err.response?.data?.message) {
         setError(`❌ ${err.response.data.message}`);
@@ -91,8 +91,6 @@ export default function ProductManagement() {
       } else {
         setError('❌ Failed to save product. Please try again.');
       }
-    }
-  };
     }
   };
 
@@ -113,7 +111,7 @@ export default function ProductManagement() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await api.delete(`/admin/products/${id}`);
+        await api.delete(`admin/products/${id}`);
         fetchProducts();
       } catch (err) {
         console.error('Error deleting product:', err);
@@ -311,13 +309,12 @@ export default function ProductManagement() {
                 <td className="px-6 py-4 text-sm text-gray-900">₹{product.price}</td>
                 <td className="px-6 py-4 text-sm">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      product.stock > 10
-                        ? 'bg-green-100 text-green-700'
-                        : product.stock > 0
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${product.stock > 10
+                      ? 'bg-green-100 text-green-700'
+                      : product.stock > 0
                         ? 'bg-yellow-100 text-yellow-700'
                         : 'bg-red-100 text-red-700'
-                    }`}
+                      }`}
                   >
                     {product.stock}
                   </span>

@@ -20,7 +20,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
-        const response = await api.get('/admin/profile');
+        const response = await api.get('admin/profile');
         setAdminProfile(response.data);
         setLoading(false);
       } catch (err) {

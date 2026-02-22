@@ -19,7 +19,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/users', {
+      const response = await api.get('admin/users', {
         params: { page, size: 10 },
       });
       setUsers(response.data.content);
@@ -56,7 +56,7 @@ export default function UserManagement() {
     if (newRole === 'ADMIN') {
       const adminUsers = users.filter(u => u.role === 'ADMIN');
       const isCurrentlyAdmin = selectedUser.role === 'ADMIN';
-      
+
       if (adminUsers.length > 0 && !isCurrentlyAdmin) {
         setError('❌ Only ONE ADMIN user is allowed. Remove existing ADMIN first.');
         return;
@@ -65,14 +65,14 @@ export default function UserManagement() {
 
     try {
       setUpdating({ userId, type: 'role' });
-      await api.put(`/admin/users/${userId}/role`, { role: newRole });
-      
+      await api.put(`admin/users/${userId}/role`, { role: newRole });
+
       // Update the user in detail view
       if (selectedUser && selectedUser.id === userId) {
         const response = await api.get(`/admin/users/${userId}`);
         setSelectedUser(response.data);
       }
-      
+
       // Refresh users list
       fetchUsers();
       setUpdating(null);
@@ -87,14 +87,14 @@ export default function UserManagement() {
   const handleUpdateStatus = async (userId, newStatus) => {
     try {
       setUpdating({ userId, type: 'status' });
-      await api.put(`/admin/users/${userId}/status`, { active: newStatus });
-      
+      await api.put(`admin/users/${userId}/status`, { active: newStatus });
+
       // Update the user in detail view
       if (selectedUser && selectedUser.id === userId) {
         const response = await api.get(`/admin/users/${userId}`);
         setSelectedUser(response.data);
       }
-      
+
       // Refresh users list
       fetchUsers();
       setUpdating(null);
@@ -273,11 +273,10 @@ export default function UserManagement() {
                           key={role}
                           onClick={() => handleUpdateRole(selectedUser.id, role)}
                           disabled={updating?.type === 'role' || role === selectedUser.role}
-                          className={`w-full px-4 py-2 rounded-lg font-medium transition ${
-                            role === selectedUser.role
-                              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
-                          }`}
+                          className={`w-full px-4 py-2 rounded-lg font-medium transition ${role === selectedUser.role
+                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
                         >
                           {updating?.type === 'role' && updating?.userId === selectedUser.id
                             ? 'Updating...'
@@ -305,11 +304,10 @@ export default function UserManagement() {
                       <button
                         onClick={() => handleUpdateStatus(selectedUser.id, true)}
                         disabled={updating?.type === 'status' || selectedUser.active}
-                        className={`w-full px-4 py-2 rounded-lg font-medium transition ${
-                          selectedUser.active
-                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                            : 'bg-green-600 text-white hover:bg-green-700'
-                        }`}
+                        className={`w-full px-4 py-2 rounded-lg font-medium transition ${selectedUser.active
+                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : 'bg-green-600 text-white hover:bg-green-700'
+                          }`}
                       >
                         {updating?.type === 'status' && updating?.userId === selectedUser.id
                           ? 'Updating...'
@@ -318,11 +316,10 @@ export default function UserManagement() {
                       <button
                         onClick={() => handleUpdateStatus(selectedUser.id, false)}
                         disabled={updating?.type === 'status' || !selectedUser.active}
-                        className={`w-full px-4 py-2 rounded-lg font-medium transition ${
-                          !selectedUser.active
-                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                            : 'bg-red-600 text-white hover:bg-red-700'
-                        }`}
+                        className={`w-full px-4 py-2 rounded-lg font-medium transition ${!selectedUser.active
+                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : 'bg-red-600 text-white hover:bg-red-700'
+                          }`}
                       >
                         {updating?.type === 'status' && updating?.userId === selectedUser.id
                           ? 'Updating...'

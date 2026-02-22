@@ -46,7 +46,7 @@ export default function ProductDetail() {
 
   const checkPurchaseStatus = async () => {
     try {
-      const { data } = await api.get('/orders/my-orders');
+      const { data } = await api.get('orders/my-orders');
       const purchased = data.some(order =>
         order.items.some(item => item.product.id === parseInt(id))
       );
@@ -58,7 +58,7 @@ export default function ProductDetail() {
 
   const fetchProduct = async () => {
     try {
-      const { data } = await api.get(`/products/${id}`);
+      const { data } = await api.get(`products/${id}`);
       setProduct(data);
       setSelectedImage(data.imageUrl);
       // Auto-select first available variant if variants exist
@@ -85,7 +85,7 @@ export default function ProductDetail() {
 
   const fetchReviews = async () => {
     try {
-      const { data } = await api.get(`/reviews/product/${id}`);
+      const { data } = await api.get(`reviews/product/${id}`);
       setReviews(data.content);
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
@@ -110,7 +110,7 @@ export default function ProductDetail() {
         requestData.variantId = selectedVariant.id;
       }
 
-      const { data } = await api.post('/cart/items', requestData);
+      const { data } = await api.post('cart/items', requestData);
       setCart(data);
       toast.success(`Added ${selectedVariant ? `${selectedVariant.size}ml` : ''} to cart!`);
     } catch (error) {

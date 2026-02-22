@@ -14,7 +14,7 @@ const OrderTimeline = ({ orderId, currentStatus }) => {
   const fetchTimeline = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`/orders/${orderId}/timeline`);
+      const { data } = await api.get(`orders/${orderId}/timeline`);
       setTimeline(data);
     } catch (err) {
       setError('Failed to load order timeline');
@@ -28,7 +28,7 @@ const OrderTimeline = ({ orderId, currentStatus }) => {
     const date = new Date(dateTimeString);
     const dayOptions = { weekday: 'short', day: 'numeric', month: 'short' };
     const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
-    
+
     return {
       fullDate: date.toLocaleDateString('en-IN', dayOptions),
       time: date.toLocaleTimeString('en-IN', timeOptions)
@@ -155,7 +155,7 @@ const OrderTimeline = ({ orderId, currentStatus }) => {
                   <div className="flex-grow pt-0">
                     <div className="flex items-start justify-between mb-1">
                       <h4 className="font-semibold text-gray-900 text-base">
-                        {event.status.replace('_', ' ').split(' ').map(word => 
+                        {event.status.replace('_', ' ').split(' ').map(word =>
                           word.charAt(0) + word.slice(1).toLowerCase()
                         ).join(' ')}
                       </h4>

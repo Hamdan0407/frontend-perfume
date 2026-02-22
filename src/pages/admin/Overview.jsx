@@ -9,7 +9,7 @@ export default function Overview() {
   useEffect(() => {
     const fetchOverview = async () => {
       try {
-        const response = await api.get('/admin/stats');
+        const response = await api.get('admin/stats');
         setOverview(response.data);
         setLoading(false);
       } catch (err) {
@@ -173,7 +173,7 @@ export default function Overview() {
       {(overview.lowStockProducts?.length > 0 || overview.outOfStockProducts?.length > 0) && (
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">🚨 Inventory Alerts</h3>
-          
+
           {/* Low Stock Alert */}
           {overview.lowStockProducts?.length > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -196,7 +196,7 @@ export default function Overview() {
               </div>
             </div>
           )}
-          
+
           {/* Out of Stock Alert */}
           {overview.outOfStockProducts?.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">

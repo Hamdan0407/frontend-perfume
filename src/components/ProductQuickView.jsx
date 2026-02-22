@@ -65,7 +65,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
         requestData.variantId = selectedVariant.id;
       }
 
-      const { data } = await api.post('/cart/items', requestData);
+      const { data } = await api.post('cart/items', requestData);
 
       addItem(data);
       toast.success(`Added ${quantity} ${product.name}${selectedVariant ? ` (${selectedVariant.size}ml)` : ''} to cart`);

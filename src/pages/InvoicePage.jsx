@@ -24,7 +24,7 @@ export default function InvoicePage() {
 
   const fetchOrder = async () => {
     try {
-      const { data } = await api.get(`/orders/${id}`);
+      const { data } = await api.get(`orders/${id}`);
       setOrder(data);
     } catch (error) {
       toast.error('Failed to load invoice');
@@ -74,7 +74,7 @@ export default function InvoicePage() {
 
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       pdf.save(`Invoice-${order.orderNumber}.pdf`);
       toast.success('Invoice downloaded successfully!');

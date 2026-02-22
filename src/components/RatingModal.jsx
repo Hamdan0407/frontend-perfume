@@ -29,7 +29,7 @@ export default function RatingModal({ isOpen, onClose, product, orderId, onSucce
 
         setSubmitting(true);
         try {
-            await api.post('/reviews', {
+            await api.post('reviews', {
                 orderId,
                 productId: product.id,
                 rating,
@@ -80,8 +80,8 @@ export default function RatingModal({ isOpen, onClose, product, orderId, onSucce
                                 >
                                     <Star
                                         className={`h-10 w-10 ${star <= (hoverRating || rating)
-                                                ? 'fill-yellow-400 text-yellow-400'
-                                                : 'text-gray-300'
+                                            ? 'fill-yellow-400 text-yellow-400'
+                                            : 'text-gray-300'
                                             }`}
                                     />
                                 </button>

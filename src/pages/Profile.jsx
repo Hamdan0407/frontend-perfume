@@ -43,7 +43,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await api.get('/users/profile');
+        const { data } = await api.get('users/profile');
         setProfileData({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
@@ -149,7 +149,7 @@ export default function Profile() {
 
     setSaving(true);
     try {
-      const { data } = await api.put('/users/profile', profileData);
+      const { data } = await api.put('users/profile', profileData);
       setProfileData({
         firstName: data.firstName || '',
         lastName: data.lastName || '',
@@ -180,7 +180,7 @@ export default function Profile() {
 
     setSaving(true);
     try {
-      await api.post('/users/change-password', {
+      await api.post('users/change-password', {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
         confirmPassword: passwordData.confirmPassword
@@ -232,22 +232,20 @@ export default function Profile() {
         <div className="flex gap-4 mb-6 border-b">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`pb-3 px-1 font-medium border-b-2 transition ${
-              activeTab === 'profile'
+            className={`pb-3 px-1 font-medium border-b-2 transition ${activeTab === 'profile'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             <User className="h-4 w-4 inline mr-2" />
             Profile Information
           </button>
           <button
             onClick={() => setActiveTab('password')}
-            className={`pb-3 px-1 font-medium border-b-2 transition ${
-              activeTab === 'password'
+            className={`pb-3 px-1 font-medium border-b-2 transition ${activeTab === 'password'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
             <Lock className="h-4 w-4 inline mr-2" />
             Change Password

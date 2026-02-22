@@ -78,7 +78,7 @@ export default function Products() {
 
   const fetchBrands = async () => {
     try {
-      const response = await api.get('/products/brands');
+      const response = await api.get('products/brands');
       setBrands(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Failed to fetch brands:', error);

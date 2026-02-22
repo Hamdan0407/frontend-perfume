@@ -22,7 +22,7 @@ export default function Orders() {
   const fetchOrders = async () => {
     try {
       // Use /orders/page endpoint with large page size to get all orders
-      const { data } = await api.get('/orders/page', {
+      const { data } = await api.get('orders/page', {
         params: {
           page: 0,
           size: 1000

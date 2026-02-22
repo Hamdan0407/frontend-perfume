@@ -31,7 +31,7 @@ const cartAPI = {
    * - 401: Not authenticated
    */
   getCart: async () => {
-    const response = await api.get('/cart');
+    const response = await api.get('cart');
     return response.data.data;
   },
 
@@ -48,7 +48,7 @@ const cartAPI = {
    * - 401: Not authenticated
    */
   addToCart: async (productId, quantity = 1) => {
-    const response = await api.post('/cart', { productId, quantity });
+    const response = await api.post('cart', { productId, quantity });
     return response.data.data;
   },
 
@@ -65,7 +65,7 @@ const cartAPI = {
    * - 401: Not authenticated
    */
   updateCartItem: async (itemId, quantity) => {
-    const response = await api.put(`/cart/items/${itemId}`, { quantity });
+    const response = await api.put(`cart/items/${itemId}`, { quantity });
     return response.data.data;
   },
 
@@ -80,7 +80,7 @@ const cartAPI = {
    * - 401: Not authenticated
    */
   removeFromCart: async (itemId) => {
-    const response = await api.delete(`/cart/items/${itemId}`);
+    const response = await api.delete(`cart/items/${itemId}`);
     return response.data.data;
   },
 
@@ -90,7 +90,7 @@ const cartAPI = {
    * @returns {Promise} - Empty cart
    */
   clearCart: async () => {
-    const response = await api.post('/cart/clear');
+    const response = await api.post('cart/clear');
     return response.data.data;
   },
 
@@ -100,7 +100,7 @@ const cartAPI = {
    * @returns {Promise} - Item count
    */
   getCartCount: async () => {
-    const response = await api.get('/cart/count');
+    const response = await api.get('cart/count');
     return response.data.data;
   },
 };
