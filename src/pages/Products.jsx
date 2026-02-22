@@ -28,6 +28,75 @@ export default function Products() {
   const search = searchParams.get('search') || '';
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortDir = searchParams.get('sortDir') || 'DESC';
+  const [groupedProducts, setGroupedProducts] = useState([]);
+
+  // Helper to group products by name and brand
+  const groupProducts = (productsList) => {
+    const groups = {};
+
+    productsList.forEach(p => {
+      const key = `${p.name.toLowerCase()}_${p.brand.toLowerCase()}`;
+      if (!groups[key]) {
+        groups[key] = {
+          ...p,
+          allVariants: [...(p.variants || [])]
+        };
+        // If product doesn't have variants but has volume/price, create a 'virtual' variant
+        if (p.volume && (!p.variants || p.variants.length === 0)) {
+          groups[key].allVariants.push({
+            id: `v_${p.id}`,
+            productId: p.id,
+            size: p.volume,
+            price: p.price,
+            discountPrice: p.discountPrice,
+            stock: p.stock,
+            active: p.active
+          });
+        }
+      } else {
+        // Merge variants
+        const existingVariants = groups[key].allVariants;
+        const newVariants = p.variants || [];
+
+        // Add new variants if they don't exist
+        newVariants.forEach(nv => {
+          if (!existingVariants.find(ev => ev.size === nv.size)) {
+            existingVariants.push(nv);
+          }
+        });
+
+        // Add virtual variant for the current product if it's not already covered
+        if (p.volume && !existingVariants.find(ev => ev.size === p.volume)) {
+          existingVariants.push({
+            id: `v_${p.id}`,
+            productId: p.id,
+            size: p.volume,
+            price: p.price,
+            discountPrice: p.discountPrice,
+            stock: p.stock,
+            active: p.active
+          });
+        }
+
+        // Update stock (total)
+        groups[key].stock = (groups[key].stock || 0) + (p.stock || 0);
+
+        // Sort variants by size
+        groups[key].allVariants.sort((a, b) => a.size - b.size);
+
+        // Update price to the lowest available in the group
+        const minPrice = Math.min(...groups[key].allVariants.map(v => v.price));
+        const minDiscountPrice = Math.min(...groups[key].allVariants.filter(v => v.discountPrice).map(v => v.discountPrice));
+
+        groups[key].price = minPrice;
+        if (minDiscountPrice !== Infinity) {
+          groups[key].discountPrice = minDiscountPrice;
+        }
+      }
+    });
+
+    return Object.values(groups);
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -70,6 +139,7 @@ export default function Products() {
       }
 
       setProducts(content);
+      setGroupedProducts(groupProducts(content));
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -260,7 +330,7 @@ export default function Products() {
             ) : (Array.isArray(products) && products.length > 0) ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
+                  {groupedProducts.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}

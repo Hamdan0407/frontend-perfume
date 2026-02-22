@@ -88,13 +88,6 @@ export default function ProductCard({ product, onQuickView }) {
             </p>
           )}
 
-          {product.volume && (
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs font-medium">
-                {product.volume}ml
-              </Badge>
-            </div>
-          )}
 
           {product.rating > 0 && (
             <div className="flex items-center gap-1">
@@ -122,6 +115,7 @@ export default function ProductCard({ product, onQuickView }) {
           <div className="flex items-baseline justify-between pt-2">
             <div className="flex items-baseline gap-2">
               <span className="text-lg font-bold text-foreground">
+                {product.allVariants?.length > 1 && <span className="text-sm font-medium text-muted-foreground mr-1">From</span>}
                 ₹{(displayPrice || 0).toFixed(2)}
               </span>
               {hasDiscount && (

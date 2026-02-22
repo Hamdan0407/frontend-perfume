@@ -25,14 +25,16 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
     ? (selectedVariant.discountPrice && selectedVariant.discountPrice < selectedVariant.price)
     : (product?.discountPrice && product?.discountPrice < product?.price);
   const currentStock = selectedVariant ? selectedVariant.stock : (product?.stock || 0);
+  const variantsToDisplay = product?.allVariants || product?.variants || [];
   const discountPercent = hasDiscount
     ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100)
     : 0;
 
   // Auto-select first available variant when product changes
   useEffect(() => {
-    if (product?.variants && product.variants.length > 0 && !selectedVariant) {
-      const firstAvailable = product.variants.find(v => v.active && v.stock > 0) || product.variants[0];
+    const vars = product?.allVariants || product?.variants || [];
+    if (vars.length > 0 && !selectedVariant) {
+      const firstAvailable = vars.find(v => v.active && v.stock > 0) || vars[0];
       setSelectedVariant(firstAvailable);
     }
   }, [product]);
@@ -56,7 +58,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
     setLoading(true);
     try {
       const requestData = {
-        productId: product.id,
+        productId: selectedVariant?.productId || product.id,
         quantity: quantity
       };
 
@@ -215,11 +217,11 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
             {/* Details */}
             <div className="space-y-2">
               {/* Variant Selector */}
-              {product.variants && product.variants.length > 0 && (
+              {variantsToDisplay.length > 0 && (
                 <div className="mb-4">
                   <h3 className="text-sm font-semibold text-foreground mb-3">Select Size</h3>
                   <div className="flex flex-wrap gap-3">
-                    {product.variants.map((variant) => (
+                    {variantsToDisplay.map((variant) => (
                       <button
                         key={variant.id}
                         onClick={() => setSelectedVariant(variant)}

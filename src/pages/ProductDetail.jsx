@@ -26,6 +26,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [mergedVariants, setMergedVariants] = useState([]);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -61,10 +62,65 @@ export default function ProductDetail() {
       const { data } = await api.get(`products/${id}`);
       setProduct(data);
       setSelectedImage(data.imageUrl);
-      // Auto-select first available variant if variants exist
-      if (data.variants && data.variants.length > 0) {
-        const firstAvailable = data.variants.find(v => v.active && v.stock > 0) || data.variants[0];
+      // Fetch related products to merge variants (for products with same name/brand but different volumes)
+      try {
+        const { data: relatedData } = await api.get(`products/search?query=${encodeURIComponent(data.name)}&brand=${encodeURIComponent(data.brand)}&size=50`);
+        const relatedProducts = relatedData.content || relatedData || [];
+
+        let allVariants = [];
+
+        relatedProducts.forEach(p => {
+          if (p.name.toLowerCase() === data.name.toLowerCase() && p.brand.toLowerCase() === data.brand.toLowerCase()) {
+            // Add existing variants
+            if (p.variants && p.variants.length > 0) {
+              p.variants.forEach(v => {
+                if (!allVariants.find(ev => ev.size === v.size)) {
+                  allVariants.push(v);
+                }
+              });
+            } else if (p.volume) {
+              // Add virtual variant for the product record itself
+              if (!allVariants.find(ev => ev.size === p.volume)) {
+                allVariants.push({
+                  id: `v_${p.id}`,
+                  productId: p.id,
+                  size: p.volume,
+                  price: p.price,
+                  discountPrice: p.discountPrice,
+                  stock: p.stock,
+                  active: p.active
+                });
+              }
+            }
+          }
+        });
+
+        allVariants.sort((a, b) => a.size - b.size);
+        setMergedVariants(allVariants);
+
+        // Auto-select first available variant
+        const firstAvailable = allVariants.find(v => v.active && v.stock > 0) || allVariants[0];
         setSelectedVariant(firstAvailable);
+      } catch (err) {
+        console.error('Failed to fetch related products for variants:', err);
+        // Fallback to current product variants
+        if (data.variants && data.variants.length > 0) {
+          const firstAvailable = data.variants.find(v => v.active && v.stock > 0) || data.variants[0];
+          setSelectedVariant(firstAvailable);
+          setMergedVariants(data.variants);
+        } else if (data.volume) {
+          const virtualV = {
+            id: `v_${data.id}`,
+            productId: data.id,
+            size: data.volume,
+            price: data.price,
+            discountPrice: data.discountPrice,
+            stock: data.stock,
+            active: data.active
+          };
+          setSelectedVariant(virtualV);
+          setMergedVariants([virtualV]);
+        }
       }
     } catch (error) {
       console.error('Failed to load product:', error);
@@ -347,11 +403,11 @@ export default function ProductDetail() {
             )}
 
             {/* Variant Selector */}
-            {product.variants && product.variants.length > 0 && (
+            {mergedVariants && mergedVariants.length > 0 && (
               <div className="mb-6">
                 <h3 className="font-semibold text-foreground mb-3">Select Size</h3>
                 <div className="flex flex-wrap gap-3">
-                  {product.variants.map((variant) => (
+                  {mergedVariants.map((variant) => (
                     <button
                       key={variant.id}
                       onClick={() => setSelectedVariant(variant)}
