@@ -98,43 +98,31 @@ export default function Home() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDEzNEgxNHYtMjFoMjJ2MjF6bTAgMTlIMTR2LTIxaDIydjIxeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-12 items-center">
 
-            {/* Left Content - Text */}
-            <div className="space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000 fill-mode-backwards text-center lg:text-left order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium border border-white/20 mx-auto lg:mx-0">
+            {/* Content - Text centered */}
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-backwards text-center order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium border border-white/20 mx-auto">
                 <Sparkles className="h-4 w-4 text-accent" />
                 <span>Premium Fragrances Collection</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight">
-                Discover Your <br className="hidden lg:block" />
+                Discover Your <br />
                 <span className="text-accent">Signature Scent</span>
               </h1>
 
-              <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto lg:mx-0 font-light tracking-wide">
+              <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto font-light tracking-wide">
                 Exquisite luxury fragrances crafted for elegance. Experience the essence of true sophistication this season.
               </p>
 
-              <div className="pt-4 flex justify-center lg:justify-start">
+              <div className="pt-4 flex justify-center">
                 <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white h-14 px-10 text-lg shadow-lg hover:shadow-accent/50 transition-all duration-300 hover:scale-105">
                   <Link to="/products" className="flex items-center gap-2">
                     Explore Collection
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-              </div>
-            </div>
-
-            {/* Right Content - Image */}
-            <div className="relative animate-in fade-in slide-in-from-right-8 duration-1000 delay-200 fill-mode-backwards order-1 lg:order-2 flex justify-center">
-              <div className="relative w-full max-w-lg lg:max-w-xl aspect-square lg:aspect-auto">
-                <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full opacity-30 animate-pulse"></div>
-                <img
-                  src="/hero-main.jpg"
-                  alt="Muwas Premium Oud"
-                  className="relative w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 ease-out z-10 rounded-2xl"
-                />
               </div>
             </div>
 
