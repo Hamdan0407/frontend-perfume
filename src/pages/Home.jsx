@@ -11,13 +11,12 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Skeleton } from '../components/ui/skeleton';
 import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
-import DemoIntro from '../components/DemoIntro';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
 
 import '../styles/HomeTheme.css';
 
 // Memory flag to track intro animation per session (reset on reload)
-let hasViewedIntro = false;
+// let hasViewedIntro = false; // Intentionally disabled as intro is removed
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -25,15 +24,6 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [showIntro, setShowIntro] = useState(() => {
-    const shouldShow = sessionStorage.getItem('showIntroOnNextLoad');
-    if (shouldShow) {
-      sessionStorage.removeItem('showIntroOnNextLoad');
-      hasViewedIntro = false;
-      return true;
-    }
-    return !hasViewedIntro;
-  });
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const toast = useToast();
   const scrollContainerRef = useRef(null);
@@ -42,12 +32,7 @@ export default function Home() {
     fetchFeaturedProducts();
   }, []);
 
-  const handleIntroComplete = () => {
-    setShowIntro(false);
-    hasViewedIntro = true;
-    // Trigger custom login animation after intro
-    setShowLoginSuccess(true);
-  };
+  // Removed handleIntroComplete as intro is removed
 
   const fetchFeaturedProducts = async () => {
     setLoading(true);
@@ -89,7 +74,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen theme-home">
-      {showIntro && <DemoIntro onComplete={handleIntroComplete} />}
       {showLoginSuccess && <LoginSuccessAnimation onComplete={() => setShowLoginSuccess(false)} />}
       {/* Hero Section */}
       {/* Hero Section - Split Layout */}
