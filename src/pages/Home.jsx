@@ -54,8 +54,8 @@ export default function Home() {
     setError(null);
 
     try {
-      const products = await productAPI.getFeaturedProducts(8);
-      setFeaturedProducts(Array.isArray(products) ? products : []);
+      const data = await productAPI.getFeaturedProducts(8);
+      setFeaturedProducts(Array.isArray(data.content) ? data.content : []);
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to load featured products';
       setError(message);

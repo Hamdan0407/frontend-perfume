@@ -59,8 +59,10 @@ export default function Products() {
         url = `/products?${params.toString()}`;
       }
 
+      const { data } = await api.get(url);
+
       // Standardize response content
-      let content = Array.isArray(data.content) ? data.content : Array.isArray(data) ? data : [];
+      let content = Array.isArray(data.content) ? data.content : [];
 
       // Filter by stock if checkbox is checked
       if (inStockOnly) {
