@@ -15,8 +15,8 @@ export default function ProductCard({ product, onQuickView }) {
     : 0;
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 group">
-      <Link to={`/products/${product.id}`} className="block">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 group h-full flex flex-col">
+      <Link to={`/products/${product.id}`} className="block flex-1 flex flex-col">
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           <img
             src={product.imageUrl || 'https://placehold.co/600x400?text=Perfume'}
@@ -71,7 +71,7 @@ export default function ProductCard({ product, onQuickView }) {
           )}
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="p-4 flex flex-col flex-1 space-y-3">
           {product.brand && (
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {product.brand}
@@ -82,52 +82,51 @@ export default function ProductCard({ product, onQuickView }) {
             {product.name}
           </h3>
 
-          {product.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {product.description}
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+            {product.description || "Premium fragrance experience."}
+          </p>
 
-
-          {product.rating > 0 && (
-            <div className="flex items-center gap-1">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      i < Math.floor(product.rating)
-                        ? "fill-accent text-accent"
-                        : "fill-muted text-muted"
-                    )}
-                  />
-                ))}
+          <div className="mt-auto pt-2">
+            {product.rating > 0 && (
+              <div className="flex items-center gap-1 mb-2">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={cn(
+                        "h-3.5 w-3.5",
+                        i < Math.floor(product.rating)
+                          ? "fill-accent text-accent"
+                          : "fill-muted text-muted"
+                      )}
+                    />
+                  ))}
+                </div>
+                {product.reviewCount > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    ({product.reviewCount})
+                  </span>
+                )}
               </div>
-              {product.reviewCount > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  ({product.reviewCount})
-                </span>
-              )}
-            </div>
-          )}
+            )}
 
-          <div className="flex items-baseline justify-between pt-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-foreground">
-                {product.allVariants?.length > 1 && <span className="text-sm font-medium text-muted-foreground mr-1">From</span>}
-                ₹{(displayPrice || 0).toFixed(2)}
-              </span>
-              {hasDiscount && (
-                <span className="text-sm text-muted-foreground line-through">
-                  ₹{(product.price || 0).toFixed(2)}
+            <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold text-foreground">
+                  {product.allVariants?.length > 1 && <span className="text-sm font-medium text-muted-foreground mr-1">From</span>}
+                  ₹{(displayPrice || 0).toFixed(2)}
                 </span>
-              )}
+                {hasDiscount && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    ₹{(product.price || 0).toFixed(2)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-
         </div>
       </Link>
     </Card>
+    </Card >
   );
 }
