@@ -34,6 +34,7 @@ function App() {
   const { isAuthenticated } = useAuthStore();
   const { initWishlist } = useWishlistStore();
 
+  // Fresh build trigger - Syncing latest UI changes (Intro removal, Address update)
   // Session is restored automatically by Zustand persist onRehydrateStorage
   // Initialize wishlist when user is authenticated
   useEffect(() => {
