@@ -106,10 +106,14 @@ export default function Login() {
       }
     } catch (error) {
       console.error('❌ Login error:', error);
-      console.error('❌ Error message:', error.message);
 
-      // Show the actual error
-      setLoginError('Login error: ' + error.message);
+      // Extract the specific error message from backend if available
+      const backendMessage = error.response?.data?.message;
+      const displayMessage = backendMessage || error.message;
+
+      console.error('❌ Error message for display:', displayMessage);
+
+      setLoginError('Login error: ' + displayMessage);
       setLoading(false);
     }
   };
