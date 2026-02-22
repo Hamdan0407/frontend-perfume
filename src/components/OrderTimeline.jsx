@@ -83,7 +83,7 @@ const OrderTimeline = ({ orderId, currentStatus }) => {
   }
 
   // Handle cancelled/refunded orders
-  if (currentStatus === 'CANCELLED' || currentStatus === 'REFUNDED') {
+  if (currentStatus === 'CANCELLED' || currentStatus === 'EXCHANGED') {
     const cancelEvent = timeline.find(e => e.status === currentStatus);
     return (
       <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg border border-red-200">
@@ -97,7 +97,7 @@ const OrderTimeline = ({ orderId, currentStatus }) => {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-red-700">
-              Order {currentStatus === 'CANCELLED' ? 'Cancelled' : 'Refunded'}
+              Order {currentStatus === 'CANCELLED' ? 'Cancelled' : 'Exchanged'}
             </h3>
             {cancelEvent && (
               <p className="text-sm text-gray-600">

@@ -107,7 +107,7 @@ export default function AdminPanel() {
       'DELIVERED': 'success',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
-      'REFUNDED': 'secondary'
+      'EXCHANGED': 'secondary'
     };
     return colors[status] || 'default';
   };
@@ -175,7 +175,7 @@ export default function AdminPanel() {
 
   // Categories for dropdown
   const categories = ['perfume', 'attar', 'aroma chemicals'];
-  const orderStatuses = ['PLACED', 'CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
+  const orderStatuses = ['PLACED', 'CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'EXCHANGED'];
 
   // Size options based on category
   const getSizeOptions = (category) => {

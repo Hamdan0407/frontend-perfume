@@ -49,7 +49,7 @@ export default function AdminOrders() {
       'SHIPPED': 'Shipped',
       'DELIVERED': 'Delivered',
       'CANCELLED': 'Cancelled',
-      'REFUNDED': 'Refunded'
+      'EXCHANGED': 'Exchanged'
     };
     return statusMap[status?.toUpperCase()] || status || 'Unknown';
   };
@@ -150,7 +150,7 @@ export default function AdminOrders() {
                           <option value="SHIPPED">Shipped</option>
                           <option value="DELIVERED">Delivered</option>
                           <option value="CANCELLED">Cancelled</option>
-                          <option value="REFUNDED">Refunded</option>
+                          <option value="EXCHANGED">Exchanged</option>
                         </select>
                         <textarea
                           value={editForm.notes}

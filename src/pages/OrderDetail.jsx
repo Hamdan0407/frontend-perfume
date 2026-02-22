@@ -97,7 +97,7 @@ export default function OrderDetail() {
       OUT_FOR_DELIVERY: 'bg-cyan-100 text-cyan-800 border-cyan-300',
       DELIVERED: 'bg-green-100 text-green-800 border-green-300',
       CANCELLED: 'bg-red-100 text-red-800 border-red-300',
-      REFUNDED: 'bg-gray-100 text-gray-800 border-gray-300',
+      EXCHANGED: 'bg-gray-100 text-gray-800 border-gray-300',
     };
     return classes[status] || 'bg-gray-100 text-gray-800 border-gray-300';
   };

@@ -5,7 +5,7 @@ export default function ReturnsExchange() {
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold mb-4">Returns & Exchange Policy</h1>
+                <h1 className="text-4xl font-bold mb-4">Exchange Policy</h1>
                 <p className="text-muted-foreground text-lg">
                     We want you to love your purchase. If not, we're here to help.
                 </p>
@@ -16,16 +16,16 @@ export default function ReturnsExchange() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <RotateCcw className="h-5 w-5" />
-                            Return Policy
+                            Exchange Eligibility
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-muted-foreground">
-                            We offer a <span className="font-semibold text-foreground">7-day return policy</span> from the date of delivery.
+                            We offer a <span className="font-semibold text-foreground">7-day exchange policy</span> from the date of delivery.
                         </p>
                         <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
                             <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-                                Eligible for Return:
+                                Eligible for Exchange:
                             </h3>
                             <ul className="space-y-2 text-sm text-green-800 dark:text-green-200">
                                 <li className="flex items-start gap-2">
@@ -48,7 +48,7 @@ export default function ReturnsExchange() {
                         </div>
                         <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg">
                             <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                                Not Eligible for Return:
+                                Not Eligible for Exchange:
                             </h3>
                             <ul className="space-y-2 text-sm text-red-800 dark:text-red-200">
                                 <li className="flex items-start gap-2">
