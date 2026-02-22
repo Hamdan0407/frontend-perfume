@@ -128,36 +128,6 @@ export default function ReturnsExchange() {
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5" />
-                            Refund Timeline
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="space-y-3">
-                            <li className="flex items-start gap-3">
-                                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                                <div>
-                                    <p className="font-medium">Processing: 2-3 business days</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        After we receive your returned item
-                                    </p>
-                                </div>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                                <div>
-                                    <p className="font-medium">Refund: 5-7 business days</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        Effectively credited to your original payment method
-                                    </p>
-                                </div>
-                            </li>
-                        </ul>
-                    </CardContent>
-                </Card>
 
                 <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                     <CardContent className="pt-6">

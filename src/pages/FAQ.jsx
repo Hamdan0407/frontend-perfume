@@ -25,7 +25,7 @@ const faqs = [
         ]
     },
     {
-        category: 'Returns & Refunds',
+        category: 'Returns & Exchanges',
         questions: [
             {
                 q: 'What is your return policy?',
@@ -34,10 +34,6 @@ const faqs = [
             {
                 q: 'How do I initiate a return?',
                 a: 'Email us at muwas2021@yahoo.com with your order number and reason for return. We\'ll guide you through the process.'
-            },
-            {
-                q: 'When will I receive my refund?',
-                a: 'Refunds are processed within 2-3 business days after we receive your return, and credited to your original payment method within 5-7 business days.'
             },
             {
                 q: 'Can I exchange a product?',
