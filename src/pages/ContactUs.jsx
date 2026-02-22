@@ -92,8 +92,7 @@ export default function ContactUs() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg">123 Fragrance Lane</p>
-                        <p className="text-muted-foreground">Perfume City, PC 12345</p>
+                        <p className="text-lg">India</p>
                     </CardContent>
                 </Card>
 

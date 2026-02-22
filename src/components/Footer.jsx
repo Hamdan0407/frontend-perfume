@@ -50,7 +50,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-amber-500 mt-0.5" />
-                <span>123 Fragrance Lane,<br />Perfume City, PC 12345</span>
+                <span>India</span>
               </li>
             </ul>
           </div>
