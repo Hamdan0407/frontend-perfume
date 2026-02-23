@@ -1,39 +1,43 @@
-import { Link } from 'react-router-dom';
-
 export default function TermsOfService() {
     return (
-        <div className="max-w-4xl mx-auto px-4 py-12 bg-white text-gray-800">
-            <h1 className="text-3xl font-bold mb-8 text-slate-900 border-b pb-4">Terms of Service</h1>
+        <div className="max-w-4xl mx-auto px-4 py-16">
+            <h1 className="text-3xl font-bold mb-8">Terms of Service</h1>
 
-            <div className="space-y-8 text-sm leading-relaxed">
+            <div className="space-y-6 text-gray-700">
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">1. Acceptance of Terms</h2>
-                    <p>By accessing and using Muwas.in, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this site.</p>
+                    <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
+                    <p>By accessing and using the Muwas website (muwas.in), you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">2. Product Quality & Variations</h2>
-                    <p>As our products (Perfumes, Attars, and Aroma Chemicals) involve natural and chemical blends, minor variations in scent or color may occur between batches. These variations do not constitute a defect.</p>
+                    <h2 className="text-xl font-semibold mb-3">2. Products and Services</h2>
+                    <p>We offer a range of fragrances and perfume products. All product descriptions, images, and pricing are presented as accurately as possible, but we do not guarantee that they are error-free.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">3. Orders and Payments</h2>
-                    <p>All orders are subject to availability. We reserve the right to refuse or cancel any order. Payments must be made in full through our integrated secure payment gateway before dispatch.</p>
+                    <h2 className="text-xl font-semibold mb-3">3. Orders and Payments</h2>
+                    <p>All orders are subject to availability. We reserve the right to limit quantities, refuse orders, or cancel transactions at our discretion. Payment is processed securely through our authorized payment partners.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">4. Returns and Exchanges</h2>
-                    <p>Due to the personal nature of fragrance products, returns are generally not accepted unless the item is damaged or incorrectly delivered. Please refer to our <Link to="/returns" className="text-amber-600 hover:underline">Exchange Policy</Link> for details.</p>
+                    <h2 className="text-xl font-semibold mb-3">4. Shipping and Delivery</h2>
+                    <p>We offer pan-India delivery. Delivery timelines may vary depending on your location. Free shipping is available on orders above ₹899.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">5. Limitation of Liability</h2>
-                    <p>Muwas.in shall not be liable for any indirect, incidental, special, or consequential damages resulting from the use or inability to use our products or website.</p>
+                    <h2 className="text-xl font-semibold mb-3">5. Returns and Refunds</h2>
+                    <p>Please refer to our Returns & Exchange policy for detailed information on returns, exchanges, and refunds.</p>
                 </section>
 
-                <div className="mt-12 pt-8 border-t">
-                    <Link to="/" className="text-amber-600 font-medium hover:underline">← Back to Home</Link>
-                </div>
+                <section>
+                    <h2 className="text-xl font-semibold mb-3">6. Intellectual Property</h2>
+                    <p>All content on this website, including text, graphics, logos, and images, is the property of Muwas and is protected by applicable intellectual property laws.</p>
+                </section>
+
+                <section>
+                    <h2 className="text-xl font-semibold mb-3">7. Contact</h2>
+                    <p>For any questions regarding these terms, please contact us through our Contact page.</p>
+                </section>
             </div>
         </div>
     );

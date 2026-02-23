@@ -1,39 +1,43 @@
-import { Link } from 'react-router-dom';
-
 export default function PrivacyPolicy() {
     return (
-        <div className="max-w-4xl mx-auto px-4 py-12 bg-white text-gray-800">
-            <h1 className="text-3xl font-bold mb-8 text-slate-900 border-b pb-4">Privacy Policy</h1>
+        <div className="max-w-4xl mx-auto px-4 py-16">
+            <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
 
-            <div className="space-y-8 text-sm leading-relaxed">
+            <div className="space-y-6 text-gray-700">
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">1. Information We Collect</h2>
-                    <p>We collect information you provide directly to us when you create an account, make a purchase, or contact our support. This includes your name, email address, phone number, shipping address, and payment information handled securely via Stripe.</p>
+                    <h2 className="text-xl font-semibold mb-3">1. Information We Collect</h2>
+                    <p>We collect personal information that you provide when creating an account, placing orders, or contacting us. This includes your name, email address, phone number, and shipping address.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">2. How We Use Your Information</h2>
-                    <p>We use your information to process orders, communicate about your purchases, and improve our services. We do not sell your personal data to third parties.</p>
+                    <h2 className="text-xl font-semibold mb-3">2. How We Use Your Information</h2>
+                    <p>Your information is used to process orders, provide customer support, send order updates, and improve our services. We do not sell your personal data to third parties.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">3. Cookies & Tracking</h2>
-                    <p>Muwas.in uses cookies to maintain your shopping cart and session. These help us provide a seamless shopping experience and analyze site traffic via standard web tools.</p>
+                    <h2 className="text-xl font-semibold mb-3">3. Data Security</h2>
+                    <p>We implement industry-standard security measures to protect your personal information. All payment transactions are encrypted and processed through secure payment gateways.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">4. Data Security</h2>
-                    <p>We implement industry-standard security measures to protect your sensitive data. Your password is encrypted, and payment details are processed directly by Stripe using their secure infrastructure.</p>
+                    <h2 className="text-xl font-semibold mb-3">4. Cookies</h2>
+                    <p>We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. You can manage cookie preferences through your browser settings.</p>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-slate-800">5. Contact Us</h2>
-                    <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:muwas2021@yahoo.com" className="text-amber-600 hover:underline">muwas2021@yahoo.com</a>.</p>
+                    <h2 className="text-xl font-semibold mb-3">5. Third-Party Services</h2>
+                    <p>We may use third-party services for payment processing, analytics, and delivery. These services have their own privacy policies governing the use of your information.</p>
                 </section>
 
-                <div className="mt-12 pt-8 border-t">
-                    <Link to="/" className="text-amber-600 font-medium hover:underline">← Back to Home</Link>
-                </div>
+                <section>
+                    <h2 className="text-xl font-semibold mb-3">6. Your Rights</h2>
+                    <p>You have the right to access, update, or delete your personal information. You can do this through your account settings or by contacting our support team.</p>
+                </section>
+
+                <section>
+                    <h2 className="text-xl font-semibold mb-3">7. Contact Us</h2>
+                    <p>For privacy-related inquiries, please reach out through our Contact page.</p>
+                </section>
             </div>
         </div>
     );

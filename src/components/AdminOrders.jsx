@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react';
+import { Clock, CheckCircle, X, Save, Eye, Edit } from 'lucide-react';
+import { toast } from 'react-toastify';
 import api from '../api/axios';
 
 export default function AdminOrders() {
@@ -35,7 +38,7 @@ export default function AdminOrders() {
     const statusUpper = status?.toUpperCase() || '';
     if (['PENDING', 'PROCESSING'].includes(statusUpper)) return <Clock size={16} />;
     if (['SHIPPED', 'DELIVERED'].includes(statusUpper)) return <CheckCircle size={16} />;
-    if (statusUpper === 'CANCELLED') return <XIcon size={16} />;
+    if (statusUpper === 'CANCELLED') return <X size={16} />;
     return null;
   };
 
