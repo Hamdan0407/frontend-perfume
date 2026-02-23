@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import ThemeToggle from './ThemeToggle';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
 
 export default function Navbar() {
@@ -184,7 +183,7 @@ export default function Navbar() {
               <Search className="h-5 w-5" />
             </Button>
 
-            <ThemeToggle />
+            {/* Theme Toggle removed for static light theme */}
 
             {isAuthenticated ? (
               <>

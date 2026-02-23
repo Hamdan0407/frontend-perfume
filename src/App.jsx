@@ -34,8 +34,16 @@ function App() {
   const { isAuthenticated } = useAuthStore();
   const { initWishlist } = useWishlistStore();
 
-  // Fresh build trigger - Syncing latest UI changes (Intro removal, Address update)
-  // Session is restored automatically by Zustand persist onRehydrateStorage
+  // Force Light Theme Static Only - Removing Dark Mode Support
+  useEffect(() => {
+    // 1. Explicitly remove 'dark' class from root element
+    document.documentElement.classList.remove('dark');
+    // 2. Clear theme from localStorage to prevent legacy settings sticking
+    if (localStorage.getItem('theme')) {
+      localStorage.removeItem('theme');
+    }
+  }, []);
+
   // Initialize wishlist when user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
