@@ -340,12 +340,12 @@ export default function ProductDetail() {
 
             <div className="flex items-baseline gap-3">
               {hasDiscount && (
-                <span className="text-2xl text-muted-foreground line-through">
-                  ₹{product.price.toFixed(2)}
+                <span className="text-2xl text-muted-foreground line-through decoration-red-500/20">
+                  ₹{product.price.toFixed(0)}
                 </span>
               )}
-              <span className="text-4xl font-bold text-foreground">
-                ₹{displayPrice.toFixed(2)}
+              <span className="text-3xl sm:text-4xl font-bold text-foreground">
+                ₹{displayPrice.toFixed(0)}
               </span>
               {hasDiscount && (
                 <Badge variant="destructive">
@@ -401,7 +401,7 @@ export default function ProductDetail() {
                       onClick={() => setSelectedVariant(variant)}
                       disabled={!variant.active || variant.stock === 0}
                       className={cn(
-                        "relative px-6 py-3 rounded-full border transition-all text-sm font-bold min-w-[90px]",
+                        "relative px-4 sm:px-6 py-2 sm:py-3 rounded-full border transition-all text-xs sm:text-sm font-bold min-w-[70px] sm:min-w-[90px]",
                         "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100",
                         selectedVariant?.id === variant.id
                           ? "bg-slate-900 text-white border-slate-900 shadow-md transform scale-105"

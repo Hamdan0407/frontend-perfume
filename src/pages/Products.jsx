@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, X, Search } from 'lucide-react';
+import { Filter, X, Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
+import { groupProducts } from '../utils/productUtils';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,75 +30,7 @@ export default function Products() {
   const search = searchParams.get('search') || '';
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortDir = searchParams.get('sortDir') || 'DESC';
-  const [groupedProducts, setGroupedProducts] = useState([]);
 
-  // Helper to group products by name and brand
-  const groupProducts = (productsList) => {
-    const groups = {};
-
-    productsList.forEach(p => {
-      const key = `${p.name.toLowerCase()}_${p.brand.toLowerCase()}`;
-      if (!groups[key]) {
-        groups[key] = {
-          ...p,
-          allVariants: [...(p.variants || [])]
-        };
-        // If product doesn't have variants but has volume/price, create a 'virtual' variant
-        if (p.volume && (!p.variants || p.variants.length === 0)) {
-          groups[key].allVariants.push({
-            id: `v_${p.id}`,
-            productId: p.id,
-            size: p.volume,
-            price: p.price,
-            discountPrice: p.discountPrice,
-            stock: p.stock,
-            active: p.active
-          });
-        }
-      } else {
-        // Merge variants
-        const existingVariants = groups[key].allVariants;
-        const newVariants = p.variants || [];
-
-        // Add new variants if they don't exist
-        newVariants.forEach(nv => {
-          if (!existingVariants.find(ev => ev.size === nv.size)) {
-            existingVariants.push(nv);
-          }
-        });
-
-        // Add virtual variant for the current product if it's not already covered
-        if (p.volume && !existingVariants.find(ev => ev.size === p.volume)) {
-          existingVariants.push({
-            id: `v_${p.id}`,
-            productId: p.id,
-            size: p.volume,
-            price: p.price,
-            discountPrice: p.discountPrice,
-            stock: p.stock,
-            active: p.active
-          });
-        }
-
-        // Update stock (total)
-        groups[key].stock = (groups[key].stock || 0) + (p.stock || 0);
-
-        // Sort variants by size
-        groups[key].allVariants.sort((a, b) => a.size - b.size);
-
-        // Update price to the lowest available in the group
-        const minPrice = Math.min(...groups[key].allVariants.map(v => v.price));
-        const minDiscountPrice = Math.min(...groups[key].allVariants.filter(v => v.discountPrice).map(v => v.discountPrice));
-
-        groups[key].price = minPrice;
-        if (minDiscountPrice !== Infinity) {
-          groups[key].discountPrice = minDiscountPrice;
-        }
-      }
-    });
-
-    return Object.values(groups);
-  };
 
   useEffect(() => {
     fetchProducts();
@@ -138,8 +72,7 @@ export default function Products() {
         content = content.filter(p => p.stock > 0);
       }
 
-      setProducts(content);
-      setGroupedProducts(groupProducts(content));
+      setProducts(groupProducts(content));
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -195,133 +128,84 @@ export default function Products() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Mobile Filters Trigger */}
+          <div className="lg:hidden flex items-center justify-between gap-4 mb-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="flex-1 gap-2 border-slate-200">
+                  <SlidersHorizontal className="h-4 w-4" />
                   Filters
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Category Filter */}
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <select
-                    id="category"
-                    value={category}
-                    onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <option value="">All Categories</option>
-                    <option value="perfume">Perfume</option>
-                    <option value="attar">Attar</option>
-                    <option value="aroma chemicals">Aroma Chemicals</option>
-                  </select>
-                </div>
-
-                {/* Brand Filter */}
-                <div className="space-y-2">
-                  <Label htmlFor="brand">Brand</Label>
-                  <select
-                    id="brand"
-                    value={brand}
-                    onChange={(e) => handleFilterChange('brand', e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <option value="">All Brands</option>
-                    {brands.map((b) => (
-                      <option key={b} value={b}>{b}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Sort Filter */}
-                <div className="space-y-2">
-                  <Label htmlFor="sort">Sort By</Label>
-                  <select
-                    id="sort"
-                    value={`${sortBy}-${sortDir}`}
-                    onChange={(e) => {
-                      const [newSortBy, newSortDir] = e.target.value.split('-');
-                      handleFilterChange('sortBy', newSortBy);
-                      handleFilterChange('sortDir', newSortDir);
-                    }}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <option value="createdAt-DESC">Newest First</option>
-                    <option value="price-ASC">Price: Low to High</option>
-                    <option value="price-DESC">Price: High to Low</option>
-                    <option value="name-ASC">Name: A to Z</option>
-                    <option value="rating-DESC">Highest Rated</option>
-                  </select>
-                </div>
-
-                {/* Price Range Filter */}
-                <div className="space-y-2">
-                  <Label>Price Range (₹)</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    onClick={handlePriceFilter}
-                    disabled={!minPrice && !maxPrice}
-                  >
-                    Apply
-                  </Button>
-                </div>
-
-                {/* Stock Availability Filter */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="inStock"
-                    checked={inStockOnly}
-                    onCheckedChange={setInStockOnly}
-                  />
-                  <Label
-                    htmlFor="inStock"
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    In Stock Only
-                  </Label>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={clearAllFilters}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Clear Filters
                 </Button>
-              </CardContent>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] overflow-y-auto">
+                <FiltersContent
+                  category={category}
+                  brand={brand}
+                  brands={brands}
+                  sortBy={sortBy}
+                  sortDir={sortDir}
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
+                  inStockOnly={inStockOnly}
+                  setMinPrice={setMinPrice}
+                  setMaxPrice={setMaxPrice}
+                  setInStockOnly={setInStockOnly}
+                  handleFilterChange={handleFilterChange}
+                  handlePriceFilter={handlePriceFilter}
+                  clearAllFilters={clearAllFilters}
+                />
+              </SheetContent>
+            </Sheet>
+
+            <div className="flex-1">
+              <select
+                value={`${sortBy}-${sortDir}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortDir] = e.target.value.split('-');
+                  handleFilterChange('sortBy', newSortBy);
+                  handleFilterChange('sortDir', newSortDir);
+                }}
+                className="w-full h-10 rounded-md border border-slate-200 bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring"
+              >
+                <option value="createdAt-DESC">Newest</option>
+                <option value="price-ASC">Price: Low</option>
+                <option value="price-DESC">Price: High</option>
+                <option value="name-ASC">Name: A-Z</option>
+                <option value="rating-DESC">Rating</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Filters Sidebar (Desktop) */}
+          <div className="hidden lg:block lg:w-64 flex-shrink-0">
+            <Card className="sticky top-24 border-slate-100 shadow-sm">
+              <FiltersContent
+                category={category}
+                brand={brand}
+                brands={brands}
+                sortBy={sortBy}
+                sortDir={sortDir}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                inStockOnly={inStockOnly}
+                setMinPrice={setMinPrice}
+                setMaxPrice={setMaxPrice}
+                setInStockOnly={setInStockOnly}
+                handleFilterChange={handleFilterChange}
+                handlePriceFilter={handlePriceFilter}
+                clearAllFilters={clearAllFilters}
+              />
             </Card>
           </div>
 
           {/* Products Grid */}
-          <div className="lg:col-span-3">
+          <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {[...Array(9)].map((_, i) => (
                   <div key={i} className="space-y-4">
-                    <Skeleton className="h-80 w-full rounded-lg" />
+                    <Skeleton className="h-64 sm:h-80 w-full rounded-lg" />
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-4 w-1/2" />
                   </div>
@@ -329,8 +213,8 @@ export default function Products() {
               </div>
             ) : (Array.isArray(products) && products.length > 0) ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {groupedProducts.map((product) => (
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                  {products.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
@@ -382,7 +266,6 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Quick View Modal */}
       <ProductQuickView
         product={quickViewProduct}
         isOpen={isQuickViewOpen}
@@ -394,3 +277,147 @@ export default function Products() {
     </div>
   );
 }
+
+function FiltersContent({
+  category,
+  brand,
+  brands,
+  sortBy,
+  sortDir,
+  minPrice,
+  maxPrice,
+  inStockOnly,
+  setMinPrice,
+  setMaxPrice,
+  setInStockOnly,
+  handleFilterChange,
+  handlePriceFilter,
+  clearAllFilters
+}) {
+  return (
+    <>
+      <CardHeader className="pb-3 border-b lg:border-none">
+        <SheetHeader className="lg:hidden text-left mb-4">
+          <SheetTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filters
+          </SheetTitle>
+        </SheetHeader>
+        <CardTitle className="hidden lg:flex items-center gap-2 text-lg">
+          <Filter className="h-5 w-5" />
+          Filters
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6 pt-6">
+        {/* Category Filter */}
+        <div className="space-y-2">
+          <Label htmlFor="category" className="text-sm font-semibold">Category</Label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="">All Categories</option>
+            <option value="perfume">Perfume</option>
+            <option value="attar">Attar</option>
+            <option value="aroma chemicals">Aroma Chemicals</option>
+          </select>
+        </div>
+
+        {/* Brand Filter */}
+        <div className="space-y-2">
+          <Label htmlFor="brand" className="text-sm font-semibold">Brand</Label>
+          <select
+            id="brand"
+            value={brand}
+            onChange={(e) => handleFilterChange('brand', e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="">All Brands</option>
+            {brands.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Sort Filter (Desktop Only) */}
+        <div className="hidden lg:block space-y-2">
+          <Label htmlFor="sort" className="text-sm font-semibold">Sort By</Label>
+          <select
+            id="sort"
+            value={`${sortBy}-${sortDir}`}
+            onChange={(e) => {
+              const [newSortBy, newSortDir] = e.target.value.split('-');
+              handleFilterChange('sortBy', newSortBy);
+              handleFilterChange('sortDir', newSortDir);
+            }}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="createdAt-DESC">Newest First</option>
+            <option value="price-ASC">Price: Low to High</option>
+            <option value="price-DESC">Price: High to Low</option>
+            <option value="name-ASC">Name: A to Z</option>
+            <option value="rating-DESC">Highest Rated</option>
+          </select>
+        </div>
+
+        {/* Price Range Filter */}
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold">Price Range (₹)</Label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              placeholder="Min"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <input
+              type="number"
+              placeholder="Max"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <Button
+            size="sm"
+            className="w-full mt-2"
+            onClick={handlePriceFilter}
+            disabled={!minPrice && !maxPrice}
+          >
+            Apply
+          </Button>
+        </div>
+
+        {/* Stock Availability Filter */}
+        <div className="flex items-center space-x-2 pt-2">
+          <Checkbox
+            id="inStock"
+            checked={inStockOnly}
+            onCheckedChange={setInStockOnly}
+          />
+          <Label
+            htmlFor="inStock"
+            className="text-sm font-medium cursor-pointer"
+          >
+            In Stock Only
+          </Label>
+        </div>
+
+        <div className="pt-4 border-t">
+          <Button
+            variant="ghost"
+            className="w-full text-muted-foreground hover:text-destructive"
+            onClick={clearAllFilters}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Clear All
+          </Button>
+        </div>
+      </CardContent>
+    </>
+  );
+}
+

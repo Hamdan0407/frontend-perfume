@@ -466,6 +466,7 @@ export default function AdminPanel() {
       type: productForm.type || 'Eau de Parfum',
       active: productForm.active !== false,
       featured: false,
+      volume: parseInt(productForm.size) || 0, // Add volume based on size
       variants: variantsData
     };
 

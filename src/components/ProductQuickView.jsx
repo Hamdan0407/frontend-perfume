@@ -10,7 +10,7 @@ import api from '../api/axios';
 
 export default function ProductQuickView({ product, isOpen, onClose }) {
   const navigate = useNavigate();
-  const { addItem } = useCartStore();
+  const { setCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -69,7 +69,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
 
       const { data } = await api.post('cart/items', requestData);
 
-      addItem(data);
+      setCart(data);
       toast.success(`Added ${quantity} ${product.name}${selectedVariant ? ` (${selectedVariant.size}ml)` : ''} to cart`);
     } catch (error) {
       console.error('Add to cart error:', error);
@@ -114,7 +114,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
         </button>
 
         {/* Content */}
-        <div className="grid md:grid-cols-2 gap-6 p-6 overflow-y-auto max-h-[90vh]">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
           {/* Left: Image */}
           <div className="space-y-4">
             <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-muted">
@@ -187,10 +187,9 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
               </div>
             )}
 
-            {/* Price */}
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-foreground">
-                ₹{displayPrice.toFixed(2)}
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">
+                ₹{displayPrice.toFixed(0)}
               </span>
               {hasDiscount && (
                 <>
@@ -227,14 +226,14 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                         onClick={() => setSelectedVariant(variant)}
                         disabled={!variant.active || variant.stock === 0}
                         className={cn(
-                          "relative px-4 py-2 rounded-full border transition-all text-xs font-bold min-w-[70px]",
+                          "relative px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-all text-[11px] sm:text-xs font-bold min-w-[60px] sm:min-w-[70px]",
                           "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100",
                           selectedVariant?.id === variant.id
                             ? "bg-slate-900 text-white border-slate-900 shadow-sm transform scale-105"
                             : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                         )}
                       >
-                        {variant.size}ml
+                        {variant.size}ml 🛒
                         {variant.stock === 0 && (
                           <span className="absolute -top-1.5 -right-1 bg-red-500 text-white text-[9px] px-1 py-0.5 rounded-full">
                             Out

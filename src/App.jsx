@@ -29,6 +29,10 @@ import ReturnsExchange from './pages/ReturnsExchange';
 import FAQ from './pages/FAQ';
 import { useAuthStore } from './store/authStore';
 import { useWishlistStore } from './store/wishlistStore';
+import ScrollToTop from './components/ScrollToTop';
+
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -54,6 +58,7 @@ function App() {
   return (
     <ToastProvider>
       <div className="flex flex-col min-h-screen overflow-x-hidden">
+        <ScrollToTop />
         <AnnouncementBar />
         <Navbar />
         <main className="flex-grow overflow-x-hidden">
@@ -69,6 +74,8 @@ function App() {
             <Route path="/shipping" element={<ShippingInfo />} />
             <Route path="/returns" element={<ReturnsExchange />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
 
             {/* Protected Routes */}
             <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />

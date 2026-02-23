@@ -258,21 +258,11 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="space-y-4">
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Don't have an account? </span>
-              <Link to="/register" className="text-primary hover:underline font-medium">
-                Sign up
-              </Link>
-            </div>
-
-            <Alert className="bg-muted/50">
-              <AlertDescription className="text-xs space-y-1">
-                <p className="font-semibold text-foreground">Example Format:</p>
-                <p><strong>Email:</strong> your.email@example.com</p>
-                <p><strong>Password:</strong> Your secure password</p>
-              </AlertDescription>
-            </Alert>
+          <div className="mt-6 text-center text-sm">
+            <span className="text-muted-foreground">Don't have an account? </span>
+            <Link to="/register" className="text-primary hover:underline font-medium">
+              Sign up
+            </Link>
           </div>
         </CardContent>
       </Card>

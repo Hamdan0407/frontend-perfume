@@ -16,6 +16,9 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -29,6 +32,30 @@ export default function Navbar() {
       setCart(data);
     } catch (error) {
       console.error('Failed to fetch cart:', error);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const fetchSuggestions = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get(`products?search=${encodeURIComponent(searchQuery)}&size=5`);
+      setSuggestions(data.content || []);
+    } catch (error) {
+      console.error('Failed to fetch suggestions:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,9 +137,9 @@ export default function Navbar() {
             </div>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-1">
-              <img src="/muwas-logo.jfif" alt="MUWAS" className="h-10 w-auto object-contain" />
-              <span className="text-[10px] font-bold text-accent border border-accent px-1 rounded opacity-50">v2.1</span>
+            <Link to="/" className="flex items-center gap-1.5 ml-1 sm:ml-0">
+              <img src="/muwas-logo.jfif" alt="MUWAS" className="h-8 sm:h-10 w-auto object-contain" />
+              <span className="text-[8px] sm:text-[10px] font-bold text-accent border border-accent/30 px-1 rounded opacity-60 hidden xs:inline">v2.1</span>
             </Link>
           </div>
 
@@ -156,7 +183,7 @@ export default function Navbar() {
           </div>
 
           {/* Search Bar (Desktop) */}
-          <form onSubmit={handleSearch} className="hidden lg:block flex-1 max-w-lg mx-8">
+          <form onSubmit={handleSearch} className="hidden lg:block flex-1 max-w-lg mx-8 relative">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
@@ -166,9 +193,62 @@ export default function Navbar() {
                 placeholder="Search perfumes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                autoComplete="off"
                 className="w-full pl-10 pr-4 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
+
+            {/* Suggestions Dropdown */}
+            {showSuggestions && (searchQuery.length >= 2) && (
+              <div className="absolute top-full left-0 w-full bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg shadow-xl mt-1 z-50 overflow-hidden">
+                {loading ? (
+                  <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
+                ) : suggestions.length > 0 ? (
+                  <div className="py-1">
+                    {suggestions.map((product) => (
+                      <Link
+                        key={product.id}
+                        to={`/products/${product.id}`}
+                        onClick={() => {
+                          setSearchQuery('');
+                          setShowSuggestions(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-900 transition-colors"
+                      >
+                        <div className="h-10 w-10 rounded bg-gray-50 flex-shrink-0">
+                          <img
+                            src={product.imageUrl || '/placeholder-perfume.png'}
+                            alt={product.name}
+                            className="h-full w-full object-contain p-1"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-muted-foreground">₹{Math.round(product.price)}</span>
+                            {product.stock > 0 ? (
+                              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded leading-none">In Stock</span>
+                            ) : (
+                              <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded leading-none">Out of Stock</span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                    <button
+                      onClick={handleSearch}
+                      className="w-full px-4 py-2 text-xs text-center text-primary font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border-t"
+                    >
+                      View all results
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-sm text-gray-500">No products found</div>
+                )}
+              </div>
+            )}
           </form>
 
           {/* Right Side Icons */}
@@ -272,7 +352,7 @@ export default function Navbar() {
 
         {/* Mobile Search Bar (Collapsible) */}
         {mobileSearchOpen && (
-          <div className="lg:hidden pb-4 px-2 animate-in slide-in-from-top-2">
+          <div className="lg:hidden pb-4 px-2 animate-in slide-in-from-top-2 relative">
             <form onSubmit={handleSearch}>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -283,11 +363,59 @@ export default function Navbar() {
                   placeholder="Search perfumes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   autoFocus
+                  autoComplete="off"
                   className="w-full pl-10 pr-4 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring shadow-sm"
                 />
               </div>
             </form>
+
+            {/* Mobile Suggestions Dropdown */}
+            {showSuggestions && (searchQuery.length >= 2) && (
+              <div className="absolute top-full left-0 right-0 mx-2 bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-lg shadow-xl mt-1 z-50 overflow-hidden">
+                {loading ? (
+                  <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
+                ) : suggestions.length > 0 ? (
+                  <div className="py-1">
+                    {suggestions.map((product) => (
+                      <Link
+                        key={product.id}
+                        to={`/products/${product.id}`}
+                        onClick={() => {
+                          setSearchQuery('');
+                          setShowSuggestions(false);
+                          setMobileSearchOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-900 transition-colors"
+                      >
+                        <div className="h-10 w-10 rounded bg-gray-50 flex-shrink-0">
+                          <img
+                            src={product.imageUrl || '/placeholder-perfume.png'}
+                            alt={product.name}
+                            className="h-full w-full object-contain p-1"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-muted-foreground">₹{Math.round(product.price)}</span>
+                            {product.stock > 0 ? (
+                              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded leading-none">In Stock</span>
+                            ) : (
+                              <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded leading-none">Out of Stock</span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-sm text-gray-500">No products found</div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

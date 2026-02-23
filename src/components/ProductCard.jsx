@@ -16,9 +16,9 @@ export default function ProductCard({ product, onQuickView }) {
     : 0;
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 group h-full flex flex-col">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 group h-full flex flex-col shadow-sm">
       <Link to={`/products/${product.id}`} className="block flex-1 flex flex-col">
-        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+        <div className="relative aspect-[3/4] overflow-hidden bg-muted sm:aspect-[3/4]">
           <img
             src={product.imageUrl || 'https://placehold.co/600x400?text=Perfume'}
             alt={product.name}
@@ -43,22 +43,22 @@ export default function ProductCard({ product, onQuickView }) {
               </Badge>
             )}
             {product.stock < 10 && (
-              <StockBadge stock={product.stock} className="shadow-sm" />
+              <StockBadge stock={product.stock} className="shadow-sm scale-90 sm:scale-100 origin-top-right" />
             )}
           </div>
 
-          {/* Quick View Button - Shows on hover */}
-          <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          {/* Quick View Button - Responsive behavior */}
+          <div className="absolute inset-x-0 bottom-0 p-2 sm:p-4 translate-y-full group-hover:translate-y-0 md:group-hover:translate-y-0 transition-transform duration-300 md:translate-y-full">
             <Button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onQuickView?.(product);
               }}
-              className="w-full bg-white/95 hover:bg-white text-foreground backdrop-blur-sm shadow-lg"
+              className="w-full bg-white/95 hover:bg-white text-foreground backdrop-blur-sm shadow-md text-[10px] sm:text-xs h-8 sm:h-10"
               size="sm"
             >
-              <Eye className="h-4 w-4 mr-2" />
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Quick View
             </Button>
           </div>
@@ -79,11 +79,11 @@ export default function ProductCard({ product, onQuickView }) {
             </p>
           )}
 
-          <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors min-h-[2.5rem]">
+          <h3 className="font-semibold text-foreground text-sm sm:text-base line-clamp-2 group-hover:text-primary transition-colors min-h-[2.5rem] sm:min-h-[3rem]">
             {product.name}
           </h3>
 
-          <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 sm:line-clamp-2 min-h-[1rem] sm:min-h-[2.5rem] hidden xs:block">
             {product.description || "Premium fragrance experience."}
           </p>
 
@@ -99,15 +99,15 @@ export default function ProductCard({ product, onQuickView }) {
               </div>
             )}
 
-            <div className="flex items-baseline justify-between">
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-foreground">
-                  {product.allVariants?.length > 1 && <span className="text-sm font-medium text-muted-foreground mr-1">From</span>}
-                  ₹{(displayPrice || 0).toFixed(2)}
+            <div className="flex items-baseline justify-between flex-wrap gap-1">
+              <div className="flex items-baseline gap-1.5 sm:gap-2">
+                <span className="text-base sm:text-lg font-bold text-foreground">
+                  {product.allVariants?.length > 1 && <span className="text-[10px] sm:text-sm font-medium text-muted-foreground mr-0.5">From</span>}
+                  ₹{(displayPrice || 0).toFixed(0)}
                 </span>
                 {hasDiscount && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    ₹{(product.price || 0).toFixed(2)}
+                  <span className="text-[10px] sm:text-sm text-muted-foreground line-through">
+                    ₹{(product.price || 0).toFixed(0)}
                   </span>
                 )}
               </div>

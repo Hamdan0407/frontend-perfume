@@ -1,11 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { useToast } from '../context/ToastContext';
-import { ShieldCheck, Truck, CheckCircle, Sparkles, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import productAPI from '../api/productAPI';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
 import RecentlyViewed from '../components/RecentlyViewed';
+import { groupProducts } from '../utils/productUtils';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Skeleton } from '../components/ui/skeleton';
@@ -41,7 +38,8 @@ export default function Home() {
     try {
       const data = await productAPI.getFeaturedProducts(8);
       // Backend returns a direct List<ProductResponse> for featured products
-      setFeaturedProducts(Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : []));
+      const productsList = Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : []);
+      setFeaturedProducts(groupProducts(productsList));
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to load featured products';
       setError(message);
@@ -91,12 +89,12 @@ export default function Home() {
                 <span>Premium Fragrances Collection</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight px-2">
                 Discover Your <br />
-                <span className="text-accent">Signature Scent</span>
+                <span className="text-accent underline decoration-accent/30 underline-offset-8">Signature Scent</span>
               </h1>
 
-              <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto font-light tracking-wide">
+              <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto font-light tracking-wide px-4">
                 Exquisite luxury fragrances crafted for elegance. Experience the essence of true sophistication this season.
               </p>
 
@@ -141,10 +139,10 @@ export default function Home() {
                     alt={`${category}'s Fragrances`}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-end p-6 sm:p-8">
-                    <h3 className="text-white text-2xl sm:text-3xl font-bold mb-2">{category}</h3>
-                    <span className="text-white/90 text-sm group-hover:underline">Explore →</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-end p-4 sm:p-8">
+                    <h3 className="text-white text-xl sm:text-3xl font-bold mb-1">{category}</h3>
+                    <span className="text-white/90 text-xs sm:text-sm group-hover:underline">Explore →</span>
                   </div>
                 </Link>
               );
