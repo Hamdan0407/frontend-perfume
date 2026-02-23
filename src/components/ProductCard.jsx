@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { cn } from '../lib/utils';
 import WishlistButton from './WishlistButton';
+import StarRating from './StarRating';
 import StockBadge from './StockBadge';
 
 export default function ProductCard({ product, onQuickView }) {
