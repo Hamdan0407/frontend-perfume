@@ -89,19 +89,7 @@ export default function ProductCard({ product, onQuickView }) {
           <div className="mt-auto pt-2">
             {product.rating > 0 && (
               <div className="flex items-center gap-1 mb-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "h-3.5 w-3.5",
-                        i < Math.floor(product.rating)
-                          ? "fill-accent text-accent"
-                          : "fill-muted text-muted"
-                      )}
-                    />
-                  ))}
-                </div>
+                <StarRating value={product.rating} readOnly={true} size="sm" />
                 {product.reviewCount > 0 && (
                   <span className="text-xs text-muted-foreground">
                     ({product.reviewCount})

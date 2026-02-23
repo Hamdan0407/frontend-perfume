@@ -333,19 +333,7 @@ export default function ProductDetail() {
               </div>
 
               <div className="flex items-center gap-2 mb-6">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "h-5 w-5",
-                        i < Math.floor(product.rating)
-                          ? "fill-accent text-accent"
-                          : "fill-muted text-muted"
-                      )}
-                    />
-                  ))}
-                </div>
+                <StarRating value={product.rating} readOnly={true} size="md" />
                 <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
               </div>
             </div>
@@ -488,19 +476,7 @@ export default function ProductDetail() {
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Customer Reviews</h2>
             <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "h-5 w-5",
-                      i < Math.round(product.rating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "fill-none text-gray-300"
-                    )}
-                  />
-                ))}
-              </div>
+              <StarRating value={product.rating} readOnly={true} size="md" />
               <span className="text-sm text-muted-foreground">
                 {product.rating.toFixed(1)} ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
               </span>
@@ -565,19 +541,7 @@ export default function ProductDetail() {
                       <div>
                         <div className="flex items-center gap-3 mb-2">
                           <span className="font-medium text-foreground">{review.userName}</span>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={cn(
-                                  "h-4 w-4",
-                                  i < review.rating
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "fill-none text-gray-300"
-                                )}
-                              />
-                            ))}
-                          </div>
+                          <StarRating value={review.rating} readOnly={true} size="sm" />
                         </div>
                         {review.comment && (
                           <p className="text-muted-foreground leading-relaxed">{review.comment}</p>

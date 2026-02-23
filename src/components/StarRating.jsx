@@ -1,5 +1,6 @@
+// StarRating.jsx - Reusable star rating component with half-star support
 import { useState } from 'react';
-import { Star } from 'lucide-react';
+import { Star, StarHalf } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function StarRating({ value = 0, onChange, readOnly = false, size = 'md' }) {
@@ -34,7 +35,9 @@ export default function StarRating({ value = 0, onChange, readOnly = false, size
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((rating) => {
-        const filled = (hoverValue || value) >= rating;
+        const isFull = (hoverValue || value) >= rating;
+        const isHalf = !isFull && (hoverValue || value) >= rating - 0.5;
+
         return (
           <button
             key={rating}
@@ -44,19 +47,25 @@ export default function StarRating({ value = 0, onChange, readOnly = false, size
             onMouseLeave={handleMouseLeave}
             disabled={readOnly}
             className={cn(
-              "transition-transform duration-100",
+              "transition-transform duration-100 outline-none",
               !readOnly && "hover:scale-110 cursor-pointer",
               readOnly && "cursor-default"
             )}
           >
-            <Star
-              className={cn(
-                starSize,
-                filled
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "fill-none text-gray-300"
-              )}
-            />
+            {readOnly && isHalf ? (
+              <StarHalf
+                className={cn(starSize, "fill-yellow-400 text-yellow-400")}
+              />
+            ) : (
+              <Star
+                className={cn(
+                  starSize,
+                  isFull
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "fill-none text-gray-300"
+                )}
+              />
+            )}
           </button>
         );
       })}
