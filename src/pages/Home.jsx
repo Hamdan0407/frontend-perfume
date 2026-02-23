@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import productAPI from '../api/productAPI';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
