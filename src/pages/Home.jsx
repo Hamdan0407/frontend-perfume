@@ -10,6 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
+import { useToast } from '../context/ToastContext';
 
 import '../styles/HomeTheme.css';
 
