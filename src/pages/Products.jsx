@@ -139,6 +139,12 @@ export default function Products() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] overflow-y-auto">
+                <SheetHeader className="text-left mb-4">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Filter className="h-5 w-5" />
+                    Filters
+                  </SheetTitle>
+                </SheetHeader>
                 <FiltersContent
                   category={category}
                   brand={brand}
@@ -297,13 +303,7 @@ function FiltersContent({
   return (
     <>
       <CardHeader className="pb-3 border-b lg:border-none">
-        <SheetHeader className="lg:hidden text-left mb-4">
-          <SheetTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </SheetTitle>
-        </SheetHeader>
-        <CardTitle className="hidden lg:flex items-center gap-2 text-lg">
+        <CardTitle className="flex items-center gap-2 text-lg">
           <Filter className="h-5 w-5" />
           Filters
         </CardTitle>
