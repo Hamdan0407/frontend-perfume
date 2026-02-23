@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import productAPI from '../api/productAPI';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
@@ -11,6 +12,7 @@ import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
 import { useToast } from '../context/ToastContext';
+import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck } from 'lucide-react';
 
 import '../styles/HomeTheme.css';
 
