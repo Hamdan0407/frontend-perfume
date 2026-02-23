@@ -178,6 +178,38 @@ export default function AdminPanel() {
 
   // Categories for dropdown
   const categories = ['perfume', 'attar', 'aroma chemicals'];
+
+  // Product Types state with persistence
+  const [productTypes, setProductTypes] = useState(() => {
+    const saved = localStorage.getItem('productTypes');
+    return saved ? JSON.parse(saved) : ['Eau de Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Parfum', 'Eau Fraiche'];
+  });
+  const [newType, setNewType] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('productTypes', JSON.stringify(productTypes));
+  }, [productTypes]);
+
+  const addProductType = () => {
+    if (newType.trim() && !productTypes.includes(newType.trim())) {
+      setProductTypes([...productTypes, newType.trim()]);
+      setNewType('');
+      toast.success('Type added successfully');
+    }
+  };
+
+  const deleteProductType = (typeToDelete) => {
+    if (productTypes.length <= 1) {
+      toast.error('At least one type must remain');
+      return;
+    }
+    setProductTypes(productTypes.filter(t => t !== typeToDelete));
+    if (productForm.type === typeToDelete) {
+      setProductForm({ ...productForm, type: productTypes.find(t => t !== typeToDelete) });
+    }
+    toast.success('Type removed successfully');
+  };
+
   const orderStatuses = ['PLACED', 'CONFIRMED', 'PACKED', 'HANDOVER', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REFUNDED', 'EXCHANGED'];
 
   // Size options based on category
@@ -2272,18 +2304,46 @@ export default function AdminPanel() {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Type</label>
-                      <select
-                        className="form-input"
-                        value={productForm.type}
-                        onChange={(e) => setProductForm({ ...productForm, type: e.target.value })}
-                      >
-                        <option value="Eau de Parfum">Eau de Parfum</option>
-                        <option value="Eau de Toilette">Eau de Toilette</option>
-                        <option value="Eau de Cologne">Eau de Cologne</option>
-                        <option value="Parfum">Parfum</option>
-                        <option value="Eau Fraiche">Eau Fraiche</option>
-                      </select>
+                      <label className="flex justify-between items-center">
+                        Type
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            placeholder="Add new..."
+                            className="text-xs px-2 py-1 border rounded w-24"
+                            value={newType}
+                            onChange={(e) => setNewType(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addProductType())}
+                          />
+                          <button
+                            type="button"
+                            onClick={addProductType}
+                            className="p-1 bg-primary text-white rounded hover:bg-primary/90"
+                            title="Add Type"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+                      </label>
+                      <div className="flex gap-2 items-center mt-1">
+                        <select
+                          className="form-input flex-1"
+                          value={productForm.type}
+                          onChange={(e) => setProductForm({ ...productForm, type: e.target.value })}
+                        >
+                          {productTypes.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => deleteProductType(productForm.type)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded border border-red-200"
+                          title="Delete current type"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                     <div className="form-group">
                       <label>Status</label>
