@@ -113,7 +113,8 @@ export default function Login() {
 
       console.error('❌ Error message for display:', displayMessage);
 
-      setLoginError('Login error: ' + displayMessage);
+      toast.error(displayMessage);
+      setLoginError(displayMessage);
       setLoading(false);
     }
   };
