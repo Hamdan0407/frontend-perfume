@@ -841,7 +841,12 @@ export default function Checkout() {
                     <span className="font-medium">₹{cart?.tax?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
+                    <div>
+                      <span className="text-muted-foreground">Shipping</span>
+                      <p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight max-w-[200px]">
+                        (Please Note: For orders outside India, in some regions, additional import duties at destination may be applicable)
+                      </p>
+                    </div>
                     <span className="font-medium">₹{cart?.shippingCost?.toFixed(2) || '0.00'}</span>
                   </div>
 
