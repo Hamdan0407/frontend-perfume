@@ -44,6 +44,7 @@ export default function AdminPanel() {
     name: '',
     description: '',
     price: '',
+    mrp: '',
     stock: '',
     category: 'Floral',
     brand: '',
@@ -416,10 +417,12 @@ export default function AdminPanel() {
   const openEditProductModal = (product) => {
     setModalMode('edit');
     setSelectedItem(product);
+    const hasDiscount = product.discountPrice && product.discountPrice < product.price;
     setProductForm({
       name: product.name || '',
       description: product.description || '',
-      price: product.price?.toString() || '',
+      price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
+      mrp: hasDiscount ? product.price.toString() : '',
       stock: product.stock?.toString() || '',
       category: product.category || 'perfume',
       brand: product.brand || '',
@@ -430,20 +433,26 @@ export default function AdminPanel() {
     });
     // Load existing variants or create default one
     if (product.variants && product.variants.length > 0) {
-      setProductVariants(product.variants.map(v => ({
-        id: v.id || Date.now() + Math.random(),
-        size: v.size,
-        price: v.price?.toString() || '',
-        stock: v.stock?.toString() || '',
-        active: v.active !== false
-      })));
+      setProductVariants(product.variants.map(v => {
+        const variantHasDiscount = v.discountPrice && v.discountPrice < v.price;
+        return {
+          id: v.id || Date.now() + Math.random(),
+          size: v.size,
+          price: variantHasDiscount ? v.discountPrice.toString() : (v.price?.toString() || ''),
+          mrp: variantHasDiscount ? v.price.toString() : '',
+          stock: v.stock?.toString() || '',
+          active: v.active !== false
+        };
+      }));
     } else {
       // Create variant from product data if no variants exist
       const sizeNum = parseInt(product.size) || 30;
+      const hasDiscount = product.discountPrice && product.discountPrice < product.price;
       setProductVariants([{
         id: Date.now(),
         size: sizeNum,
-        price: product.price?.toString() || '',
+        price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
+        mrp: hasDiscount ? product.price.toString() : '',
         stock: product.stock?.toString() || '',
         active: true
       }]);
@@ -471,12 +480,20 @@ export default function AdminPanel() {
     }
 
     // Build variants data
-    const variantsData = productVariants.map(v => ({
-      size: parseInt(v.size) || 30,
-      price: parseFloat(v.price) || parseFloat(productForm.price) || 0,
-      stock: parseInt(v.stock) || 0,
-      active: v.active !== false
-    }));
+    const variantsData = productVariants.map(v => {
+      const salePrice = parseFloat(v.price) || parseFloat(productForm.price) || 0;
+      const originalPrice = parseFloat(v.mrp) || parseFloat(productForm.mrp) || 0;
+
+      return {
+        size: parseInt(v.size) || 30,
+        // If originalPrice is provided, it becomes the 'price' (struck out) 
+        // and salePrice becomes 'discountPrice'
+        price: originalPrice > salePrice ? originalPrice : salePrice,
+        discountPrice: originalPrice > salePrice ? salePrice : null,
+        stock: parseInt(v.stock) || 0,
+        active: v.active !== false
+      };
+    });
 
     // Calculate total stock from all variants
     const totalStock = variantsData.reduce((sum, v) => sum + v.stock, 0);
@@ -489,7 +506,8 @@ export default function AdminPanel() {
     const productData = {
       name: productForm.name.trim(),
       description: productForm.description?.trim() || 'Premium perfume',
-      price: mainPrice,
+      price: variantsData[0].price,
+      discountPrice: variantsData[0].discountPrice,
       stock: totalStock,
       category: productForm.category || 'perfume',
       brand: productForm.brand?.trim() || 'Generic',
@@ -530,6 +548,7 @@ export default function AdminPanel() {
       id: Date.now(),
       size: 30,
       price: '',
+      mrp: '',
       stock: '',
       active: true
     };
@@ -1627,7 +1646,14 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-category">{product.category}</span>
                             </div>
-                            <span className="product-price">{formatINR(product.price)}</span>
+                            <div className="product-prices flex flex-col items-end">
+                              <span className="product-price font-bold">{formatINR(product.discountPrice || product.price)}</span>
+                              {product.discountPrice && product.discountPrice < product.price && (
+                                <span className="text-[10px] text-muted-foreground line-through opacity-60">
+                                  {formatINR(product.price)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1694,7 +1720,16 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td><span className="category-badge">{product.category}</span></td>
-                          <td className="price">{formatINR(product.price)}</td>
+                          <td className="price">
+                            <div className="flex flex-col">
+                              <span className="font-bold">{formatINR(product.discountPrice || product.price)}</span>
+                              {product.discountPrice && product.discountPrice < product.price && (
+                                <span className="text-[10px] text-muted-foreground line-through opacity-60">
+                                  {formatINR(product.price)}
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td>
                             <span className={`stock-badge ${product.stock < 10 ? 'low' : 'ok'}`}>
                               {product.stock} units
@@ -2223,7 +2258,7 @@ export default function AdminPanel() {
                               </button>
                             </div>
                           )}
-                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
                             <div>
                               <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size (ml)</label>
                               <input
@@ -2237,7 +2272,7 @@ export default function AdminPanel() {
                               />
                             </div>
                             <div>
-                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Price (₹)</label>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Sale Price (₹)</label>
                               <input
                                 type="number"
                                 step="0.01"
@@ -2246,7 +2281,21 @@ export default function AdminPanel() {
                                 onChange={(e) => updateVariant(variant.id, 'price', e.target.value)}
                                 min="0"
                                 required
-                                style={{ width: '100%' }}
+                                style={{ width: '100%', borderColor: '#10b981' }}
+                                placeholder="Now"
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>MRP (Struck-off)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="form-input"
+                                value={variant.mrp}
+                                onChange={(e) => updateVariant(variant.id, 'mrp', e.target.value)}
+                                min="0"
+                                style={{ width: '100%', borderStyle: 'dashed' }}
+                                placeholder="Was"
                               />
                             </div>
                             <div>
