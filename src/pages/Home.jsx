@@ -219,7 +219,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12 sm:mb-16">
             <div className="text-left">
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Featured Fragrances</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Featured Collection</h2>
               <p className="text-muted-foreground text-lg max-w-2xl">
                 Handpicked selections from our premium collection
               </p>
@@ -305,7 +305,7 @@ export default function Home() {
                 <Truck className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Fast Delivery</h3>
-              <p className="text-muted-foreground">Free shipping on orders over ₹899 • 3-5 business days</p>
+              <p className="text-muted-foreground">Pan-India delivery • 3-5 business days</p>
             </div>
 
             <div className="text-center space-y-4 sm:col-span-2 lg:col-span-1">
@@ -341,7 +341,7 @@ export default function Home() {
               },
               {
                 question: "How long does delivery take?",
-                answer: "Standard delivery takes 3-5 business days across India. Express delivery (1-2 days) is available for selected locations. All orders are carefully packed to ensure the fragrance arrives in perfect condition. Free shipping on orders above ₹899."
+                answer: "Standard delivery takes 3-5 business days across India. Express delivery (1-2 days) is available for selected locations. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
               },
               {
                 question: "Can I return or exchange a product?",
@@ -420,7 +420,7 @@ export default function Home() {
                 {
                   step: "4",
                   title: "Fast Delivery",
-                  desc: "Free shipping on orders above ₹899"
+                  desc: "Pan-India delivery in 3-5 business days"
                 }
               ].map((item, idx) => (
                 <div key={idx} className="bg-slate-800/50 border border-amber-600/30 rounded-lg p-6 hover:bg-slate-800/70 transition-colors">

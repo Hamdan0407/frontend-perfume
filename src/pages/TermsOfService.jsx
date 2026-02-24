@@ -21,7 +21,7 @@ export default function TermsOfService() {
 
                 <section>
                     <h2 className="text-xl font-semibold mb-3">4. Shipping and Delivery</h2>
-                    <p>We offer pan-India delivery. Delivery timelines may vary depending on your location. Free shipping is available on orders above ₹899.</p>
+                    <p>We offer pan-India delivery. Delivery timelines may vary depending on your location.</p>
                 </section>
 
                 <section>

@@ -11,8 +11,8 @@ const faqs = [
                 a: 'Standard delivery takes 5-7 business days, Express delivery 2-3 days, and Same Day delivery is available in select cities.'
             },
             {
-                q: 'Do you offer free shipping?',
-                a: 'Yes! We offer free standard shipping on all orders above ₹999.'
+                q: 'How long does delivery take?',
+                a: 'Standard delivery takes 5-7 business days across India. Express delivery (2-3 days) is available in select cities.'
             },
             {
                 q: 'Can I track my order?',

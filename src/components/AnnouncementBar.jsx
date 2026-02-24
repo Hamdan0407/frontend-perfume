@@ -7,7 +7,7 @@ export default function AnnouncementBar() {
             <div className="animate-marquee whitespace-nowrap flex items-center gap-16 font-medium text-xs sm:text-sm tracking-wide">
                 <span className="flex items-center gap-2">
                     <Gift className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                    Free Shipping on orders above ₹899
+                    100% Authentic Fragrances
                 </span>
                 <span className="flex items-center gap-2">
                     <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
@@ -21,7 +21,7 @@ export default function AnnouncementBar() {
                 {/* Duplicate Content for seamless loop */}
                 <span className="flex items-center gap-2">
                     <Gift className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                    Free Shipping on orders above ₹899
+                    100% Authentic Fragrances
                 </span>
                 <span className="flex items-center gap-2">
                     <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
@@ -35,7 +35,7 @@ export default function AnnouncementBar() {
                 {/* Duplicate Content for seamless loop (Extra buffer for wide screens) */}
                 <span className="flex items-center gap-2">
                     <Gift className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                    Free Shipping on orders above ₹899
+                    100% Authentic Fragrances
                 </span>
                 <span className="flex items-center gap-2">
                     <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
