@@ -7,6 +7,7 @@ import api from '../api/axios';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
+import BulkInquiryModal from './BulkInquiryModal';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [bulkPricingOpen, setBulkPricingOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -137,6 +139,12 @@ export default function Navbar() {
                         </button>
                       </div>
                     )}
+                    <button
+                      onClick={() => { setBulkPricingOpen(true); setMobileMenuOpen(false); }}
+                      className="text-lg font-medium text-left hover:text-accent transition-colors pt-4 border-t"
+                    >
+                      Bulk Pricing
+                    </button>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -271,6 +279,14 @@ export default function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Bulk Pricing Link */}
+            <button
+              onClick={() => setBulkPricingOpen(true)}
+              className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mr-2"
+            >
+              Bulk Pricing
+            </button>
+
             {/* Mobile Search Toggle */}
             <Button
               variant="ghost"
@@ -437,6 +453,7 @@ export default function Navbar() {
           </div>
         )}
       </div>
+      <BulkInquiryModal isOpen={bulkPricingOpen} onOpenChange={setBulkPricingOpen} />
     </nav>
   );
 }
