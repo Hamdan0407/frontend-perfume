@@ -27,6 +27,7 @@ export default function Products() {
 
   const category = searchParams.get('category') || '';
   const brand = searchParams.get('brand') || '';
+  const type = searchParams.get('type') || '';
   const search = searchParams.get('search') || '';
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortDir = searchParams.get('sortDir') || 'DESC';
@@ -35,7 +36,7 @@ export default function Products() {
   useEffect(() => {
     fetchProducts();
     fetchBrands();
-  }, [category, brand, search, page, sortBy, sortDir, minPrice, maxPrice, inStockOnly]);
+  }, [category, brand, type, search, page, sortBy, sortDir, minPrice, maxPrice, inStockOnly]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -58,6 +59,8 @@ export default function Products() {
         url = `/products/category/${category}?${params.toString()}`;
       } else if (brand) {
         url = `/products/brand/${brand}?${params.toString()}`;
+      } else if (type) {
+        url = `/products/type/${type}?${params.toString()}`;
       } else {
         url = `/products?${params.toString()}`;
       }

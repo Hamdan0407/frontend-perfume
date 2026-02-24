@@ -94,12 +94,18 @@ export default function Navbar() {
                       Home
                     </Link>
                     <div className="space-y-2">
-                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Categories</p>
-                      <Link to="/products?category=perfume" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Perfumes
+                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Collections</p>
+                      <Link to="/products?type=Parfum" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
+                        Parfum
                       </Link>
-                      <Link to="/products?category=attar" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Attar
+                      <Link to="/products?category=premium attars" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
+                        Premium Attars
+                      </Link>
+                      <Link to="/products?category=oud reserve" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
+                        Oud Reserve
+                      </Link>
+                      <Link to="/products?category=bakhoor" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
+                        Bakhoor
                       </Link>
                       <Link to="/products?category=aroma chemicals" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
                         Aroma Chemicals
@@ -152,24 +158,36 @@ export default function Navbar() {
               Home
             </Link>
 
-            {/* Fragrance Dropdown */}
+            {/* Collections Dropdown */}
             <div className="relative group">
               <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Fragrance
+                Collections
                 <ChevronDown className="h-4 w-4" />
               </button>
-              <div className="absolute left-0 top-full mt-2 w-40 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <Link
-                  to="/products?category=perfume"
+                  to="/products?type=Parfum"
                   className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg"
                 >
-                  Perfume
+                  Parfum
                 </Link>
                 <Link
-                  to="/products?category=attar"
+                  to="/products?category=premium attars"
+                  className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Premium Attars
+                </Link>
+                <Link
+                  to="/products?category=oud reserve"
+                  className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Oud Reserve
+                </Link>
+                <Link
+                  to="/products?category=bakhoor"
                   className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors last:rounded-b-lg"
                 >
-                  Attar
+                  Bakhoor
                 </Link>
               </div>
             </div>

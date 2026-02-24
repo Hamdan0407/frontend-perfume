@@ -177,7 +177,7 @@ export default function AdminPanel() {
   }, [orders, products, users]);
 
   // Categories for dropdown
-  const categories = ['perfume', 'attar', 'aroma chemicals'];
+  const categories = ['perfume', 'attar', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
 
   // Product Types state with persistence
   const [productTypes, setProductTypes] = useState(() => {
