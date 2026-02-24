@@ -546,41 +546,50 @@ export default function AdminPanel() {
     }
   }, [productForm, productVariants, modalMode, selectedItem, fetchProducts]);
 
-  // Migration: Move products from 'attar' to 'premium attars'
+  // Migration: Move products from 'attar' to 'premium attars' (runs once on mount)
+  const migrationRan = useRef(false);
   useEffect(() => {
-    const attarProducts = products.filter(p => p.category === 'attar');
-    if (attarProducts.length > 0) {
-      const migrateProducts = async () => {
-        const count = attarProducts.length;
-        toast.info(`System: Moving ${count} products from "attar" to "premium attars"...`);
+    if (migrationRan.current) return;
+    migrationRan.current = true;
+
+    const migrateAttarProducts = async () => {
+      try {
+        // Use admin endpoint to get ALL products (including inactive)
+        const { data } = await api.get('admin/products?size=200');
+        const allProducts = data.content || data || [];
+        const attarProducts = allProducts.filter(p => p.category === 'attar');
+
+        if (attarProducts.length === 0) return;
+
+        toast.info(`Migrating ${attarProducts.length} product(s) from "attar" to "premium attars"...`);
 
         let successCount = 0;
         for (const p of attarProducts) {
           try {
-            // Use PATCH for partial update if supported, or PUT if not. 
-            // AdminController.java line 160 has partialUpdateProduct mapping to @PatchMapping
             await api.patch(`admin/products/${p.id}`, { category: 'premium attars' });
             successCount++;
           } catch (err) {
-            console.error(`Failed to migrate product ${p.id}:`, err);
-            // Fallback to PUT if PATCH fails for some reason (though PATCH is preferred)
+            console.error(`PATCH failed for product ${p.id}:`, err);
             try {
               await api.put(`admin/products/${p.id}`, { ...p, category: 'premium attars' });
               successCount++;
             } catch (err2) {
-              console.error(`Fallback PUT also failed for ${p.id}:`, err2);
+              console.error(`PUT also failed for ${p.id}:`, err2);
             }
           }
         }
 
         if (successCount > 0) {
-          toast.success(`Successfully migrated ${successCount} products to Premium Attars.`);
+          toast.success(`Migrated ${successCount} product(s) to Premium Attars!`);
           fetchProducts();
         }
-      };
-      migrateProducts();
-    }
-  }, [products.length]);
+      } catch (err) {
+        console.error('Migration fetch failed:', err);
+      }
+    };
+
+    migrateAttarProducts();
+  }, []);
 
   // Variant management functions
   const addVariant = () => {
