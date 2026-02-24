@@ -215,14 +215,19 @@ export default function AdminPanel() {
 
   // Size options based on category
   const getSizeOptions = (category) => {
-    if (category === 'attar') {
+    if (category === 'attar' || category === 'premium attars' || category === 'oud reserve') {
       return ['6ml', '12ml'];
     } else if (category === 'perfume') {
       return ['30ml', '50ml', '100ml'];
     } else if (category === 'aroma chemicals') {
-      return ['50ml', '100ml', '250ml', '500ml', '1L'];
+      return ['50g', '100g', '250g', '500g', '1kg'];
     }
     return ['30ml', '50ml', '100ml']; // default for perfume
+  };
+
+  // Get the unit label based on category
+  const getUnitLabel = (category) => {
+    return category === 'aroma chemicals' ? 'g' : 'ml';
   };
 
   // Fetch Products
@@ -2309,7 +2314,7 @@ export default function AdminPanel() {
                           )}
                           <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
                             <div>
-                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size (ml)</label>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size ({getUnitLabel(productForm.category)})</label>
                               <input
                                 type="number"
                                 className="form-input"
@@ -2387,7 +2392,7 @@ export default function AdminPanel() {
                           const newCategory = e.target.value;
                           let defaultSize = '30ml'; // perfume default
                           if (['attar', 'premium attars', 'oud reserve'].includes(newCategory)) defaultSize = '6ml';
-                          else if (newCategory === 'aroma chemicals') defaultSize = '50ml';
+                          else if (newCategory === 'aroma chemicals') defaultSize = '50g';
                           setProductForm({ ...productForm, category: newCategory, size: defaultSize });
                         }}
                         required

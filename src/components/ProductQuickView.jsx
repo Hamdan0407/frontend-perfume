@@ -233,7 +233,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                             : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                         )}
                       >
-                        {variant.size}ml 🛒
+                        {variant.size}{product?.category === 'aroma chemicals' ? 'g' : 'ml'} 🛒
                         {variant.stock === 0 && (
                           <span className="absolute -top-1.5 -right-1 bg-red-500 text-white text-[9px] px-1 py-0.5 rounded-full">
                             Out
@@ -250,8 +250,8 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
 
               {product.volume && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Volume</span>
-                  <span className="font-medium">{product.volume}ml</span>
+                  <span className="text-muted-foreground">{product?.category === 'aroma chemicals' ? 'Weight' : 'Volume'}</span>
+                  <span className="font-medium">{product.volume}{product?.category === 'aroma chemicals' ? 'g' : 'ml'}</span>
                 </div>
               )}
               {product.gender && (
