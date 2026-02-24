@@ -323,7 +323,9 @@ function FiltersContent({
           >
             <option value="">All Categories</option>
             <option value="perfume">Perfume</option>
-            <option value="attar">Attar</option>
+            <option value="premium attars">Premium Attars</option>
+            <option value="oud reserve">Oud Reserve</option>
+            <option value="bakhoor">Bakhoor</option>
             <option value="aroma chemicals">Aroma Chemicals</option>
           </select>
         </div>

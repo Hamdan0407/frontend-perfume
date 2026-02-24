@@ -178,7 +178,7 @@ export default function AdminPanel() {
   }, [orders, products, users]);
 
   // Categories for dropdown
-  const categories = ['perfume', 'attar', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
+  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
 
   // Product Types state with persistence
   const [productTypes, setProductTypes] = useState(() => {
@@ -431,6 +431,10 @@ export default function AdminPanel() {
       type: product.type || 'Eau de Parfum',
       active: product.active !== false
     });
+
+    // Handle legacy size selection based on category
+    const currentCategory = product.category || 'perfume';
+    const defaultSize = (currentCategory === 'attar' || currentCategory === 'premium attars' || currentCategory === 'oud reserve') ? '6ml' : '30ml';
     // Load existing variants or create default one
     if (product.variants && product.variants.length > 0) {
       setProductVariants(product.variants.map(v => {
@@ -512,7 +516,7 @@ export default function AdminPanel() {
       category: productForm.category || 'perfume',
       brand: productForm.brand?.trim() || 'Generic',
       imageUrl: imageUrl.startsWith('data:') ? imageUrl : imageUrl.trim(),
-      size: productForm.size || (productForm.category === 'attar' ? '6ml' : '30ml'),
+      size: productForm.size || (['attar', 'premium attars', 'oud reserve'].includes(productForm.category) ? '6ml' : '30ml'),
       type: productForm.type || 'Eau de Parfum',
       active: productForm.active !== false,
       featured: false,
@@ -541,6 +545,42 @@ export default function AdminPanel() {
       setLoading(false);
     }
   }, [productForm, productVariants, modalMode, selectedItem, fetchProducts]);
+
+  // Migration: Move products from 'attar' to 'premium attars'
+  useEffect(() => {
+    const attarProducts = products.filter(p => p.category === 'attar');
+    if (attarProducts.length > 0) {
+      const migrateProducts = async () => {
+        const count = attarProducts.length;
+        toast.info(`System: Moving ${count} products from "attar" to "premium attars"...`);
+
+        let successCount = 0;
+        for (const p of attarProducts) {
+          try {
+            // Use PATCH for partial update if supported, or PUT if not. 
+            // AdminController.java line 160 has partialUpdateProduct mapping to @PatchMapping
+            await api.patch(`admin/products/${p.id}`, { category: 'premium attars' });
+            successCount++;
+          } catch (err) {
+            console.error(`Failed to migrate product ${p.id}:`, err);
+            // Fallback to PUT if PATCH fails for some reason (though PATCH is preferred)
+            try {
+              await api.put(`admin/products/${p.id}`, { ...p, category: 'premium attars' });
+              successCount++;
+            } catch (err2) {
+              console.error(`Fallback PUT also failed for ${p.id}:`, err2);
+            }
+          }
+        }
+
+        if (successCount > 0) {
+          toast.success(`Successfully migrated ${successCount} products to Premium Attars.`);
+          fetchProducts();
+        }
+      };
+      migrateProducts();
+    }
+  }, [products.length]);
 
   // Variant management functions
   const addVariant = () => {
@@ -2337,7 +2377,7 @@ export default function AdminPanel() {
                         onChange={(e) => {
                           const newCategory = e.target.value;
                           let defaultSize = '30ml'; // perfume default
-                          if (newCategory === 'attar') defaultSize = '6ml';
+                          if (['attar', 'premium attars', 'oud reserve'].includes(newCategory)) defaultSize = '6ml';
                           else if (newCategory === 'aroma chemicals') defaultSize = '50ml';
                           setProductForm({ ...productForm, category: newCategory, size: defaultSize });
                         }}
