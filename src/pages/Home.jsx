@@ -116,41 +116,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Collections */}
       <section className="py-16 sm:py-20 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Shop by Category</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Our Collections</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Find the perfect fragrance tailored to your style
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {['Perfume', 'Attar', 'Aroma Chemicals'].map((category, idx) => {
-              const images = {
-                'Perfume': 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500', // Classic Perfume Bottle
-                'Attar': 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500',   // Dark/Premium Bottle for Attar
-                'Aroma Chemicals': 'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?w=500' // Clean/Scientific looking bottle
-              };
-              return (
-                <Link
-                  key={category}
-                  to={`/products?category=${category}`}
-                  className="group relative overflow-hidden rounded-xl aspect-[4/5] sm:aspect-square lg:aspect-[4/5]"
-                >
-                  <img
-                    src={images[category]}
-                    alt={`${category}'s Fragrances`}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
+            {[
+              { name: 'Perfume', path: '/products?category=perfume', subtitle: 'Luxury Scents', accent: '#c9a96e' },
+              { name: 'Premium Attars', path: '/products?category=premium attars', subtitle: 'Pure Essence', accent: '#a78bfa' },
+              { name: 'Oud Reserve', path: '/products?category=oud reserve', subtitle: 'Exotic Woods', accent: '#f59e0b' },
+              { name: 'Bakhoor', path: '/products?category=bakhoor', subtitle: 'Sacred Smoke', accent: '#ef4444' },
+              { name: 'Aroma Chemicals', path: '/products?category=aroma chemicals', subtitle: 'Raw Ingredients', accent: '#38bdf8' },
+            ].map((cat, idx) => (
+              <Link
+                key={cat.name}
+                to={cat.path}
+                className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
+                style={{
+                  animationDelay: `${idx * 100}ms`,
+                }}
+              >
+                {/* Black gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-black to-gray-900 transition-all duration-500" />
+
+                {/* Subtle pattern overlay */}
+                <div className="absolute inset-0 opacity-[0.04]" style={{
+                  backgroundImage: `radial-gradient(circle at 25% 25%, ${cat.accent} 1px, transparent 1px)`,
+                  backgroundSize: '20px 20px'
+                }} />
+
+                {/* Animated glow border on hover */}
+                <div
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    boxShadow: `inset 0 0 30px ${cat.accent}15, 0 0 20px ${cat.accent}10`
+                  }}
+                />
+
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-3/4 transition-all duration-500 ease-out rounded-full"
+                  style={{ backgroundColor: cat.accent }}
+                />
+
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
+                  {/* Decorative top element */}
+                  <div
+                    className="w-8 h-[1px] mb-4 opacity-40 group-hover:w-12 group-hover:opacity-80 transition-all duration-500"
+                    style={{ backgroundColor: cat.accent }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-end p-4 sm:p-8">
-                    <h3 className="text-white text-xl sm:text-3xl font-bold mb-1">{category}</h3>
-                    <span className="text-white/90 text-xs sm:text-sm group-hover:underline">Explore →</span>
-                  </div>
-                </Link>
-              );
-            })}
+
+                  {/* Subtitle */}
+                  <span
+                    className="text-[10px] sm:text-xs tracking-[0.25em] uppercase font-light mb-2 opacity-50 group-hover:opacity-80 transition-opacity duration-300"
+                    style={{ color: cat.accent }}
+                  >
+                    {cat.subtitle}
+                  </span>
+
+                  {/* Category Name */}
+                  <h3
+                    className="text-white text-base sm:text-lg lg:text-xl font-bold tracking-wide group-hover:tracking-wider transition-all duration-500 leading-tight"
+                    style={{
+                      textShadow: `0 0 20px ${cat.accent}30`
+                    }}
+                  >
+                    {cat.name}
+                  </h3>
+
+                  {/* Decorative bottom element */}
+                  <div
+                    className="w-8 h-[1px] mt-4 opacity-40 group-hover:w-12 group-hover:opacity-80 transition-all duration-500"
+                    style={{ backgroundColor: cat.accent }}
+                  />
+
+                  {/* Explore Link */}
+                  <span className="mt-4 text-[10px] sm:text-xs text-white/40 group-hover:text-white/80 tracking-widest uppercase transition-all duration-300 flex items-center gap-1">
+                    Explore
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
+                  </span>
+                </div>
+
+                {/* Bottom accent line */}
+                <div
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-3/4 transition-all duration-500 ease-out rounded-full"
+                  style={{ backgroundColor: cat.accent }}
+                />
+              </Link>
+            ))}
           </div>
         </div>
       </section>
