@@ -99,10 +99,6 @@ export default function Footer() {
 
             <div className="text-center text-sm text-gray-400">
               <p>&copy; 2026 MUWAS. All rights reserved.</p>
-              <p className="mt-2">
-                <Link to="/privacy" className="hover:text-amber-400">Privacy Policy</Link> •
-                <Link to="/terms" className="hover:text-amber-400 mx-2">Terms of Service</Link>
-              </p>
             </div>
           </div>
         </div>
