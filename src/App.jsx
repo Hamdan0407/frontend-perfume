@@ -53,21 +53,6 @@ function App() {
     }
   }, [isAuthenticated, initWishlist]);
 
-  // Wait for session to be restored from localStorage before rendering any routes
-  if (!sessionInitialized) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <img src="/muwas-logo.jfif" alt="MUWAS" className="h-20 w-auto object-contain animate-pulse" />
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm font-medium tracking-wide">Initializing session...</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <ToastProvider>
       <div className="flex flex-col min-h-screen overflow-x-hidden">
