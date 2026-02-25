@@ -9,9 +9,11 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { LoadingSpinner } from '../components/ui/spinner';
+import { useAuthStore } from '../store/authStore';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { updateUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -160,6 +162,8 @@ export default function Profile() {
         country: data.country || '',
         zipCode: data.zipCode || ''
       });
+      // Synchronize with global auth store so Navbar updates immediately
+      updateUser(data);
       toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Profile update error:', error);
@@ -233,8 +237,8 @@ export default function Profile() {
           <button
             onClick={() => setActiveTab('profile')}
             className={`pb-3 px-1 font-medium border-b-2 transition ${activeTab === 'profile'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
           >
             <User className="h-4 w-4 inline mr-2" />
@@ -243,8 +247,8 @@ export default function Profile() {
           <button
             onClick={() => setActiveTab('password')}
             className={`pb-3 px-1 font-medium border-b-2 transition ${activeTab === 'password'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
           >
             <Lock className="h-4 w-4 inline mr-2" />
