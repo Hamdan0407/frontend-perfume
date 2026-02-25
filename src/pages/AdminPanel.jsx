@@ -451,6 +451,7 @@ export default function AdminPanel() {
         return {
           id: v.id || Date.now() + Math.random(),
           size: v.size,
+          unit: v.unit || (product.category === 'aroma chemicals' ? 'g' : 'ml'),
           price: variantHasDiscount ? v.discountPrice.toString() : (v.price?.toString() || ''),
           mrp: variantHasDiscount ? v.price.toString() : '',
           stock: v.stock?.toString() || '',
@@ -464,6 +465,7 @@ export default function AdminPanel() {
       setProductVariants([{
         id: Date.now(),
         size: sizeNum,
+        unit: product.category === 'aroma chemicals' ? 'g' : 'ml',
         price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
         mrp: hasDiscount ? product.price.toString() : '',
         stock: product.stock?.toString() || '',
@@ -492,17 +494,17 @@ export default function AdminPanel() {
       return;
     }
 
-    // Build variants data and check for duplicate sizes
-    const sizes = new Set();
-    const hasDuplicateSizes = productVariants.some(v => {
-      const s = parseInt(v.size);
-      if (sizes.has(s)) return true;
-      sizes.add(s);
+    // Build variants data and check for duplicate size+unit combinations
+    const variantKeys = new Set();
+    const hasDuplicateVariants = productVariants.some(v => {
+      const key = `${v.size}-${v.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml')}`;
+      if (variantKeys.has(key)) return true;
+      variantKeys.add(key);
       return false;
     });
 
-    if (hasDuplicateSizes) {
-      toast.error('Multiple variants cannot have the same size');
+    if (hasDuplicateVariants) {
+      toast.error('Multiple variants cannot have the same size and unit');
       setLoading(false);
       return;
     }
@@ -517,6 +519,7 @@ export default function AdminPanel() {
 
       return {
         size: parseInt(v.size) || 30,
+        unit: v.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml'),
         // If originalPrice is provided, it becomes the 'price' (struck out) 
         // and salePrice becomes 'discountPrice'
         price: originalPrice > salePrice ? originalPrice : salePrice,
@@ -623,6 +626,7 @@ export default function AdminPanel() {
     const newVariant = {
       id: Date.now(),
       size: 30,
+      unit: getUnitLabel(productForm.category),
       price: '',
       mrp: '',
       stock: '',
@@ -2334,9 +2338,9 @@ export default function AdminPanel() {
                               </button>
                             </div>
                           )}
-                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.2fr 1.2fr 1fr', gap: '12px' }}>
                             <div>
-                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size ({getUnitLabel(productForm.category)})</label>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size</label>
                               <input
                                 type="number"
                                 className="form-input"
@@ -2346,6 +2350,20 @@ export default function AdminPanel() {
                                 required
                                 style={{ width: '100%' }}
                               />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Unit</label>
+                              <select
+                                className="form-input"
+                                value={variant.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml')}
+                                onChange={(e) => updateVariant(variant.id, 'unit', e.target.value)}
+                                style={{ width: '100%' }}
+                              >
+                                <option value="ml">ml</option>
+                                <option value="g">g</option>
+                                <option value="kg">kg</option>
+                                <option value="L">L</option>
+                              </select>
                             </div>
                             <div>
                               <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Sale Price (₹)</label>

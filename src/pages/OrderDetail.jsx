@@ -191,6 +191,7 @@ export default function OrderDetail() {
                           {item.product.name}
                         </Link>
                         <p className="text-sm text-muted-foreground mt-1">
+                          {item.variant ? `${item.variant.size}${item.variant.unit || 'ml'} | ` : ''}
                           ₹{item.price.toFixed(2)} × {item.quantity}
                         </p>
                       </div>

@@ -103,10 +103,11 @@ export default function ProductCard({ product, onQuickView }) {
               const displayVolume = product.size || product.volume || (product.variants && product.variants.length > 0 ? product.variants[0].size : null);
               if (!displayVolume) return null;
 
+              const displayUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (product.category === 'aroma chemicals' ? 'g' : 'ml'));
               return (
                 <div className="mb-2">
                   <span className="text-[10px] sm:text-xs font-medium bg-secondary/50 px-1.5 py-0.5 rounded text-muted-foreground uppercase">
-                    {displayVolume}{product.category === 'aroma chemicals' ? 'g' : 'ml'}
+                    {displayVolume}{displayUnit}
                   </span>
                 </div>
               );
