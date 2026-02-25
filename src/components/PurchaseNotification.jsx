@@ -1,28 +1,41 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, ShoppingBag } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/axios';
 
 // Adaptive timing: frequent initially, then slower for engaged users
 const INITIAL_INTERVAL_MIN = 8000;  // 8 seconds
-const INITIAL_INTERVAL_MAX = 10000; // 10 seconds
+const INITIAL_INTERVAL_MAX = 12000; // 12 seconds
 const LATER_INTERVAL = 300000;      // 5 minutes
 const TRANSITION_TIME = 900000;     // 15 minutes
 
-// Indian names for realistic notifications
-const firstNames = [
+// Indian male names
+const maleNames = [
     'Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Arnav', 'Ayaan', 'Krishna', 'Ishaan',
+    'Rajesh', 'Amit', 'Rahul', 'Rohit', 'Suresh', 'Manish', 'Vikram', 'Ravi', 'Karthik', 'Deepak',
+    'Harsh', 'Yash', 'Dev', 'Pranav', 'Nikhil', 'Aman', 'Rohan', 'Sahil', 'Tarun', 'Varun',
+    'Gaurav', 'Akash', 'Sameer', 'Mohit', 'Ashwin', 'Siddharth', 'Ajay', 'Anand', 'Kunal', 'Piyush',
+    'Zaid', 'Irfan', 'Arif', 'Imran', 'Faisal', 'Samir', 'Farhan', 'Danish', 'Hassan', 'Bilal'
+];
+
+// Indian female names
+const femaleNames = [
     'Ananya', 'Diya', 'Pari', 'Aadhya', 'Sara', 'Anvi', 'Aaradhya', 'Navya', 'Saanvi', 'Prisha',
-    'Rajesh', 'Amit', 'Rahul', 'Rohit', 'Priya', 'Pooja', 'Sneha', 'Kavya', 'Neha', 'Ritu'
+    'Priya', 'Pooja', 'Sneha', 'Kavya', 'Neha', 'Ritu', 'Meera', 'Nisha', 'Shreya', 'Divya',
+    'Isha', 'Tanya', 'Aisha', 'Fatima', 'Zara', 'Simran', 'Anjali', 'Swati', 'Kriti', 'Nikita',
+    'Jyoti', 'Tanvi', 'Sakshi', 'Riya', 'Aditi', 'Komal', 'Pallavi', 'Sonal', 'Rashmi', 'Deepika',
+    'Noor', 'Ayesha', 'Sana', 'Hina', 'Rabia', 'Amira', 'Rukhsar', 'Nafisa', 'Shabana', 'Mariam'
 ];
 
 const lastNames = [
     'Kumar', 'Singh', 'Sharma', 'Patel', 'Gupta', 'Reddy', 'Nair', 'Iyer', 'Rao', 'Mehta',
-    'Desai', 'Joshi', 'Shah', 'Agarwal', 'Verma', 'Mishra', 'Pandey', 'Tiwari', 'Yadav', 'Chauhan'
+    'Desai', 'Joshi', 'Shah', 'Agarwal', 'Verma', 'Mishra', 'Pandey', 'Tiwari', 'Yadav', 'Chauhan',
+    'Khan', 'Ali', 'Ansari', 'Siddiqui', 'Hussain', 'Bhat', 'Pillai', 'Menon', 'Mukherjee', 'Das'
 ];
 
 const cities = [
     'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad',
-    'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Patna', 'Vadodara', 'Surat'
+    'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Patna', 'Vadodara', 'Surat',
+    'Coimbatore', 'Kochi', 'Dehradun', 'Bhopal', 'Mangalore', 'Chandigarh', 'Goa', 'Mysore'
 ];
 
 export default function PurchaseNotification() {
@@ -30,14 +43,16 @@ export default function PurchaseNotification() {
     const [sessionStartTime] = useState(Date.now());
     const [products, setProducts] = useState([]);
     const usedIndicesRef = useRef([]);
+    const usedNamesRef = useRef([]);
 
     // Fetch real products from API
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get('products');
-                if (response.data && response.data.length > 0) {
-                    setProducts(response.data);
+                const { data } = await api.get('products?size=100');
+                const productsList = Array.isArray(data) ? data : (data?.content || []);
+                if (productsList.length > 0) {
+                    setProducts(productsList.filter(p => p.active !== false));
                 }
             } catch (error) {
                 console.error('Failed to fetch products for notifications:', error);
@@ -45,6 +60,28 @@ export default function PurchaseNotification() {
         };
         fetchProducts();
     }, []);
+
+    // Generate a unique random name (male or female)
+    const getRandomName = () => {
+        const isMale = Math.random() > 0.5;
+        const namePool = isMale ? maleNames : femaleNames;
+        const firstName = namePool[Math.floor(Math.random() * namePool.length)];
+        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const fullName = `${firstName} ${lastName}`;
+
+        // Avoid repeating names in same session
+        if (usedNamesRef.current.includes(fullName) && usedNamesRef.current.length < (maleNames.length + femaleNames.length)) {
+            return getRandomName();
+        }
+
+        usedNamesRef.current.push(fullName);
+        // Reset once pool is nearly exhausted
+        if (usedNamesRef.current.length > 60) {
+            usedNamesRef.current = [fullName];
+        }
+
+        return fullName;
+    };
 
     useEffect(() => {
         // Don't show notifications if no products exist
@@ -74,8 +111,7 @@ export default function PurchaseNotification() {
             const id = notificationId++;
 
             // Generate random name and city
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const name = getRandomName();
             const city = cities[Math.floor(Math.random() * cities.length)];
 
             // Mark this index as used
@@ -83,11 +119,11 @@ export default function PurchaseNotification() {
 
             setNotifications(prev => [...prev, {
                 id,
-                name: `${firstName} ${lastName}`,
+                name,
                 city,
-                brand: product.brand,
+                brand: product.brand || product.name,
                 product: product.name,
-                image: product.imageUrl || product.images?.[0] || 'https://via.placeholder.com/100'
+                image: product.imageUrl || product.images?.[0] || ''
             }]);
 
             // Auto-remove after 5 seconds
@@ -102,7 +138,7 @@ export default function PurchaseNotification() {
             // Adaptive timing based on session duration
             let delay;
             if (timeOnSite < TRANSITION_TIME) {
-                // First 15 minutes: frequent notifications (8-10 seconds)
+                // First 15 minutes: frequent notifications (8-12 seconds)
                 delay = Math.random() * (INITIAL_INTERVAL_MAX - INITIAL_INTERVAL_MIN) + INITIAL_INTERVAL_MIN;
             } else {
                 // After 15 minutes: slower notifications (5 minutes)
@@ -111,14 +147,14 @@ export default function PurchaseNotification() {
 
             currentInterval = setTimeout(() => {
                 addNotification();
-                scheduleNextNotification(); // Schedule the next one
+                scheduleNextNotification();
             }, delay);
         };
 
         // Show first notification after 3 seconds
         const initialTimeout = setTimeout(() => {
             addNotification();
-            scheduleNextNotification(); // Start the adaptive cycle
+            scheduleNextNotification();
         }, 3000);
 
         return () => {
@@ -141,18 +177,18 @@ export default function PurchaseNotification() {
                     className="animate-slide-in-left"
                     style={{ animationDelay: `${index * 100}ms` }}
                 >
-                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-gray-200 dark:border-slate-700 p-3 sm:p-4 max-w-sm flex items-start gap-2 sm:gap-3 relative">
+                    <div className="bg-white rounded-lg shadow-2xl border border-gray-200 p-3 sm:p-4 max-w-sm flex items-start gap-2 sm:gap-3 relative">
                         {/* Close button */}
                         <button
                             onClick={() => removeNotification(notification.id)}
-                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                             <X className="h-3 w-3 sm:h-4 sm:w-4" />
                         </button>
 
                         {/* Shopping bag icon */}
-                        <div className="flex-shrink-0 bg-green-100 dark:bg-green-900/30 rounded-full p-1.5 sm:p-2">
-                            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
+                        <div className="flex-shrink-0 bg-green-100 rounded-full p-1.5 sm:p-2">
+                            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                         </div>
 
                         {/* Content */}
@@ -164,24 +200,26 @@ export default function PurchaseNotification() {
                                 </span>
                             </p>
                             <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-                                purchased <span className="font-medium text-foreground">{notification.brand}</span>
+                                purchased <span className="font-medium text-foreground">{notification.product}</span>
                             </p>
-                            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                                 Just now
                             </p>
                         </div>
 
                         {/* Product image */}
-                        <div className="flex-shrink-0">
-                            <img
-                                src={notification.image}
-                                alt={notification.product}
-                                className="w-12 h-12 sm:w-16 sm:h-16 rounded-md object-cover border border-gray-200 dark:border-slate-600"
-                                onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/100/cccccc/666666?text=Product';
-                                }}
-                            />
-                        </div>
+                        {notification.image && (
+                            <div className="flex-shrink-0">
+                                <img
+                                    src={notification.image}
+                                    alt={notification.product}
+                                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-md object-cover border border-gray-200"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             ))}

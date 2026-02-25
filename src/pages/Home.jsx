@@ -449,7 +449,7 @@ export default function Home() {
       />
 
       {/* Purchase Notifications - Only on Home Page */}
-      {/* <PurchaseNotification /> */}
+      <PurchaseNotification />
     </div>
   );
 }
