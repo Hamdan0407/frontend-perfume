@@ -99,13 +99,18 @@ export default function ProductCard({ product, onQuickView }) {
               </div>
             )}
 
-            {(product.size || product.volume) && (
-              <div className="mb-2">
-                <span className="text-[10px] sm:text-xs font-medium bg-secondary/50 px-1.5 py-0.5 rounded text-muted-foreground uppercase">
-                  {product.size || product.volume}{product.category === 'aroma chemicals' ? 'g' : 'ml'}
-                </span>
-              </div>
-            )}
+            {(() => {
+              const displayVolume = product.size || product.volume || (product.variants && product.variants.length > 0 ? product.variants[0].size : null);
+              if (!displayVolume) return null;
+
+              return (
+                <div className="mb-2">
+                  <span className="text-[10px] sm:text-xs font-medium bg-secondary/50 px-1.5 py-0.5 rounded text-muted-foreground uppercase">
+                    {displayVolume}{product.category === 'aroma chemicals' ? 'g' : 'ml'}
+                  </span>
+                </div>
+              );
+            })()}
 
             <div className="flex items-baseline justify-between flex-wrap gap-1">
               <div className="flex items-baseline gap-1.5 sm:gap-2">
