@@ -179,6 +179,10 @@ export default function AdminPanel() {
 
   // Categories for dropdown
   const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
+  const getCategoryDisplayName = (cat) => {
+    if (cat === 'perfume') return 'Parfum';
+    return cat.charAt(0).toUpperCase() + cat.slice(1);
+  };
 
   // Product Types state with persistence
   const [productTypes, setProductTypes] = useState(() => {
@@ -1698,7 +1702,7 @@ export default function AdminPanel() {
                             <span className="rank">#{idx + 1}</span>
                             <div className="product-info">
                               <span className="product-name">{product.name}</span>
-                              <span className="product-category">{product.category}</span>
+                              <span className="product-category">{getCategoryDisplayName(product.category)}</span>
                             </div>
                             <div className="product-prices flex flex-col items-end">
                               <span className="product-price font-bold">{formatINR(product.discountPrice || product.price)}</span>
@@ -1773,7 +1777,7 @@ export default function AdminPanel() {
                               </div>
                             </div>
                           </td>
-                          <td><span className="category-badge">{product.category}</span></td>
+                          <td><span className="category-badge">{getCategoryDisplayName(product.category)}</span></td>
                           <td className="price">
                             <div className="flex flex-col">
                               <span className="font-bold">{formatINR(product.discountPrice || product.price)}</span>
@@ -2398,7 +2402,7 @@ export default function AdminPanel() {
                         required
                       >
                         {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                          <option key={cat} value={cat}>{getCategoryDisplayName(cat)}</option>
                         ))}
                       </select>
                     </div>

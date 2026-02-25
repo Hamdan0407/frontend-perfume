@@ -334,7 +334,7 @@ export default function ProductDetail() {
 
               <div className="flex items-center gap-2 mb-6">
                 <StarRating value={product.rating} readOnly={true} size="md" />
-                <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
+                <span className="text-sm text-muted-foreground">({product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount} reviews)</span>
               </div>
             </div>
 
@@ -360,7 +360,7 @@ export default function ProductDetail() {
               <CardContent className="grid grid-cols-2 gap-4 p-6">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Category</p>
-                  <p className="font-medium text-foreground">{product.category}</p>
+                  <p className="font-medium text-foreground">{product.category === 'perfume' ? 'Parfum' : (product.category.charAt(0).toUpperCase() + product.category.slice(1))}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Type</p>
@@ -368,7 +368,7 @@ export default function ProductDetail() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">{product.category === 'aroma chemicals' ? 'Weight' : 'Volume'}</p>
-                  <p className="font-medium text-foreground">{product.volume} {product.category === 'aroma chemicals' ? 'g' : 'ml'}</p>
+                  <p className="font-medium text-foreground">{selectedVariant ? `${selectedVariant.size}${product.category === 'aroma chemicals' ? 'g' : 'ml'}` : (product.volume ? `${product.volume} ${product.category === 'aroma chemicals' ? 'g' : 'ml'}` : 'N/A')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Availability</p>
@@ -478,7 +478,7 @@ export default function ProductDetail() {
             <div className="flex items-center gap-2">
               <StarRating value={product.rating} readOnly={true} size="md" />
               <span className="text-sm text-muted-foreground">
-                {product.rating.toFixed(1)} ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
+                {product.rating.toFixed(1)} ({product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount} reviews)
               </span>
             </div>
           </div>

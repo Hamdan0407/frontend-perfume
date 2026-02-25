@@ -182,7 +182,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {product.rating.toFixed(1)}
-                  {product.reviewCount > 0 && ` (${product.reviewCount} reviews)`}
+                  {product.reviewCount > 0 && ` (${product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount} reviews)`}
                 </span>
               </div>
             )}
@@ -251,7 +251,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
               {product.volume && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{product?.category === 'aroma chemicals' ? 'Weight' : 'Volume'}</span>
-                  <span className="font-medium">{product.volume}{product?.category === 'aroma chemicals' ? 'g' : 'ml'}</span>
+                  <span className="font-medium">{selectedVariant ? `${selectedVariant.size}${product.category === 'aroma chemicals' ? 'g' : 'ml'}` : (product.volume ? `${product.volume}${product.category === 'aroma chemicals' ? 'g' : 'ml'}` : 'N/A')}</span>
                 </div>
               )}
               {product.gender && (

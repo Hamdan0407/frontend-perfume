@@ -127,7 +127,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
             {[
-              { name: 'Perfume', path: '/products?category=perfume', subtitle: 'Luxury Scents', accent: '#c9a96e' },
+              { name: 'Parfum', path: '/products?category=perfume', subtitle: 'Luxury Scents', accent: '#c9a96e' },
               { name: 'Premium Attars', path: '/products?category=premium attars', subtitle: 'Pure Essence', accent: '#a78bfa' },
               { name: 'Oud Reserve', path: '/products?category=oud reserve', subtitle: 'Exotic Woods', accent: '#f59e0b' },
               { name: 'Bakhoor', path: '/products?category=bakhoor', subtitle: 'Sacred Smoke', accent: '#ef4444' },

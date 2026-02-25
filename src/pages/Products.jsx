@@ -322,7 +322,7 @@ function FiltersContent({
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Categories</option>
-            <option value="perfume">Perfume</option>
+            <option value="perfume">Parfum</option>
             <option value="premium attars">Premium Attars</option>
             <option value="oud reserve">Oud Reserve</option>
             <option value="bakhoor">Bakhoor</option>
