@@ -3,8 +3,8 @@ import { X, ShoppingBag } from 'lucide-react';
 import api from '../api/axios';
 
 // Adaptive timing: frequent initially, then slower for engaged users
-const INITIAL_INTERVAL_MIN = 8000;  // 8 seconds
-const INITIAL_INTERVAL_MAX = 12000; // 12 seconds
+const INITIAL_INTERVAL_MIN = 25000;  // 25 seconds
+const INITIAL_INTERVAL_MAX = 45000; // 45 seconds
 const LATER_INTERVAL = 300000;      // 5 minutes
 const TRANSITION_TIME = 900000;     // 15 minutes
 
@@ -151,11 +151,11 @@ export default function PurchaseNotification() {
             }, delay);
         };
 
-        // Show first notification after 3 seconds
+        // Show first notification after 15 seconds
         const initialTimeout = setTimeout(() => {
             addNotification();
             scheduleNextNotification();
-        }, 3000);
+        }, 15000);
 
         return () => {
             clearTimeout(initialTimeout);
