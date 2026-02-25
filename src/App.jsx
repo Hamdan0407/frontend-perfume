@@ -33,7 +33,7 @@ import ScrollToTop from './components/ScrollToTop';
 
 
 function App() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, sessionInitialized } = useAuthStore();
   const { initWishlist } = useWishlistStore();
 
   // Force Light Theme Static Only - Removing Dark Mode Support
@@ -52,6 +52,21 @@ function App() {
       initWishlist();
     }
   }, [isAuthenticated, initWishlist]);
+
+  // Wait for session to be restored from localStorage before rendering any routes
+  if (!sessionInitialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <img src="/muwas-logo.jfif" alt="MUWAS" className="h-20 w-auto object-contain animate-pulse" />
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium tracking-wide">Initializing session...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ToastProvider>

@@ -271,7 +271,9 @@ export const useAuthStore = create(
               }
             } else {
               // Fallback to stored timestamp if parsing fails
-              isValid = state.tokenExpiresAt && (state.tokenExpiresAt - Date.now() > 60 * 1000);
+              const storedExp = Number(state.tokenExpiresAt);
+              isValid = !isNaN(storedExp) && (storedExp - Date.now() > 60 * 1000);
+              expiresAt = storedExp;
             }
           } catch (e) {
             console.error('Error validating persisted token:', e);
@@ -283,7 +285,7 @@ export const useAuthStore = create(
             useAuthStore.setState({
               sessionInitialized: true,
               isAuthenticated: true,
-              tokenExpiresAt: expiresAt
+              tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt
             });
 
             // Sync legacy keys
