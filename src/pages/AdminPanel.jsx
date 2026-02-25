@@ -492,7 +492,21 @@ export default function AdminPanel() {
       return;
     }
 
-    // Build variants data
+    // Build variants data and check for duplicate sizes
+    const sizes = new Set();
+    const hasDuplicateSizes = productVariants.some(v => {
+      const s = parseInt(v.size);
+      if (sizes.has(s)) return true;
+      sizes.add(s);
+      return false;
+    });
+
+    if (hasDuplicateSizes) {
+      toast.error('Multiple variants cannot have the same size');
+      setLoading(false);
+      return;
+    }
+
     const variantsData = productVariants.map(v => {
       // Use variant value if defined and not empty, otherwise fallback to product form default
       const salePriceStr = (v.price !== '' && v.price !== undefined) ? v.price : productForm.price;
