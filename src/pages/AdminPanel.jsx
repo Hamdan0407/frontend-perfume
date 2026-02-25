@@ -494,8 +494,12 @@ export default function AdminPanel() {
 
     // Build variants data
     const variantsData = productVariants.map(v => {
-      const salePrice = parseFloat(v.price) || parseFloat(productForm.price) || 0;
-      const originalPrice = parseFloat(v.mrp) || parseFloat(productForm.mrp) || 0;
+      // Use variant value if defined and not empty, otherwise fallback to product form default
+      const salePriceStr = (v.price !== '' && v.price !== undefined) ? v.price : productForm.price;
+      const mrpPriceStr = (v.mrp !== '' && v.mrp !== undefined) ? v.mrp : productForm.mrp;
+
+      const salePrice = parseFloat(salePriceStr) || 0;
+      const originalPrice = parseFloat(mrpPriceStr) || 0;
 
       return {
         size: parseInt(v.size) || 30,
