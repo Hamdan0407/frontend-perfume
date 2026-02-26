@@ -355,11 +355,12 @@ export default function Checkout() {
       newErrors.shippingZipCode = 'Please enter a valid zip code';
     }
 
-    if (shippingInfo.shippingPhone.trim()) {
-      if (!/^\+?[\d\s-]{10,}$/.test(shippingInfo.shippingPhone.trim())) {
-        newErrors.shippingPhone = 'Please enter a valid phone number';
-      }
+    if (!shippingInfo.shippingPhone.trim()) {
+      newErrors.shippingPhone = 'Phone number is required';
+    } else if (!/^[+]?[0-9]{10,15}$/.test(shippingInfo.shippingPhone.trim().replace(/\s/g, ''))) {
+      newErrors.shippingPhone = 'Please enter a valid phone number';
     }
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -664,7 +665,7 @@ export default function Checkout() {
                       </div>
                     </div>
 
-                    {/* Zip Code and Phone */}
+                    {/* Zip Code & Phone */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="zipcode" className="text-sm font-medium">
@@ -695,18 +696,21 @@ export default function Checkout() {
                         <Label htmlFor="phone" className="text-sm font-medium">
                           Phone Number <span className="text-destructive">*</span>
                         </Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          required
-                          value={shippingInfo.shippingPhone}
-                          onChange={(e) => {
-                            setShippingInfo({ ...shippingInfo, shippingPhone: e.target.value });
-                            if (errors.shippingPhone) setErrors({ ...errors, shippingPhone: '' });
-                          }}
-                          placeholder="+91 98765 43210"
-                          className={errors.shippingPhone ? 'border-destructive' : ''}
-                        />
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="phone"
+                            type="tel"
+                            required
+                            value={shippingInfo.shippingPhone}
+                            onChange={(e) => {
+                              setShippingInfo({ ...shippingInfo, shippingPhone: e.target.value });
+                              if (errors.shippingPhone) setErrors({ ...errors, shippingPhone: '' });
+                            }}
+                            placeholder="e.g., 8247327106"
+                            className={`pl-10 ${errors.shippingPhone ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                          />
+                        </div>
                         {errors.shippingPhone && (
                           <p className="text-xs text-destructive flex items-center gap-1">
                             <AlertCircle className="h-3 w-3" />

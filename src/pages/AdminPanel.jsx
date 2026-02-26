@@ -2667,11 +2667,6 @@ export default function AdminPanel() {
                       <span className="value">
                         {selectedItem.shippingAddress}<br />
                         {selectedItem.shippingCity}, {selectedItem.shippingCountry} - {selectedItem.shippingZipCode}<br />
-                        {selectedItem.shippingPhone && (
-                          <span className="text-muted-foreground text-sm block mt-1">
-                            Phone: {selectedItem.shippingPhone}
-                          </span>
-                        )}
                       </span>
                     </div>
                   )}
@@ -2741,10 +2736,6 @@ export default function AdminPanel() {
                   <div className="detail-row">
                     <span className="label">User ID:</span>
                     <span className="value">#{selectedItem.id}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Phone:</span>
-                    <span className="value">{selectedItem.phoneNumber || 'N/A'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="label">Address:</span>

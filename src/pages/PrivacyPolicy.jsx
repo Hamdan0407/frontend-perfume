@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
             <div className="space-y-6 text-gray-700">
                 <section>
                     <h2 className="text-xl font-semibold mb-3">1. Information We Collect</h2>
-                    <p>We collect personal information that you provide when creating an account, placing orders, or contacting us. This includes your name, email address, phone number, and shipping address.</p>
+                    <p>We collect personal information that you provide when creating an account, placing orders, or contacting us. This includes your name, email address, and shipping address.</p>
                 </section>
 
                 <section>

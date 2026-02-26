@@ -9,7 +9,6 @@ export default function BulkInquiryModal({ isOpen, onOpenChange }) {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phone: '',
         quantity: '',
         message: ''
     });
@@ -27,11 +26,11 @@ export default function BulkInquiryModal({ isOpen, onOpenChange }) {
                 name: formData.name,
                 email: formData.email,
                 subject: `Bulk Pricing Inquiry - ${formData.quantity} units`,
-                message: `Phone: ${formData.phone}\nQuantity: ${formData.quantity}\n\nMessage: ${formData.message}`
+                message: `Quantity: ${formData.quantity}\n\nMessage: ${formData.message}`
             });
             toast.success('Inquiry sent successfully! We will contact you soon.');
             onOpenChange(false);
-            setFormData({ name: '', email: '', phone: '', quantity: '', message: '' });
+            setFormData({ name: '', email: '', quantity: '', message: '' });
             setShowForm(false);
         } catch (error) {
             toast.error('Failed to send inquiry. Please try again.');
@@ -96,18 +95,7 @@ export default function BulkInquiryModal({ isOpen, onOpenChange }) {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Phone</label>
-                                    <input
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                                        placeholder="+91..."
-                                    />
-                                </div>
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Approx. Quantity</label>
                                     <input

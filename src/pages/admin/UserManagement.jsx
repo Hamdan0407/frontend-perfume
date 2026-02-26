@@ -234,7 +234,7 @@ export default function UserManagement() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Phone</p>
-                    <p className="font-medium">{selectedUser.phone || 'Not provided'}</p>
+                    <p className="font-medium">{selectedUser.phoneNumber || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Member Since</p>

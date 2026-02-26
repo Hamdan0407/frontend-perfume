@@ -289,7 +289,9 @@ export default function OrderDetail() {
               </p>
               <p className="text-muted-foreground">{order.shippingCountry}</p>
               {order.shippingPhone && (
-                <p className="text-muted-foreground mt-2">Phone: {order.shippingPhone}</p>
+                <p className="text-muted-foreground mt-2">
+                  <span className="font-medium text-foreground">Phone:</span> {order.shippingPhone}
+                </p>
               )}
             </CardContent>
           </Card>

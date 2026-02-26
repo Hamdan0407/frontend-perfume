@@ -54,20 +54,6 @@ export default function ContactUs() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 mb-12">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Phone className="h-5 w-5" />
-                            Phone
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-lg">+91-9894722186</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Mon-Sat: 9:00 AM - 8:00 PM IST
-                        </p>
-                    </CardContent>
-                </Card>
 
                 <Card>
                     <CardHeader>
@@ -80,6 +66,21 @@ export default function ContactUs() {
                         <p className="text-lg">muwas2021@yahoo.com</p>
                         <p className="text-sm text-muted-foreground mt-1">
                             We'll respond within 24 hours
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Phone className="h-5 w-5" />
+                            Phone
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-lg">+91 8247327106</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Available Mon-Sat, 9AM-8PM
                         </p>
                     </CardContent>
                 </Card>

@@ -84,11 +84,6 @@ export default function Profile() {
       newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
-    if (profileData.phoneNumber.trim()) {
-      if (!/^\+?[\d\s-]{10,}$/.test(profileData.phoneNumber)) {
-        newErrors.phoneNumber = 'Please enter a valid phone number';
-      }
-    }
 
     if (!profileData.address.trim()) {
       newErrors.address = 'Address is required';
@@ -322,29 +317,26 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Phone Number */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="font-medium flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    Phone Number <span className="text-destructive">*</span>
+                  <Label htmlFor="phoneNumber" className="font-medium">
+                    Phone Number
                   </Label>
-                  <Input
-                    id="phone"
-                    value={profileData.phoneNumber}
-                    onChange={(e) => {
-                      setProfileData({ ...profileData, phoneNumber: e.target.value });
-                      if (errors.phoneNumber) setErrors({ ...errors, phoneNumber: '' });
-                    }}
-                    placeholder="+91 98765 43210"
-                    className={errors.phoneNumber ? 'border-destructive' : ''}
-                  />
-                  {errors.phoneNumber && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.phoneNumber}
-                    </p>
-                  )}
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      value={profileData.phoneNumber}
+                      onChange={(e) => {
+                        setProfileData({ ...profileData, phoneNumber: e.target.value });
+                        if (errors.phoneNumber) setErrors({ ...errors, phoneNumber: '' });
+                      }}
+                      placeholder="e.g., 8247327106"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
+
 
                 {/* Address */}
                 <div className="space-y-2">

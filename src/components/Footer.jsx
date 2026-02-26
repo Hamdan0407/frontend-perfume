@@ -29,7 +29,6 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-gray-900">Customer Service</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link to="/contact" className="hover:text-amber-500 transition-colors">Contact Us</Link></li>
               <li><Link to="/shipping" className="hover:text-amber-500 transition-colors">Shipping Info</Link></li>
               <li><Link to="/returns" className="hover:text-amber-500 transition-colors">Exchange Policy</Link></li>
               <li><Link to="/faq" className="hover:text-amber-500 transition-colors">FAQ</Link></li>
@@ -41,12 +40,12 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-gray-900">Contact Us</h4>
             <ul className="space-y-3 text-sm text-gray-500">
               <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-amber-500" />
-                <a href="tel:+919894722186" className="hover:text-amber-500 transition-colors">+91-9894722186</a>
-              </li>
-              <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-amber-500" />
                 <a href="mailto:muwas2021@yahoo.com" className="hover:text-amber-500 transition-colors">muwas2021@yahoo.com</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-amber-500" />
+                <a href="tel:+918247327106" className="hover:text-amber-500 transition-colors">+91 8247327106</a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-amber-500 mt-0.5" />

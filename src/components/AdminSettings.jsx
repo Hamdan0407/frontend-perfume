@@ -6,7 +6,7 @@ export default function AdminSettings() {
   const [settings, setSettings] = useState({
     storeName: 'Perfume Shop',
     email: 'admin@perfumeshop.com',
-    phone: '+1 234-567-8900',
+    phoneNumber: '8247327106',
     address: '123 Fashion Street, NY',
     currency: 'USD',
     taxRate: '10',
@@ -78,8 +78,8 @@ export default function AdminSettings() {
             <label>Phone Number</label>
             <input
               type="tel"
-              name="phone"
-              value={settings.phone}
+              name="phoneNumber"
+              value={settings.phoneNumber}
               onChange={handleChange}
             />
           </div>

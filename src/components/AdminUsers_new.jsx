@@ -59,7 +59,7 @@ export default function AdminUsers() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         fetchUsers();
         toast.success(`User ${action}ed successfully`);
@@ -72,16 +72,16 @@ export default function AdminUsers() {
     }
   };
 
-  const filteredUsers = filter === 'All' 
-    ? users 
-    : filter === 'Active' 
+  const filteredUsers = filter === 'All'
+    ? users
+    : filter === 'Active'
       ? users.filter(u => u.active)
       : filter === 'Blocked'
-      ? users.filter(u => !u.active)
-      : users.filter(u => u.role === filter);
+        ? users.filter(u => !u.active)
+        : users.filter(u => u.role === filter);
 
   if (loading) {
-    return <div className="users-container"><p style={{padding: '20px'}}>Loading users...</p></div>;
+    return <div className="users-container"><p style={{ padding: '20px' }}>Loading users...</p></div>;
   }
 
   return (
@@ -106,7 +106,7 @@ export default function AdminUsers() {
 
       <div className="users-grid">
         {filteredUsers.length === 0 ? (
-          <p style={{padding: '20px', gridColumn: '1/-1'}}>No users found</p>
+          <p style={{ padding: '20px', gridColumn: '1/-1' }}>No users found</p>
         ) : (
           filteredUsers.map(user => (
             <div key={user.id} className={`user-card ${!user.active ? 'blocked' : ''}`}>
@@ -116,21 +116,16 @@ export default function AdminUsers() {
                   {POSITION_LABELS[user.role] || user.role}
                 </span>
               </div>
-              
+
               <div className="user-card-content">
                 <h3>{user.firstName} {user.lastName}</h3>
-                
+
                 <div className="user-detail">
                   <Mail size={14} />
                   <span>{user.email}</span>
                 </div>
-                
-                {user.phoneNumber && (
-                  <div className="user-detail">
-                    <span>📞 {user.phoneNumber}</span>
-                  </div>
-                )}
-                
+
+
                 <div className="user-detail">
                   <Shield size={14} />
                   <span>Status: <strong>{user.active ? '✅ Active' : '❌ Blocked'}</strong></span>
@@ -148,7 +143,7 @@ export default function AdminUsers() {
                 </div>
 
                 <div className="user-card-actions">
-                  <button 
+                  <button
                     className={`btn-action ${user.active ? 'block' : 'unblock'}`}
                     onClick={() => handleBlockUser(user.id, user.active)}
                     title={user.active ? 'Block this user' : 'Unblock this user'}

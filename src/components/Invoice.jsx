@@ -10,8 +10,8 @@ const Invoice = forwardRef(({ order, company }, ref) => {
     address: 'No 3, Modi Ibrahim Street, Ambur',
     city: 'Ambur, Tamil Nadu 635802',
     country: 'India',
-    phone: '+91 9629004158',
     email: 'muwas2021@gmail.com',
+    phone: '+91 8247327106',
     website: 'www.muwas.com',
     gst: 'GSTIN: 33AAAAA0000A1Z5',
     pan: 'PAN: AAAAA0000A',
@@ -92,12 +92,12 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 text-accent" />
-              <span className="font-medium">{defaultCompany.phone}</span>
-            </div>
-            <div className="flex items-center gap-2">
               <Mail className="h-3.5 w-3.5 text-accent" />
               <span className="font-medium">{defaultCompany.email}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Phone className="h-3.5 w-3.5 text-accent" />
+              <span className="font-medium">{defaultCompany.phone}</span>
             </div>
           </div>
           <div className="space-y-1 text-right">
@@ -125,7 +125,9 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           <div className="space-y-2 text-sm">
             <p className="font-bold text-foreground text-lg">{order.user?.firstName} {order.user?.lastName}</p>
             <p className="text-muted-foreground">{order.user?.email}</p>
-            {order.user?.phone && <p className="text-muted-foreground">{order.user.phone}</p>}
+            {order.user?.phoneNumber && (
+              <p className="text-muted-foreground">Ph: {order.user.phoneNumber}</p>
+            )}
           </div>
         </div>
 
@@ -147,8 +149,8 @@ const Invoice = forwardRef(({ order, company }, ref) => {
               {order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.pinCode}
             </p>
             <p className="text-muted-foreground">{order.shippingAddress?.country}</p>
-            {order.shippingAddress?.phone && (
-              <p className="text-muted-foreground">📱 {order.shippingAddress.phone}</p>
+            {order.shippingPhone && (
+              <p className="text-muted-foreground">Ph: {order.shippingPhone}</p>
             )}
           </div>
         </div>
@@ -277,8 +279,8 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           <div className="bg-background rounded-lg p-3 border border-border">
             <span className="text-muted-foreground block mb-1">Payment Status</span>
             <span className={`inline-block font-bold text-sm px-3 py-1 rounded-full ${order.paymentStatus === 'PAID'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
               }`}>
               {order.paymentStatus}
             </span>
@@ -316,11 +318,11 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           </div>
           <p className="text-xs text-muted-foreground">We appreciate your business and look forward to serving you again</p>
           <p className="text-xs text-muted-foreground mt-2">
-            Need help? Contact us at {defaultCompany.email} or call {defaultCompany.phone}
+            Need help? Contact us at {defaultCompany.email}
           </p>
         </div>
       </div>
-    </div>
+    </div >
   );
 });
 
