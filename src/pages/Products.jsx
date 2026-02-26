@@ -121,8 +121,8 @@ export default function Products() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="mb-8 lg:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
-            {category ? `${category}'s Fragrances` : search ? 'Search Results' : 'All Products'}
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 capitalize">
+            {category ? category : search ? 'Search Results' : 'All Products'}
           </h1>
           {search && (
             <p className="text-muted-foreground">
