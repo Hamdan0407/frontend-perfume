@@ -250,7 +250,8 @@ export default function AdminPanel() {
   const fetchProducts = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('products?size=100');
+      // Use admin endpoint to ensure we see all products (active/inactive)
+      const { data } = await api.get('admin/products?size=200');
       setProducts(data.content || data || []);
     } catch (err) {
       console.error('Error loading products:', err);
@@ -573,16 +574,23 @@ export default function AdminPanel() {
       variants: variantsData
     };
 
+    console.log('Submitting Product Data:', productData);
+    console.log('Variants Data:', variantsData);
+
     try {
       if (modalMode === 'add') {
-        await api.post('admin/products', productData);
-        toast.success('Product created successfully!');
+        const response = await api.post('admin/products', productData);
+        console.log('Server Success (Add):', response.data);
+        toast.success(`Success: ${productData.name} created!`);
       } else {
-        await api.put(`admin/products/${selectedItem.id}`, productData);
-        toast.success('Product updated successfully!');
+        const response = await api.put(`admin/products/${selectedItem.id}`, productData);
+        console.log('Server Success (Update):', response.data);
+        toast.success(`Success: ${productData.name} updated!`);
       }
+
+      // Refresh data BEFORE closing to ensure UI is updated
+      await fetchProducts();
       setShowProductModal(false);
-      fetchProducts();
     } catch (err) {
       console.error('Product save error:', err);
       const errorMsg = err.response?.data?.message || 'Failed to save product';
@@ -648,15 +656,23 @@ export default function AdminPanel() {
       stock: '',
       active: true
     };
-    setProductVariants(prev => [...prev, newVariant]);
+    setProductVariants(prev => {
+      const next = [...prev, newVariant];
+      variantsRef.current = next;
+      return next;
+    });
   };
 
   const removeVariant = (variantId) => {
-    if (productVariants.length === 1) {
-      toast.error('Product must have at least one size variant');
-      return;
-    }
-    setProductVariants(prev => prev.filter(v => v.id !== variantId));
+    setProductVariants(prev => {
+      if (prev.length <= 1) {
+        toast.error('Product must have at least one size variant');
+        return prev;
+      }
+      const next = prev.filter(v => v.id !== variantId);
+      variantsRef.current = next;
+      return next;
+    });
   };
 
   const updateVariant = (variantId, field, value) => {
