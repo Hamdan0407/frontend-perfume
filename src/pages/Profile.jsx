@@ -84,10 +84,10 @@ export default function Profile() {
       newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
-    if (!profileData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!/^\+?[\d\s-]{10,}$/.test(profileData.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid phone number';
+    if (profileData.phoneNumber.trim()) {
+      if (!/^\+?[\d\s-]{10,}$/.test(profileData.phoneNumber)) {
+        newErrors.phoneNumber = 'Please enter a valid phone number';
+      }
     }
 
     if (!profileData.address.trim()) {

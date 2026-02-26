@@ -355,10 +355,10 @@ export default function Checkout() {
       newErrors.shippingZipCode = 'Please enter a valid zip code';
     }
 
-    if (!shippingInfo.shippingPhone.trim()) {
-      newErrors.shippingPhone = 'Phone number is required';
-    } else if (!/^\+?[\d\s-]{10,}$/.test(shippingInfo.shippingPhone.trim())) {
-      newErrors.shippingPhone = 'Please enter a valid phone number';
+    if (shippingInfo.shippingPhone.trim()) {
+      if (!/^\+?[\d\s-]{10,}$/.test(shippingInfo.shippingPhone.trim())) {
+        newErrors.shippingPhone = 'Please enter a valid phone number';
+      }
     }
 
     setErrors(newErrors);
