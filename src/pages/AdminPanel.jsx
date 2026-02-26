@@ -537,20 +537,23 @@ export default function AdminPanel() {
 
     // Build product data with proper types
     const imageUrl = productForm.imageUrl || '';
+    const primaryVariant = variantsData[0];
+    const topLevelSize = `${primaryVariant.size}${primaryVariant.unit}`;
+
     const productData = {
       name: productForm.name.trim(),
       description: productForm.description?.trim() || 'Premium perfume',
-      price: variantsData[0].price,
-      discountPrice: variantsData[0].discountPrice,
+      price: primaryVariant.price,
+      discountPrice: primaryVariant.discountPrice,
       stock: totalStock,
       category: productForm.category || 'perfume',
       brand: productForm.brand?.trim() || 'Generic',
       imageUrl: imageUrl.startsWith('data:') ? imageUrl : imageUrl.trim(),
-      size: productForm.size || (['attar', 'premium attars', 'oud reserve'].includes(productForm.category) ? '6ml' : '30ml'),
+      size: topLevelSize,
       type: productForm.type || 'Eau de Parfum',
       active: productForm.active !== false,
       featured: false,
-      volume: parseInt(productForm.size) || 0, // Add volume based on size
+      volume: parseInt(primaryVariant.size) || 0,
       variants: variantsData
     };
 
