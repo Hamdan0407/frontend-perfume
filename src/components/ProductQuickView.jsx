@@ -213,122 +213,12 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
               </div>
             )}
 
-            {/* Details */}
-            <div className="space-y-2">
-              {/* Variant Selector */}
-              {variantsToDisplay.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-foreground mb-3">Select Size</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {variantsToDisplay.map((variant) => (
-                      <button
-                        key={variant.id}
-                        onClick={() => setSelectedVariant(variant)}
-                        disabled={!variant.active || variant.stock === 0}
-                        className={cn(
-                          "relative px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border transition-all text-[11px] sm:text-xs font-bold min-w-[60px] sm:min-w-[70px]",
-                          "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100",
-                          selectedVariant?.id === variant.id
-                            ? "bg-slate-900 text-white border-slate-900 shadow-sm transform scale-105"
-                            : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
-                        )}
-                      >
-                        {variant.size}{product?.category === 'aroma chemicals' ? 'g' : 'ml'} 🛒
-                        {variant.stock === 0 && (
-                          <span className="absolute -top-1.5 -right-1 bg-red-500 text-white text-[9px] px-1 py-0.5 rounded-full">
-                            Out
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                  {selectedVariant && selectedVariant.stock === 0 && (
-                    <p className="text-xs text-red-600 mt-2 font-medium">Selected size is out of stock</p>
-                  )}
-                </div>
-              )}
-
-              {product.volume && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{product?.category === 'aroma chemicals' ? 'Weight' : 'Volume'}</span>
-                  <span className="font-medium">{selectedVariant ? `${selectedVariant.size}${product.category === 'aroma chemicals' ? 'g' : 'ml'}` : (product.volume ? `${product.volume}${product.category === 'aroma chemicals' ? 'g' : 'ml'}` : 'N/A')}</span>
-                </div>
-              )}
-              {product.gender && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Gender</span>
-                  <Badge variant="secondary">{product.gender}</Badge>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Stock Status</span>
-                <div className="flex items-center gap-2">
-                  <Package className={cn(
-                    "h-4 w-4",
-                    currentStock > 10 ? "text-green-600" : currentStock > 0 ? "text-amber-600" : "text-red-600"
-                  )} />
-                  <span className={cn(
-                    "font-medium",
-                    currentStock > 10 ? "text-green-600" : currentStock > 0 ? "text-amber-600" : "text-red-600"
-                  )}>
-                    {currentStock > 10 ? 'In Stock' : currentStock > 0 ? `Only ${currentStock} left` : 'Out of Stock'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quantity Selector */}
-            {currentStock > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Quantity</label>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-lg font-semibold w-12 text-center">
-                    {quantity}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
-                    disabled={quantity >= currentStock}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    ({currentStock} available)
-                  </span>
-                </div>
-              </div>
-            )}
-
             {/* Action Buttons */}
             <div className="space-y-3 pt-4">
               <Button
-                onClick={handleAddToCart}
-                disabled={loading || currentStock === 0}
-                className="w-full h-12"
-                size="lg"
-              >
-                {loading ? (
-                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    {currentStock === 0 ? 'Out of Stock' : 'Add to Cart'}
-                  </>
-                )}
-              </Button>
-              <Button
                 onClick={handleViewDetails}
-                variant="outline"
-                className="w-full"
+                variant="default"
+                className="w-full h-12"
                 size="lg"
               >
                 View Full Details
