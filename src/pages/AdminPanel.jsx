@@ -418,6 +418,7 @@ export default function AdminPanel() {
       type: 'Eau de Parfum',
       active: true
     });
+    setProductVariants([]);
     setImagePreview(null);
     setUploadMethod('url');
     setShowProductModal(true);
@@ -635,7 +636,7 @@ export default function AdminPanel() {
       stock: '',
       active: true
     };
-    setProductVariants([...productVariants, newVariant]);
+    setProductVariants(prev => [...prev, newVariant]);
   };
 
   const removeVariant = (variantId) => {
@@ -643,11 +644,11 @@ export default function AdminPanel() {
       toast.error('Product must have at least one size variant');
       return;
     }
-    setProductVariants(productVariants.filter(v => v.id !== variantId));
+    setProductVariants(prev => prev.filter(v => v.id !== variantId));
   };
 
   const updateVariant = (variantId, field, value) => {
-    setProductVariants(productVariants.map(v =>
+    setProductVariants(prev => prev.map(v =>
       v.id === variantId ? { ...v, [field]: value } : v
     ));
   };
@@ -2365,10 +2366,11 @@ export default function AdminPanel() {
                               <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Unit</label>
                               <select
                                 className="form-input"
-                                value={variant.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml')}
+                                value={variant.unit || ''}
                                 onChange={(e) => updateVariant(variant.id, 'unit', e.target.value)}
                                 style={{ width: '100%', paddingLeft: '4px', paddingRight: '4px', minWidth: '75px' }}
                               >
+                                <option value="" disabled>Select Unit</option>
                                 <option value="ml">ml</option>
                                 <option value="g">g</option>
                                 <option value="gms">gms</option>
