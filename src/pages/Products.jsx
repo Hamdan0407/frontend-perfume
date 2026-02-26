@@ -40,6 +40,7 @@ export default function Products() {
 
   const fetchProducts = async () => {
     setLoading(true);
+    setProducts([]); // Clear existing products
     try {
       let url = `/products?page=${page}&size=12&sortBy=${sortBy}&sortDir=${sortDir}`;
 
@@ -65,6 +66,7 @@ export default function Products() {
         url = `/products?${params.toString()}`;
       }
 
+      console.log(`[Products] Requesting: ${url}`);
       const { data } = await api.get(url);
 
       // Standardize response content - handle both paginated content and direct list

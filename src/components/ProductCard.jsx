@@ -15,9 +15,10 @@ export default function ProductCard({ product, onQuickView }) {
     ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
     : 0;
 
+  console.log(`[ProductCard] Rendering product: ${product.id} - ${product.name}`);
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 group h-full flex flex-col shadow-sm">
-      <Link to={`/products/${product.id}`} className="block flex-1 flex flex-col">
+      <Link to={`/products/${product.id}`} className="block flex-1 flex flex-col" onClick={() => console.log(`[ProductCard] Clicking product ID: ${product.id}`)}>
         <div className="relative aspect-[3/4] overflow-hidden bg-muted sm:aspect-[3/4]">
           <img
             src={product.imageUrl || 'https://placehold.co/600x400?text=Perfume'}

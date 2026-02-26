@@ -58,8 +58,10 @@ export default function ProductDetail() {
   };
 
   const fetchProduct = async () => {
+    console.log(`[ProductDetail] Fetching details for ID: ${id}`);
     try {
       const { data } = await api.get(`products/${id}`);
+      console.log(`[ProductDetail] Data received:`, data);
       setProduct(data);
       setSelectedImage(data.imageUrl);
       // Fetch related products to merge variants (for products with same name/brand but different volumes)
@@ -70,7 +72,8 @@ export default function ProductDetail() {
         let allVariants = [];
 
         relatedProducts.forEach(p => {
-          if (p.name.toLowerCase() === data.name.toLowerCase() && p.brand.toLowerCase() === data.brand.toLowerCase()) {
+          if (p.name && data.name && p.name.toLowerCase() === data.name.toLowerCase() &&
+            ((!p.brand && !data.brand) || (p.brand && data.brand && p.brand.toLowerCase() === data.brand.toLowerCase()))) {
             // Add existing variants
             if (p.variants && p.variants.length > 0) {
               p.variants.forEach(v => {
@@ -249,13 +252,13 @@ export default function ProductDetail() {
 
   // Use variant pricing if selected, otherwise use product pricing
   const displayPrice = selectedVariant
-    ? (selectedVariant.discountPrice || selectedVariant.price)
-    : (product.discountPrice || product.price);
-  const originalPrice = selectedVariant ? selectedVariant.price : product.price;
+    ? (selectedVariant.discountPrice || selectedVariant.price || 0)
+    : (product.discountPrice || product.price || 0);
+  const originalPrice = selectedVariant ? (selectedVariant.price || 0) : (product.price || 0);
   const hasDiscount = selectedVariant
     ? (selectedVariant.discountPrice && selectedVariant.discountPrice < selectedVariant.price)
     : (product.discountPrice && product.discountPrice < product.price);
-  const currentStock = selectedVariant ? selectedVariant.stock : product.stock;
+  const currentStock = selectedVariant ? (selectedVariant.stock || 0) : (product.stock || 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -345,7 +348,7 @@ export default function ProductDetail() {
                 </span>
               )}
               <span className="text-3xl sm:text-4xl font-bold text-foreground">
-                ₹{displayPrice.toFixed(0)}
+                ₹{(displayPrice || 0).toFixed(0)}
               </span>
               {hasDiscount && (
                 <Badge variant="destructive">
