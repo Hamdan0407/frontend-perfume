@@ -370,7 +370,7 @@ export default function ProductDetail() {
                   <p className="text-sm text-muted-foreground mb-1">{['aroma chemicals', 'bakhoor'].includes(product.category) ? 'Weight' : 'Volume'}</p>
                   <p className="font-medium text-foreground">
                     {selectedVariant
-                      ? `${selectedVariant.size}${selectedVariant.unit || 'ml'}`
+                      ? `${selectedVariant.size}${selectedVariant.unit || (product?.category === 'aroma chemicals' ? 'g' : 'ml')}`
                       : (product.volume
                         ? `${product.volume}${product.unit || (product.category === 'aroma chemicals' ? 'g' : 'ml')}`
                         : 'N/A')}
@@ -414,7 +414,7 @@ export default function ProductDetail() {
                           : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                       )}
                     >
-                      {variant.size}{variant.unit || 'ml'}
+                      {variant.size}{variant.unit || (product?.category === 'aroma chemicals' ? 'g' : 'ml')}
                       {variant.stock === 0 && (
                         <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
                           Out
