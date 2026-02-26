@@ -660,9 +660,11 @@ export default function AdminPanel() {
   };
 
   const updateVariant = (variantId, field, value) => {
-    setProductVariants(prev => prev.map(v =>
-      v.id === variantId ? { ...v, [field]: value } : v
-    ));
+    setProductVariants(prev => {
+      const next = prev.map(v => v.id === variantId ? { ...v, [field]: value } : v);
+      variantsRef.current = next;
+      return next;
+    });
   };
 
   const confirmDeleteProduct = (product) => {
@@ -2304,7 +2306,11 @@ export default function AdminPanel() {
                         type="text"
                         className="form-input"
                         value={productForm.name}
-                        onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setProductForm(prev => ({ ...prev, name: val }));
+                          formRef.current = { ...formRef.current, name: val };
+                        }}
                         required
                       />
                     </div>
@@ -2314,7 +2320,11 @@ export default function AdminPanel() {
                         type="text"
                         className="form-input"
                         value={productForm.brand}
-                        onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setProductForm(prev => ({ ...prev, brand: val }));
+                          formRef.current = { ...formRef.current, brand: val };
+                        }}
                       />
                     </div>
                   </div>
@@ -2327,7 +2337,11 @@ export default function AdminPanel() {
                       className="form-input"
                       rows={3}
                       value={productForm.description}
-                      onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setProductForm(prev => ({ ...prev, description: val }));
+                        formRef.current = { ...formRef.current, description: val };
+                      }}
                     />
                   </div>
 
@@ -2455,10 +2469,15 @@ export default function AdminPanel() {
                         value={productForm.category}
                         onChange={(e) => {
                           const newCategory = e.target.value;
-                          let defaultSize = '30ml'; // perfume default
+                          let defaultSize = '30ml';
                           if (['attar', 'premium attars', 'oud reserve'].includes(newCategory)) defaultSize = '6ml';
                           else if (newCategory === 'aroma chemicals') defaultSize = '50g';
-                          setProductForm({ ...productForm, category: newCategory, size: defaultSize });
+
+                          setProductForm(prev => {
+                            const next = { ...prev, category: newCategory, size: defaultSize };
+                            formRef.current = next;
+                            return next;
+                          });
                         }}
                         required
                       >
@@ -2497,7 +2516,11 @@ export default function AdminPanel() {
                         <select
                           className="form-input flex-1"
                           value={productForm.type}
-                          onChange={(e) => setProductForm({ ...productForm, type: e.target.value })}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProductForm(prev => ({ ...prev, type: val }));
+                            formRef.current = { ...formRef.current, type: val };
+                          }}
                         >
                           {productTypes.map(type => (
                             <option key={type} value={type}>{type}</option>
