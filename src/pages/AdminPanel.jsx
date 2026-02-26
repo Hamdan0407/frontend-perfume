@@ -2345,7 +2345,7 @@ export default function AdminPanel() {
                               </button>
                             </div>
                           )}
-                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.2fr 1.2fr 1fr', gap: '12px' }}>
+                          <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.4fr 1.2fr 1.2fr 0.8fr', gap: '8px' }}>
                             <div>
                               <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>Size</label>
                               <input
@@ -2355,7 +2355,7 @@ export default function AdminPanel() {
                                 onChange={(e) => updateVariant(variant.id, 'size', parseInt(e.target.value) || 0)}
                                 min="1"
                                 required
-                                style={{ width: '100%' }}
+                                style={{ width: '100%', paddingLeft: '8px', paddingRight: '8px' }}
                               />
                             </div>
                             <div>
@@ -2364,12 +2364,13 @@ export default function AdminPanel() {
                                 className="form-input"
                                 value={variant.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml')}
                                 onChange={(e) => updateVariant(variant.id, 'unit', e.target.value)}
-                                style={{ width: '100%' }}
+                                style={{ width: '100%', paddingLeft: '4px', paddingRight: '4px', minWidth: '75px' }}
                               >
                                 <option value="ml">ml</option>
                                 <option value="g">g</option>
+                                <option value="gms">gms</option>
                                 <option value="kg">kg</option>
-                                <option value="L">L</option>
+                                <option value="ltr">ltr</option>
                               </select>
                             </div>
                             <div>
