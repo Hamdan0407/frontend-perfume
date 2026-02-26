@@ -689,15 +689,39 @@ export default function AdminPanel() {
   };
 
   const handleDeleteProduct = async () => {
+    if (!selectedItem || !selectedItem.id) {
+      toast.error('No product selected for deletion');
+      return;
+    }
+
     setLoading(true);
+    console.log(`[Admin] Initiating permanent deletion for Product ID: ${selectedItem.id} (${selectedItem.name})`);
+
     try {
-      await api.delete(`admin/products/${selectedItem.id}`);
-      toast.success('Product deleted successfully!');
+      // Try permanent deletion first
+      const response = await api.delete(`admin/products/${selectedItem.id}/permanent`);
+      console.log('[Admin] Delete Server Response:', response.data);
+
+      toast.success(`Product "${selectedItem.name}" has been permanently deleted.`);
+
+      // Crucial: Await the refresh before closing to ensure UI is consistent
       setShowDeleteConfirm(false);
-      fetchProducts();
+      await fetchProducts();
     } catch (err) {
-      console.error('Delete error:', err);
-      toast.error('Failed to delete product');
+      console.error('[Admin] Delete API Error:', err);
+
+      // Fallback: If permanent delete fails (e.g. linked to orders), try soft delete
+      try {
+        console.log('[Admin] Falling back to soft delete for ID:', selectedItem.id);
+        await api.delete(`admin/products/${selectedItem.id}`);
+        toast.info(`Product "${selectedItem.name}" deactivated (could not delete permanently due to order history).`);
+        setShowDeleteConfirm(false);
+        await fetchProducts();
+      } catch (softErr) {
+        console.error('[Admin] Soft Delete Fallback Error:', softErr);
+        const errorMsg = softErr.response?.data?.message || 'Failed to delete product. Please check if it is linked to active orders.';
+        toast.error(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -1186,9 +1210,12 @@ export default function AdminPanel() {
 
   // Memoized filtered data
   const filteredProducts = React.useMemo(() => {
-    if (!searchQuery) return products;
+    // Show only active products in the admin panel by default
+    const activeProducts = products.filter(p => p.active !== false);
+
+    if (!searchQuery) return activeProducts;
     const query = searchQuery.toLowerCase();
-    return products.filter(p =>
+    return activeProducts.filter(p =>
       p.name?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query) ||
       p.brand?.toLowerCase().includes(query)
