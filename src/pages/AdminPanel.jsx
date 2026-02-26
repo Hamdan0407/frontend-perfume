@@ -57,6 +57,18 @@ export default function AdminPanel() {
   // Variants management
   const [productVariants, setProductVariants] = useState([]);
 
+  // Use refs to avoid stale closures in the submit handler
+  const variantsRef = useRef([]);
+  const formRef = useRef({});
+
+  useEffect(() => {
+    variantsRef.current = productVariants;
+  }, [productVariants]);
+
+  useEffect(() => {
+    formRef.current = productForm;
+  }, [productForm]);
+
   // Coupon form
   const [couponForm, setCouponForm] = useState({
     code: '',
@@ -421,6 +433,7 @@ export default function AdminPanel() {
     setProductVariants([]);
     setImagePreview(null);
     setUploadMethod('url');
+    variantsRef.current = [];
     setShowProductModal(true);
   };
 
@@ -428,7 +441,7 @@ export default function AdminPanel() {
     setModalMode('edit');
     setSelectedItem(product);
     const hasDiscount = product.discountPrice && product.discountPrice < product.price;
-    setProductForm({
+    const initialForm = {
       name: product.name || '',
       description: product.description || '',
       price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
@@ -440,14 +453,18 @@ export default function AdminPanel() {
       size: product.size || (product.category === 'attar' ? '6ml' : '30ml'),
       type: product.type || 'Eau de Parfum',
       active: product.active !== false
-    });
+    };
+    setProductForm(initialForm);
+    formRef.current = initialForm;
 
     // Handle legacy size selection based on category
     const currentCategory = product.category || 'perfume';
     const defaultSize = (currentCategory === 'attar' || currentCategory === 'premium attars' || currentCategory === 'oud reserve') ? '6ml' : '30ml';
+
+    let initialVariants = [];
     // Load existing variants or create default one
     if (product.variants && product.variants.length > 0) {
-      setProductVariants(product.variants.map(v => {
+      initialVariants = product.variants.map(v => {
         const variantHasDiscount = v.discountPrice && v.discountPrice < v.price;
         return {
           id: v.id || Date.now() + Math.random(),
@@ -458,12 +475,12 @@ export default function AdminPanel() {
           stock: v.stock?.toString() || '',
           active: v.active !== false
         };
-      }));
+      });
     } else {
       // Create variant from product data if no variants exist
       const sizeNum = parseInt(product.size) || 30;
       const hasDiscount = product.discountPrice && product.discountPrice < product.price;
-      setProductVariants([{
+      initialVariants = [{
         id: Date.now(),
         size: sizeNum,
         unit: product.category === 'aroma chemicals' ? 'g' : 'ml',
@@ -471,8 +488,11 @@ export default function AdminPanel() {
         mrp: hasDiscount ? product.price.toString() : '',
         stock: product.stock?.toString() || '',
         active: true
-      }]);
+      }];
     }
+    setProductVariants(initialVariants);
+    variantsRef.current = initialVariants;
+
     // Set image preview if product has an image
     if (product.imageUrl) {
       setImagePreview(product.imageUrl);
@@ -484,12 +504,16 @@ export default function AdminPanel() {
     setShowProductModal(true);
   };
 
-  const handleProductSubmit = React.useCallback(async (e) => {
+  const handleProductSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
+    // Use refs instead of state to get latest values during click
+    const currentVariants = variantsRef.current;
+    const currentForm = formRef.current;
+
     // Validate variants
-    if (!productVariants || productVariants.length === 0) {
+    if (!currentVariants || currentVariants.length === 0) {
       toast.error('Please add at least one size variant');
       setLoading(false);
       return;
@@ -497,8 +521,8 @@ export default function AdminPanel() {
 
     // Build variants data and check for duplicate size+unit combinations
     const variantKeys = new Set();
-    const hasDuplicateVariants = productVariants.some(v => {
-      const key = `${v.size}-${v.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml')}`;
+    const hasDuplicateVariants = currentVariants.some(v => {
+      const key = `${v.size}-${v.unit || (currentForm.category === 'aroma chemicals' ? 'g' : 'ml')}`;
       if (variantKeys.has(key)) return true;
       variantKeys.add(key);
       return false;
@@ -510,19 +534,17 @@ export default function AdminPanel() {
       return;
     }
 
-    const variantsData = productVariants.map(v => {
+    const variantsData = currentVariants.map(v => {
       // Use variant value if defined and not empty, otherwise fallback to product form default
-      const salePriceStr = (v.price !== '' && v.price !== undefined) ? v.price : productForm.price;
-      const mrpPriceStr = (v.mrp !== '' && v.mrp !== undefined) ? v.mrp : productForm.mrp;
+      const salePriceStr = (v.price !== '' && v.price !== undefined) ? v.price : currentForm.price;
+      const mrpPriceStr = (v.mrp !== '' && v.mrp !== undefined) ? v.mrp : currentForm.mrp;
 
       const salePrice = parseFloat(salePriceStr) || 0;
       const originalPrice = parseFloat(mrpPriceStr) || 0;
 
       return {
         size: parseInt(v.size) || 30,
-        unit: v.unit || (productForm.category === 'aroma chemicals' ? 'g' : 'ml'),
-        // If originalPrice is provided, it becomes the 'price' (struck out) 
-        // and salePrice becomes 'discountPrice'
+        unit: v.unit || (currentForm.category === 'aroma chemicals' ? 'g' : 'ml'),
         price: originalPrice > salePrice ? originalPrice : salePrice,
         discountPrice: originalPrice > salePrice ? salePrice : null,
         stock: parseInt(v.stock) || 0,
@@ -530,29 +552,22 @@ export default function AdminPanel() {
       };
     });
 
-    // Calculate total stock from all variants
     const totalStock = variantsData.reduce((sum, v) => sum + v.stock, 0);
-
-    // Use first variant price as main product price
-    const mainPrice = variantsData[0].price;
-
-    // Build product data with proper types
-    const imageUrl = productForm.imageUrl || '';
     const primaryVariant = variantsData[0];
     const topLevelSize = `${primaryVariant.size}${primaryVariant.unit}`;
 
     const productData = {
-      name: productForm.name.trim(),
-      description: productForm.description?.trim() || 'Premium perfume',
+      name: currentForm.name?.trim(),
+      description: currentForm.description?.trim() || 'Premium perfume',
       price: primaryVariant.price,
       discountPrice: primaryVariant.discountPrice,
       stock: totalStock,
-      category: productForm.category || 'perfume',
-      brand: productForm.brand?.trim() || 'Generic',
-      imageUrl: imageUrl.startsWith('data:') ? imageUrl : imageUrl.trim(),
+      category: currentForm.category || 'perfume',
+      brand: currentForm.brand?.trim() || 'Generic',
+      imageUrl: currentForm.imageUrl?.startsWith('data:') ? currentForm.imageUrl : currentForm.imageUrl?.trim(),
       size: topLevelSize,
-      type: productForm.type || 'Eau de Parfum',
-      active: productForm.active !== false,
+      type: currentForm.type || 'Eau de Parfum',
+      active: currentForm.active !== false,
       featured: false,
       volume: parseInt(primaryVariant.size) || 0,
       variants: variantsData
@@ -570,15 +585,12 @@ export default function AdminPanel() {
       fetchProducts();
     } catch (err) {
       console.error('Product save error:', err);
-      const errorMsg = err.response?.data?.message
-        || err.response?.data?.error
-        || (typeof err.response?.data === 'string' ? err.response?.data : null)
-        || 'Failed to save product';
+      const errorMsg = err.response?.data?.message || 'Failed to save product';
       toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, [productForm, productVariants, modalMode, selectedItem, fetchProducts]);
+  };
 
   // Migration: Move products from 'attar' to 'premium attars' (runs once on mount)
   const migrationRan = useRef(false);
