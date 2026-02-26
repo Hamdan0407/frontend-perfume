@@ -544,6 +544,9 @@ export default function AdminPanel() {
       const originalPrice = parseFloat(mrpPriceStr) || 0;
 
       return {
+        // Only send ID if it seems to be a real database ID (small number)
+        // Temporary IDs from Date.now() are > 10^10
+        id: (v.id && v.id < 1000000000) ? v.id : null,
         size: parseInt(v.size) || 30,
         unit: v.unit || (currentForm.category === 'aroma chemicals' ? 'g' : 'ml'),
         price: originalPrice > salePrice ? originalPrice : salePrice,
@@ -574,18 +577,18 @@ export default function AdminPanel() {
       variants: variantsData
     };
 
-    console.log('Submitting Product Data:', productData);
-    console.log('Variants Data:', variantsData);
+    console.log('[ADMIN] Submitting Product:', productData);
 
     try {
       if (modalMode === 'add') {
         const response = await api.post('admin/products', productData);
-        console.log('Server Success (Add):', response.data);
-        toast.success(`Success: ${productData.name} created!`);
+        console.log('[ADMIN] Add Success:', response.data);
+        toast.success(`Product ${productData.name} created!`);
       } else {
+        console.log(`[ADMIN] Updating Product ID: ${selectedItem.id}`);
         const response = await api.put(`admin/products/${selectedItem.id}`, productData);
-        console.log('Server Success (Update):', response.data);
-        toast.success(`Success: ${productData.name} updated!`);
+        console.log('[ADMIN] Update Success:', response.data);
+        toast.success(`Product ${productData.name} updated!`);
       }
 
       // Refresh data BEFORE closing to ensure UI is updated
