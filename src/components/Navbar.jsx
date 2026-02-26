@@ -243,7 +243,7 @@ export default function Navbar() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{product.name} {product.size ? `(${product.size}${product.unit || (product.category === 'aroma chemicals' ? 'g' : 'ml')})` : ''}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-xs text-muted-foreground">₹{Math.round(product.price)}</span>
                             {product.stock > 0 ? (
@@ -418,7 +418,7 @@ export default function Navbar() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{product.name} {product.size ? `(${product.size}${product.unit || (product.category === 'aroma chemicals' ? 'g' : 'ml')})` : ''}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-muted-foreground">₹{Math.round(product.price)}</span>
                             {product.stock > 0 ? (

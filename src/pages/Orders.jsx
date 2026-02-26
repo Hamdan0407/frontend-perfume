@@ -170,7 +170,9 @@ export default function Orders() {
                             className="w-10 h-10 object-cover rounded"
                           />
                           <div className="text-xs">
-                            <p className="font-medium truncate max-w-[100px]">{item.product.name}</p>
+                            <p className="font-medium truncate max-w-[150px]">
+                              {item.product.name} {item.variant ? `(${item.variant.size}${item.variant.unit || 'ml'})` : ''}
+                            </p>
                             <p className="text-muted-foreground">Qty: {item.quantity}</p>
                           </div>
                         </div>

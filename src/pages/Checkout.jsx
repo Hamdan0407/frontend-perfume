@@ -818,7 +818,7 @@ export default function Checkout() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
-                          {item.product?.name}
+                          {item.product?.name} {item.variantSize ? `(${item.variantSize})` : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Qty: {item.quantity}

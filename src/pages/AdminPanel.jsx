@@ -1794,7 +1794,14 @@ export default function AdminPanel() {
                                 )}
                               </div>
                               <div className="product-details">
-                                <span className="product-name">{product.name}</span>
+                                <span className="product-name">
+                                  {product.name}
+                                  {product.variants && product.variants.length > 0 && (
+                                    <span style={{ fontSize: '10px', color: '#666', marginLeft: '5px', fontWeight: 'normal' }}>
+                                      ({product.variants[0].size}{product.variants[0].unit || 'ml'}{product.variants.length > 1 ? '+' : ''})
+                                    </span>
+                                  )}
+                                </span>
                                 <span className="product-id">{product.brand || `ID: ${product.id}`}</span>
                               </div>
                             </div>
