@@ -1778,9 +1778,9 @@ export default function AdminPanel() {
                     <button className="btn-link" onClick={() => setActiveTab('products')}>View All</button>
                   </div>
                   <div className="card-body">
-                    {products.slice(0, 5).length > 0 ? (
+                    {analytics.activeProducts.slice(0, 5).length > 0 ? (
                       <div className="top-products-list">
-                        {products.slice(0, 5).map((product, idx) => (
+                        {analytics.activeProducts.slice(0, 5).map((product, idx) => (
                           <div key={product.id} className="top-product-item" onClick={() => openEditProductModal(product)}>
                             <span className="rank">#{idx + 1}</span>
                             <div className="product-info">
