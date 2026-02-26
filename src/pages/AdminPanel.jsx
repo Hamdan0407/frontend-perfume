@@ -1377,7 +1377,7 @@ export default function AdminPanel() {
             >
               <Package size={20} />
               {sidebarOpen && <span>Products</span>}
-              {sidebarOpen && <span className="nav-badge">{products.length}</span>}
+              {sidebarOpen && <span className="nav-badge">{products.filter(p => p.active !== false).length}</span>}
             </button>
 
             <button
