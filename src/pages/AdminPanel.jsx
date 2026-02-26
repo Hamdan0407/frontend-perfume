@@ -1377,7 +1377,7 @@ export default function AdminPanel() {
             >
               <Package size={20} />
               {sidebarOpen && <span>Products</span>}
-              {sidebarOpen && <span className="nav-badge">{products.filter(p => p.active !== false).length}</span>}
+              {sidebarOpen && <span className="nav-badge">{analytics.activeProducts.length}</span>}
             </button>
 
             <button
@@ -1625,7 +1625,7 @@ export default function AdminPanel() {
                   <div className="stat-content">
                     <span className="stat-label">Total Stock</span>
                     <span className="stat-value">{analytics.totalStock.toLocaleString()} units</span>
-                    <span className="stat-change neutral">{products.length} products</span>
+                    <span className="stat-change neutral">{analytics.activeProducts.length} products</span>
                   </div>
                 </div>
                 <div className="stat-card gradient-orange">
