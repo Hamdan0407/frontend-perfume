@@ -9,6 +9,7 @@ import {
 import { jsPDF } from 'jspdf';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../context/ToastContext';
+import { formatCategory } from '../lib/utils';
 import api from '../api/axios';
 import '../styles/AdminPanel.css';
 
@@ -91,7 +92,7 @@ export default function AdminPanel() {
 
   // Settings form
   const [settingsForm, setSettingsForm] = useState({
-    storeName: 'Muwas.in',
+    storeName: 'Luxury Fragrances',
     storeEmail: 'admin@perfumeshop.com',
     supportPhone: '+91 98765 43210',
     currency: 'INR',
@@ -192,8 +193,7 @@ export default function AdminPanel() {
   // Categories for dropdown
   const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
   const getCategoryDisplayName = (cat) => {
-    if (cat === 'perfume') return 'Parfum';
-    return cat.charAt(0).toUpperCase() + cat.slice(1);
+    return formatCategory(cat);
   };
 
   // Product Types state with persistence
@@ -269,14 +269,7 @@ export default function AdminPanel() {
       setOrders(data.content || data || []);
     } catch (err) {
       console.error('Error loading orders:', err);
-      // Try alternate endpoint
-      try {
-        const { data } = await api.get('orders?size=100');
-        setOrders(data.content || data || []);
-      } catch (e) {
-        console.error('Alternate orders endpoint failed:', e);
-        toast.error('Failed to load orders');
-      }
+      toast.error('Failed to load orders');
     } finally {
       setLoading(false);
     }
@@ -308,8 +301,8 @@ export default function AdminPanel() {
 
       // Fetch all data without individual loading states
       const [productsRes, ordersRes, usersRes] = await Promise.all([
-        api.get(`products${cacheBuster}`),
-        api.get(`admin/orders${cacheBuster}`).catch(() => api.get(`orders${cacheBuster}`)),
+        api.get(`admin/products${cacheBuster}`),
+        api.get(`admin/orders${cacheBuster}`),
         api.get(`admin/users${cacheBuster}`)
       ]);
 
@@ -370,8 +363,8 @@ export default function AdminPanel() {
         // Silent refresh without loading spinner
         try {
           const [productsRes, ordersRes, usersRes] = await Promise.allSettled([
-            api.get('products?size=100'),
-            api.get('admin/orders?size=100').catch(() => api.get('orders?size=100')),
+            api.get('admin/products?size=100'),
+            api.get('admin/orders?size=100'),
             api.get('admin/users?size=100')
           ]);
 
@@ -972,7 +965,7 @@ export default function AdminPanel() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(32);
     doc.setFont('helvetica', 'bold');
-    doc.text('MUWAS.IN', 20, 25);
+    doc.text('LUXURY FRAGRANCES', 20, 25);
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
@@ -1355,7 +1348,7 @@ export default function AdminPanel() {
             <div className="logo-icon" style={{ width: '32px', height: '32px', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img src="/muwas-logo-nobg.png" alt="Muwas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            {sidebarOpen && <span className="brand-text">Muwas.in</span>}
+            {sidebarOpen && <span className="brand-text">Admin Panel</span>}
           </div>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
