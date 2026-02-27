@@ -18,8 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,7 +105,7 @@ public class ProductService {
     public Page<ProductResponse> filterProducts(ProductFilterRequest filter) {
         // Default pagination
         Pageable pageable = PageRequest.of(0, 12);
-        
+
         // Return all active products
         return productRepository.findByActiveTrue(pageable)
                 .map(ProductResponse::fromEntity);
@@ -200,47 +201,94 @@ public class ProductService {
         validateProductRequest(request);
 
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
-        product.setName(request.getName());
-        product.setBrand(request.getBrand());
-        product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
-        product.setDiscountPrice(request.getDiscountPrice());
-        product.setStock(request.getStock());
-        product.setCategory(request.getCategory());
-        product.setType(request.getType());
-        product.setVolume(request.getVolume());
-        product.setImageUrl(request.getImageUrl());
-        product.setAdditionalImages(request.getAdditionalImages());
-        product.setFragranceNotes(request.getFragranceNotes());
-        product.setFeatured(request.getFeatured());
-        product.setActive(request.getActive());
+        try {
+            // Update basic fields with null safety
+            if (request.getName() != null)
+                product.setName(request.getName());
+            if (request.getBrand() != null)
+                product.setBrand(request.getBrand());
+            if (request.getDescription() != null)
+                product.setDescription(request.getDescription());
+            if (request.getPrice() != null)
+                product.setPrice(request.getPrice());
+            if (request.getDiscountPrice() != null)
+                product.setDiscountPrice(request.getDiscountPrice());
+            if (request.getStock() != null)
+                product.setStock(request.getStock());
+            if (request.getCategory() != null)
+                product.setCategory(request.getCategory());
+            if (request.getType() != null)
+                product.setType(request.getType());
+            if (request.getVolume() != null)
+                product.setVolume(request.getVolume());
+            if (request.getImageUrl() != null)
+                product.setImageUrl(request.getImageUrl());
+            if (request.getAdditionalImages() != null)
+                product.setAdditionalImages(request.getAdditionalImages());
+            if (request.getFragranceNotes() != null)
+                product.setFragranceNotes(request.getFragranceNotes());
+            if (request.getFeatured() != null)
+                product.setFeatured(request.getFeatured());
+            if (request.getActive() != null)
+                product.setActive(request.getActive());
 
-        // Update variants - clear old ones and add new ones
-        if (request.getVariants() != null) {
-            product.getVariants().clear();
-            // Flush to ensure old variants are deleted before inserting new ones
-            // This prevents unique constraint violation on (product_id, size)
-            productRepository.saveAndFlush(product);
-            for (var variantReq : request.getVariants()) {
-                ProductVariant variant = ProductVariant.builder()
-                        .product(product)
-                        .size(variantReq.getSize())
-                        .price(variantReq.getPrice())
-                        .discountPrice(variantReq.getDiscountPrice())
-                        .stock(variantReq.getStock())
-                        .sku(variantReq.getSku())
-                        .active(true)
-                        .build();
-                product.getVariants().add(variant);
+            // Synchronize variants to preserve IDs and prevent FK breakage (orders/carts)
+            if (request.getVariants() != null) {
+                List<ProductVariant> currentVariants = product.getVariants();
+
+                // Map existing variants by size for lookup
+                Map<Integer, ProductVariant> existingMap = currentVariants.stream()
+                        .collect(Collectors.toMap(ProductVariant::getSize, v -> v, (v1, v2) -> v1));
+
+                // Set of sizes in the incoming request
+                Set<Integer> incomingSizes = request.getVariants().stream()
+                        .map(v -> v.getSize())
+                        .collect(Collectors.toSet());
+
+                // 1. Remove variants missing from request
+                // NOTE: This will fail if the variant is in an order, which is the correct
+                // behavior for data integrity.
+                currentVariants.removeIf(v -> !incomingSizes.contains(v.getSize()));
+
+                // 2. Update existing variants or add new ones
+                for (var variantReq : request.getVariants()) {
+                    ProductVariant existing = existingMap.get(variantReq.getSize());
+                    if (existing != null) {
+                        existing.setPrice(variantReq.getPrice());
+                        existing.setDiscountPrice(variantReq.getDiscountPrice());
+                        existing.setStock(variantReq.getStock());
+                        existing.setSku(variantReq.getSku());
+                        existing.setActive(true);
+                    } else {
+                        currentVariants.add(ProductVariant.builder()
+                                .product(product)
+                                .size(variantReq.getSize())
+                                .price(variantReq.getPrice())
+                                .discountPrice(variantReq.getDiscountPrice())
+                                .stock(variantReq.getStock())
+                                .sku(variantReq.getSku())
+                                .active(true)
+                                .build());
+                    }
+                }
             }
+
+            Product updated = productRepository.save(product);
+            log.info("Product updated successfully: {} (ID: {})", updated.getName(), updated.getId());
+            return ProductResponse.fromEntity(updated);
+
+        } catch (DataIntegrityViolationException e) {
+            log.error("Conflict updating product {}: Data integrity violation. Likely variant referenced in orders.",
+                    id);
+            throw new RuntimeException(
+                    "Cannot update product: One or more variants are referenced in existing orders or carts. " +
+                            "Try deactivating the variant instead of removing it.");
+        } catch (Exception e) {
+            log.error("Error updating product {}: {}", id, e.getMessage());
+            throw e;
         }
-
-        Product updated = productRepository.save(product);
-        log.info("Product updated: {} (ID: {})", updated.getName(), updated.getId());
-
-        return ProductResponse.fromEntity(updated);
     }
 
     @Transactional
