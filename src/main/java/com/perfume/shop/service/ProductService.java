@@ -8,6 +8,7 @@ import com.perfume.shop.entity.Product;
 import com.perfume.shop.entity.ProductVariant;
 import com.perfume.shop.exception.ResourceNotFoundException;
 import com.perfume.shop.repository.ProductRepository;
+import com.perfume.shop.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     // ==================== Public Product Queries ====================
 
@@ -181,6 +183,7 @@ public class ProductService {
                 ProductVariant variant = ProductVariant.builder()
                         .product(savedProduct)
                         .size(variantReq.getSize())
+                        .unit(variantReq.getUnit())
                         .price(variantReq.getPrice())
                         .discountPrice(variantReq.getDiscountPrice())
                         .stock(variantReq.getStock())
@@ -199,17 +202,14 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        log.info("Executing robust update for Product ID: {}", id);
+        log.info("Starting Extreme Persistence Update for Product ID: {}", id);
         validateProductRequest(request);
 
-        // Fetch the managed entity
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
-        log.debug("Managed Entity Identity: {} (Hash: {})", product.getName(), System.identityHashCode(product));
-
         try {
-            // Update basic fields with null safety and normalization
+            // Update basic fields
             if (request.getName() != null)
                 product.setName(request.getName().trim());
             if (request.getBrand() != null)
@@ -223,11 +223,9 @@ public class ProductService {
             if (request.getStock() != null)
                 product.setStock(request.getStock());
 
-            // Normalize Category to ENUM-style (e.g., "premium attars" -> "PREMIUM_ATTARS")
             if (request.getCategory() != null) {
                 String normalized = request.getCategory().trim().toUpperCase().replace(" ", "_");
                 product.setCategory(normalized);
-                log.debug("Category normalized: {} -> {}", request.getCategory(), normalized);
             }
 
             if (request.getType() != null)
@@ -241,7 +239,7 @@ public class ProductService {
             if (request.getActive() != null)
                 product.setActive(request.getActive());
 
-            // Handle @ElementCollections
+            // Handle Collections
             if (request.getAdditionalImages() != null) {
                 product.getAdditionalImages().clear();
                 product.getAdditionalImages().addAll(request.getAdditionalImages());
@@ -251,69 +249,81 @@ public class ProductService {
                 product.getFragranceNotes().addAll(request.getFragranceNotes());
             }
 
-            // Synchronize @OneToMany Variants with detailed logging
+            // Sync Variants using ProductVariantRepository for GUARANTEED persistence
             if (request.getVariants() != null) {
-                log.info("Synchronizing {} variants for product: {}", request.getVariants().size(), id);
-                List<ProductVariant> currentVariants = product.getVariants();
+                log.info("Syncing variants for product {} using explicit repository", id);
 
-                // Log state before sync
-                currentVariants.forEach(v -> log.debug("PRE-SYNC VARIANT: ID={}, Size={}, Price={}", v.getId(),
-                        v.getSize(), v.getPrice()));
+                // Fetch current variants from DB
+                List<ProductVariant> existingVariants = productVariantRepository.findByProductId(id);
 
-                Map<Integer, ProductVariant> existingMap = currentVariants.stream()
-                        .collect(Collectors.toMap(ProductVariant::getSize, v -> v, (v1, v2) -> v1));
+                // Use a composite key (size|unit) for mapping existing variants
+                Map<String, ProductVariant> existingMap = existingVariants.stream()
+                        .collect(Collectors.toMap(
+                                v -> v.getSize() + "|" + (v.getUnit() != null ? v.getUnit() : ""),
+                                v -> v,
+                                (v1, v2) -> v1));
 
-                Set<Integer> requestSizes = request.getVariants().stream()
-                        .map(ProductVariantRequest::getSize)
+                Set<String> requestKeys = request.getVariants().stream()
+                        .map(v -> v.getSize() + "|" + (v.getUnit() != null ? v.getUnit() : ""))
                         .collect(Collectors.toSet());
 
-                // 1. Remove orphans
-                currentVariants.removeIf(v -> !requestSizes.contains(v.getSize()));
+                // Delete variants not in request (orphans)
+                for (ProductVariant existing : existingVariants) {
+                    String key = existing.getSize() + "|" + (existing.getUnit() != null ? existing.getUnit() : "");
+                    if (!requestKeys.contains(key)) {
+                        log.debug("Deleting orphaned variant: {}", key);
+                        product.getVariants().remove(existing);
+                        productVariantRepository.delete(existing);
+                    }
+                }
 
-                // 2. Update existing or add new
+                // Update or Add
                 for (var vReq : request.getVariants()) {
-                    ProductVariant existing = existingMap.get(vReq.getSize());
+                    String key = vReq.getSize() + "|" + (vReq.getUnit() != null ? vReq.getUnit() : "");
+                    ProductVariant existing = existingMap.get(key);
                     if (existing != null) {
-                        log.debug("Updating existing variant size: {}", vReq.getSize());
+                        log.debug("Updating variant: {} | Price: {} -> {}",
+                                key, existing.getPrice(), vReq.getPrice());
                         existing.setPrice(vReq.getPrice());
                         existing.setDiscountPrice(vReq.getDiscountPrice());
                         existing.setStock(vReq.getStock());
                         existing.setSku(vReq.getSku());
                         existing.setActive(true);
-                        // Ensure back-reference is set
-                        existing.setProduct(product);
+                        productVariantRepository.save(existing);
                     } else {
-                        log.debug("Adding new variant size: {}", vReq.getSize());
+                        log.debug("Adding new variant: {}", key);
                         ProductVariant newVariant = ProductVariant.builder()
                                 .product(product)
                                 .size(vReq.getSize())
+                                .unit(vReq.getUnit())
                                 .price(vReq.getPrice())
                                 .discountPrice(vReq.getDiscountPrice())
                                 .stock(vReq.getStock())
                                 .sku(vReq.getSku())
                                 .active(true)
                                 .build();
-                        currentVariants.add(newVariant);
+                        product.getVariants().add(newVariant);
+                        productVariantRepository.save(newVariant);
                     }
                 }
             }
 
-            log.info("Flushing changes to DB for Product ID: {}. Variants count: {}", id, product.getVariants().size());
+            // Forced Flush and Return
             Product updated = productRepository.saveAndFlush(product);
 
-            // Log state after sync
-            updated.getVariants().forEach(v -> log.info("POST-SYNC VARIANT: ID={}, Size={}, Price={}, Stock={}",
-                    v.getId(), v.getSize(), v.getPrice(), v.getStock()));
+            // Double-check the state through repository fetch (within same transaction)
+            List<ProductVariant> finalVariants = productVariantRepository.findByProductId(id);
+            log.info("Update complete. Final Variant count in DB: {}", finalVariants.size());
+            finalVariants.forEach(v -> log.info("Final Variant: Size={}, Price={}, Stock={}", v.getSize(), v.getPrice(),
+                    v.getStock()));
 
-            log.info("Successfully persisted update for ID: {}.", updated.getId());
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
-            log.error("Integrity violation for product {}: {}", id, e.getMessage());
-            throw new RuntimeException(
-                    "Data integrity issue: One or more variants cannot be removed because they are linked to existing orders. Try deactivating them instead.");
+            log.error("Data Integrity Error updating product {}: {}", id, e.getMessage());
+            throw new RuntimeException("Cannot remove variants linked to orders. Update failed.");
         } catch (Exception e) {
-            log.error("Failed to commit Product update {}: {}", id, e.getMessage());
+            log.error("Unexpected error updating product {}: {}", id, e.getMessage());
             throw e;
         }
     }

@@ -9,11 +9,12 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product_variants", uniqueConstraints = @UniqueConstraint(columnNames = { "product_id",
-        "size" }), indexes = {
-                @Index(name = "idx_variant_product", columnList = "product_id"),
-                @Index(name = "idx_variant_size", columnList = "size"),
-                @Index(name = "idx_variant_active", columnList = "active")
-        })
+                "size", "unit" }), indexes = {
+                                @Index(name = "idx_variant_product", columnList = "product_id"),
+                                @Index(name = "idx_variant_size", columnList = "size"),
+                                @Index(name = "idx_variant_unit", columnList = "unit"),
+                                @Index(name = "idx_variant_active", columnList = "active")
+                })
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = { "product" })
 @NoArgsConstructor
@@ -22,28 +23,31 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ProductVariant extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnore
-    private Product product;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "product_id", nullable = false)
+        @JsonIgnore
+        private Product product;
 
-    @Column(nullable = false)
-    private Integer size; // in ml (3, 6, 10, 12)
+        @Column(nullable = false)
+        private Integer size;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+        @Column(length = 20)
+        private String unit; // ml, kg, g, ltr
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal discountPrice;
+        @Column(nullable = false, precision = 10, scale = 2)
+        private BigDecimal price;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer stock = 0;
+        @Column(precision = 10, scale = 2)
+        private BigDecimal discountPrice;
 
-    @Column(length = 50)
-    private String sku;
+        @Column(nullable = false)
+        @Builder.Default
+        private Integer stock = 0;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean active = true;
+        @Column(length = 50)
+        private String sku;
+
+        @Column(nullable = false)
+        @Builder.Default
+        private Boolean active = true;
 }

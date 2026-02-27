@@ -18,6 +18,7 @@ public class ProductVariantResponse {
     private Long id;
     private Long productId;
     private Integer size;
+    private String unit;
     private BigDecimal price;
     private BigDecimal discountPrice;
     private Integer stock;
@@ -31,6 +32,7 @@ public class ProductVariantResponse {
                 .id(variant.getId())
                 .productId(variant.getProduct().getId())
                 .size(variant.getSize())
+                .unit(variant.getUnit())
                 .price(variant.getPrice())
                 .discountPrice(variant.getDiscountPrice())
                 .stock(variant.getStock())

@@ -16,7 +16,10 @@ public class ProductVariantRequest {
 
     @NotNull(message = "Size is required")
     @Min(value = 1, message = "Size must be positive")
-    private Integer size; // in ml
+    private Integer size;
+
+    @Size(max = 20, message = "Unit must not exceed 20 characters")
+    private String unit;
 
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.01", message = "Price must be greater than 0")
