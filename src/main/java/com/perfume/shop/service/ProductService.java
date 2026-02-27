@@ -251,10 +251,15 @@ public class ProductService {
                 product.getFragranceNotes().addAll(request.getFragranceNotes());
             }
 
-            // Synchronize @OneToMany Variants
+            // Synchronize @OneToMany Variants with detailed logging
             if (request.getVariants() != null) {
-                log.debug("Syncing variants for product: {}", id);
+                log.info("Synchronizing {} variants for product: {}", request.getVariants().size(), id);
                 List<ProductVariant> currentVariants = product.getVariants();
+
+                // Log state before sync
+                currentVariants.forEach(v -> log.debug("PRE-SYNC VARIANT: ID={}, Size={}, Price={}", v.getId(),
+                        v.getSize(), v.getPrice()));
+
                 Map<Integer, ProductVariant> existingMap = currentVariants.stream()
                         .collect(Collectors.toMap(ProductVariant::getSize, v -> v, (v1, v2) -> v1));
 
@@ -262,20 +267,24 @@ public class ProductService {
                         .map(ProductVariantRequest::getSize)
                         .collect(Collectors.toSet());
 
-                // Remove orphans
+                // 1. Remove orphans
                 currentVariants.removeIf(v -> !requestSizes.contains(v.getSize()));
 
-                // Update/Add
+                // 2. Update existing or add new
                 for (var vReq : request.getVariants()) {
                     ProductVariant existing = existingMap.get(vReq.getSize());
                     if (existing != null) {
+                        log.debug("Updating existing variant size: {}", vReq.getSize());
                         existing.setPrice(vReq.getPrice());
                         existing.setDiscountPrice(vReq.getDiscountPrice());
                         existing.setStock(vReq.getStock());
                         existing.setSku(vReq.getSku());
                         existing.setActive(true);
+                        // Ensure back-reference is set
+                        existing.setProduct(product);
                     } else {
-                        currentVariants.add(ProductVariant.builder()
+                        log.debug("Adding new variant size: {}", vReq.getSize());
+                        ProductVariant newVariant = ProductVariant.builder()
                                 .product(product)
                                 .size(vReq.getSize())
                                 .price(vReq.getPrice())
@@ -283,16 +292,20 @@ public class ProductService {
                                 .stock(vReq.getStock())
                                 .sku(vReq.getSku())
                                 .active(true)
-                                .build());
+                                .build();
+                        currentVariants.add(newVariant);
                     }
                 }
             }
 
-            log.info("Flushing changes to DB for Product ID: {}. Current Name: {}", id, product.getName());
+            log.info("Flushing changes to DB for Product ID: {}. Variants count: {}", id, product.getVariants().size());
             Product updated = productRepository.saveAndFlush(product);
 
-            log.info("Successfully persisted update for ID: {}. Return entity IdentityHash: {}",
-                    updated.getId(), System.identityHashCode(updated));
+            // Log state after sync
+            updated.getVariants().forEach(v -> log.info("POST-SYNC VARIANT: ID={}, Size={}, Price={}, Stock={}",
+                    v.getId(), v.getSize(), v.getPrice(), v.getStock()));
+
+            log.info("Successfully persisted update for ID: {}.", updated.getId());
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
