@@ -176,9 +176,6 @@ export default function Login() {
               <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center p-2">
                 <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="w-full h-full object-contain" />
               </div>
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                Muwas.in
-              </CardTitle>
             </div>
           </div>
           <CardDescription className="text-center">Sign in to your account</CardDescription>
