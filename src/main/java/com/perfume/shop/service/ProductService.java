@@ -111,8 +111,14 @@ public class ProductService {
     public Page<ProductResponse> filterProducts(ProductFilterRequest filter) {
         log.info("Filtering products with criteria: {}", filter);
 
-        Sort sort = Sort.by(Sort.Direction.fromString(filter.getSortDir()), filter.getSortBy());
-        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(), sort);
+        // Ensure defaults if missing from JSON
+        String sortBy = filter.getSortBy() != null ? filter.getSortBy() : "createdAt";
+        String sortDir = filter.getSortDir() != null ? filter.getSortDir() : "DESC";
+        int page = filter.getPage() != null ? filter.getPage() : 0;
+        int size = filter.getSize() != null ? filter.getSize() : 12;
+
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Product> productPage;
         if (filter.getSearchQuery() != null && !filter.getSearchQuery().isBlank()) {

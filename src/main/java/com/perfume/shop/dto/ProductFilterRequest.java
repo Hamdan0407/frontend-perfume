@@ -25,14 +25,10 @@ public class ProductFilterRequest {
     private Boolean inStock;
 
     // Pagination
-    @Builder.Default
     private Integer page = 0;
-    @Builder.Default
     private Integer size = 12;
 
     // Sorting
-    @Builder.Default
     private String sortBy = "createdAt"; // name, price, rating, createdAt
-    @Builder.Default
     private String sortDir = "DESC"; // ASC or DESC
 }
