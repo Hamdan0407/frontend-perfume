@@ -1,6 +1,7 @@
 package com.perfume.shop.controller;
 
 import com.perfume.shop.dto.*;
+import com.perfume.shop.entity.enums.Category;
 import com.perfume.shop.entity.Order;
 import com.perfume.shop.entity.OrderHistory;
 import com.perfume.shop.entity.OrderItem;

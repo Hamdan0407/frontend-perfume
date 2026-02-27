@@ -109,12 +109,32 @@ public class ProductService {
     }
 
     public Page<ProductResponse> filterProducts(ProductFilterRequest filter) {
-        // Default pagination
-        Pageable pageable = PageRequest.of(0, 12);
+        log.info("Filtering products with criteria: {}", filter);
 
-        // Return all active products
-        return productRepository.findByActiveTrue(pageable)
-                .map(ProductResponse::fromEntity);
+        Sort sort = Sort.by(Sort.Direction.fromString(filter.getSortDir()), filter.getSortBy());
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(), sort);
+
+        Page<Product> productPage;
+        if (filter.getSearchQuery() != null && !filter.getSearchQuery().isBlank()) {
+            productPage = productRepository.searchWithFilters(
+                    filter.getSearchQuery(),
+                    filter.getCategory(),
+                    filter.getMinPrice(),
+                    filter.getMaxPrice(),
+                    pageable);
+        } else {
+            productPage = productRepository.findByFilters(
+                    filter.getCategory(),
+                    filter.getBrands(),
+                    filter.getMinPrice(),
+                    filter.getMaxPrice(),
+                    filter.getFeatured(),
+                    filter.getMinRating(),
+                    filter.getInStock(),
+                    pageable);
+        }
+
+        return productPage.map(ProductResponse::fromEntity);
     }
 
     public List<String> getAllBrands() {
