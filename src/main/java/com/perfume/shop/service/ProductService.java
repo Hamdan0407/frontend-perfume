@@ -198,13 +198,16 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse updateProduct(Long id, ProductRequest request) {
+        log.info("Starting product update for ID: {}. Target name: {}", id, request.getName());
         validateProductRequest(request);
 
+        // Fetch from repository - ensures it's a managed entity in this transaction
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
         try {
-            // Update basic fields with null safety
+            // Map basic fields
+            log.debug("Mapping basic fields for product ID: {}", id);
             if (request.getName() != null)
                 product.setName(request.getName().trim());
             if (request.getBrand() != null)
@@ -230,7 +233,8 @@ public class ProductService {
             if (request.getActive() != null)
                 product.setActive(request.getActive());
 
-            // Handle @ElementCollections correctly for Hibernate session
+            // Synchronize @ElementCollections (images, notes)
+            // Using clear/addAll ensures Hibernate correctly manages the child records
             if (request.getAdditionalImages() != null) {
                 product.getAdditionalImages().clear();
                 product.getAdditionalImages().addAll(request.getAdditionalImages());
@@ -240,25 +244,20 @@ public class ProductService {
                 product.getFragranceNotes().addAll(request.getFragranceNotes());
             }
 
-            // Synchronize variants to preserve IDs and prevent FK breakage (orders/carts)
+            // Synchronize @OneToMany Variants (preserves IDs)
             if (request.getVariants() != null) {
+                log.debug("Synchronizing {} variants for product ID: {}", request.getVariants().size(), id);
                 List<ProductVariant> currentVariants = product.getVariants();
-
-                // Map existing variants by size for lookup
                 Map<Integer, ProductVariant> existingMap = currentVariants.stream()
                         .collect(Collectors.toMap(ProductVariant::getSize, v -> v, (v1, v2) -> v1));
-
-                // Set of sizes in the incoming request
                 Set<Integer> incomingSizes = request.getVariants().stream()
                         .map(v -> v.getSize())
                         .collect(Collectors.toSet());
 
-                // 1. Remove variants missing from request
-                // NOTE: This will fail if the variant is in an order, which is the correct
-                // behavior for data integrity.
+                // Remove orphans
                 currentVariants.removeIf(v -> !incomingSizes.contains(v.getSize()));
 
-                // 2. Update existing variants or add new ones
+                // Update/Add
                 for (var variantReq : request.getVariants()) {
                     ProductVariant existing = existingMap.get(variantReq.getSize());
                     if (existing != null) {
@@ -281,21 +280,23 @@ public class ProductService {
                 }
             }
 
-            // Use saveAndFlush to ensure the UPDATE SQL is actually emitted and flushed to
-            // DB
+            // Log state before save
+            log.info("Sending update request for ID {} to database. Current Price: {}, Stock: {}",
+                    id, product.getPrice(), product.getStock());
+
+            // saveAndFlush() is critical for forcing Hibernate to emit SQL immediately
             Product updated = productRepository.saveAndFlush(product);
-            log.info("Persisted database changes for Product ID: {}. Result name: {}", updated.getId(),
-                    updated.getName());
+
+            log.info("Database confirmed update for ID: {}. Changes persisted successfully.", updated.getId());
+
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
-            log.error("Conflict updating product {}: Data integrity violation. Likely variant referenced in orders.",
-                    id);
+            log.error("Conflict updating product {}: {}", id, e.getMessage());
             throw new RuntimeException(
-                    "Cannot update product: One or more variants are referenced in existing orders or carts. " +
-                            "Try deactivating the variant instead of removing it.");
+                    "Data integrity issue: Cannot remove variants that are referenced in orders. Try deactivating them.");
         } catch (Exception e) {
-            log.error("Error updating product {}: {}", id, e.getMessage());
+            log.error("Failed to commit work for Product {}: {}", id, e.getMessage());
             throw e;
         }
     }
