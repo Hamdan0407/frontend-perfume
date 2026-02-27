@@ -206,11 +206,11 @@ public class ProductService {
         try {
             // Update basic fields with null safety
             if (request.getName() != null)
-                product.setName(request.getName());
+                product.setName(request.getName().trim());
             if (request.getBrand() != null)
-                product.setBrand(request.getBrand());
+                product.setBrand(request.getBrand().trim());
             if (request.getDescription() != null)
-                product.setDescription(request.getDescription());
+                product.setDescription(request.getDescription().trim());
             if (request.getPrice() != null)
                 product.setPrice(request.getPrice());
             if (request.getDiscountPrice() != null)
@@ -218,21 +218,27 @@ public class ProductService {
             if (request.getStock() != null)
                 product.setStock(request.getStock());
             if (request.getCategory() != null)
-                product.setCategory(request.getCategory());
+                product.setCategory(request.getCategory().trim());
             if (request.getType() != null)
                 product.setType(request.getType());
             if (request.getVolume() != null)
                 product.setVolume(request.getVolume());
             if (request.getImageUrl() != null)
                 product.setImageUrl(request.getImageUrl());
-            if (request.getAdditionalImages() != null)
-                product.setAdditionalImages(request.getAdditionalImages());
-            if (request.getFragranceNotes() != null)
-                product.setFragranceNotes(request.getFragranceNotes());
             if (request.getFeatured() != null)
                 product.setFeatured(request.getFeatured());
             if (request.getActive() != null)
                 product.setActive(request.getActive());
+
+            // Handle @ElementCollections correctly for Hibernate session
+            if (request.getAdditionalImages() != null) {
+                product.getAdditionalImages().clear();
+                product.getAdditionalImages().addAll(request.getAdditionalImages());
+            }
+            if (request.getFragranceNotes() != null) {
+                product.getFragranceNotes().clear();
+                product.getFragranceNotes().addAll(request.getFragranceNotes());
+            }
 
             // Synchronize variants to preserve IDs and prevent FK breakage (orders/carts)
             if (request.getVariants() != null) {
@@ -275,8 +281,11 @@ public class ProductService {
                 }
             }
 
-            Product updated = productRepository.save(product);
-            log.info("Product updated successfully: {} (ID: {})", updated.getName(), updated.getId());
+            // Use saveAndFlush to ensure the UPDATE SQL is actually emitted and flushed to
+            // DB
+            Product updated = productRepository.saveAndFlush(product);
+            log.info("Persisted database changes for Product ID: {}. Result name: {}", updated.getId(),
+                    updated.getName());
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
