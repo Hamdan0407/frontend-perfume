@@ -1346,7 +1346,7 @@ export default function AdminPanel() {
         <div className="sidebar-brand">
           <div className="brand-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div className="logo-icon" style={{ width: '32px', height: '32px', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/muwas-logo-nobg.png" alt="Muwas" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/muwas-logo-nobg.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             {sidebarOpen && <span className="brand-text">Admin Panel</span>}
           </div>
