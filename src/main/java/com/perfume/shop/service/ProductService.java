@@ -3,6 +3,7 @@ package com.perfume.shop.service;
 import com.perfume.shop.dto.ProductFilterRequest;
 import com.perfume.shop.dto.ProductRequest;
 import com.perfume.shop.dto.ProductResponse;
+import com.perfume.shop.dto.ProductVariantRequest;
 import com.perfume.shop.entity.Product;
 import com.perfume.shop.entity.ProductVariant;
 import com.perfume.shop.exception.ResourceNotFoundException;
