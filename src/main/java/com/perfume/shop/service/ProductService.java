@@ -198,43 +198,35 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        log.info("Starting product update for ID: {}. Target name: {}", id, request.getName());
+        log.info("Processing Absolute Persistence Update for Product ID: {}", id);
         validateProductRequest(request);
 
-        // Fetch from repository - ensures it's a managed entity in this transaction
+        // 1. Fetch the MANAGED entity. We must modify THIS specific object instance.
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
-        try {
-            // Map basic fields
-            log.debug("Mapping basic fields for product ID: {}", id);
-            if (request.getName() != null)
-                product.setName(request.getName().trim());
-            if (request.getBrand() != null)
-                product.setBrand(request.getBrand().trim());
-            if (request.getDescription() != null)
-                product.setDescription(request.getDescription().trim());
-            if (request.getPrice() != null)
-                product.setPrice(request.getPrice());
-            if (request.getDiscountPrice() != null)
-                product.setDiscountPrice(request.getDiscountPrice());
-            if (request.getStock() != null)
-                product.setStock(request.getStock());
-            if (request.getCategory() != null)
-                product.setCategory(request.getCategory().trim());
-            if (request.getType() != null)
-                product.setType(request.getType());
-            if (request.getVolume() != null)
-                product.setVolume(request.getVolume());
-            if (request.getImageUrl() != null)
-                product.setImageUrl(request.getImageUrl());
-            if (request.getFeatured() != null)
-                product.setFeatured(request.getFeatured());
-            if (request.getActive() != null)
-                product.setActive(request.getActive());
+        log.info("Fetched managed entity: {} (IdentityHash: {})", product.getName(), System.identityHashCode(product));
 
-            // Synchronize @ElementCollections (images, notes)
-            // Using clear/addAll ensures Hibernate correctly manages the child records
+        try {
+            // 2. Map fields from the Request DTO directly to the Managed Entity.
+            // Using standard setters on the managed object triggers Hibernate dirty
+            // checking.
+            product.setName(request.getName());
+            product.setBrand(request.getBrand());
+            product.setDescription(request.getDescription());
+            product.setPrice(request.getPrice());
+            product.setDiscountPrice(request.getDiscountPrice());
+            product.setStock(request.getStock());
+            product.setCategory(request.getCategory());
+            product.setType(request.getType());
+            product.setVolume(request.getVolume());
+            product.setImageUrl(request.getImageUrl());
+            product.setFeatured(request.getFeatured() != null && request.getFeatured());
+            product.setActive(request.getActive() != null && request.getActive());
+
+            // 3. Synchronize @ElementCollections (Images, Notes)
+            // clear() followed by addAll() ensures the collection contents are updated
+            // without breaking the Hibernate-managed collection reference.
             if (request.getAdditionalImages() != null) {
                 product.getAdditionalImages().clear();
                 product.getAdditionalImages().addAll(request.getAdditionalImages());
@@ -244,59 +236,58 @@ public class ProductService {
                 product.getFragranceNotes().addAll(request.getFragranceNotes());
             }
 
-            // Synchronize @OneToMany Variants (preserves IDs)
+            // 4. Synchronize @OneToMany ProductVariants
             if (request.getVariants() != null) {
-                log.debug("Synchronizing {} variants for product ID: {}", request.getVariants().size(), id);
                 List<ProductVariant> currentVariants = product.getVariants();
                 Map<Integer, ProductVariant> existingMap = currentVariants.stream()
                         .collect(Collectors.toMap(ProductVariant::getSize, v -> v, (v1, v2) -> v1));
-                Set<Integer> incomingSizes = request.getVariants().stream()
-                        .map(v -> v.getSize())
+
+                Set<Integer> requestSizes = request.getVariants().stream()
+                        .map(ProductVariantRequest::getSize)
                         .collect(Collectors.toSet());
 
-                // Remove orphans
-                currentVariants.removeIf(v -> !incomingSizes.contains(v.getSize()));
+                // Remove orphans (variants missing from new request)
+                currentVariants.removeIf(v -> !requestSizes.contains(v.getSize()));
 
-                // Update/Add
-                for (var variantReq : request.getVariants()) {
-                    ProductVariant existing = existingMap.get(variantReq.getSize());
+                // Update existing or add new
+                for (var vReq : request.getVariants()) {
+                    ProductVariant existing = existingMap.get(vReq.getSize());
                     if (existing != null) {
-                        existing.setPrice(variantReq.getPrice());
-                        existing.setDiscountPrice(variantReq.getDiscountPrice());
-                        existing.setStock(variantReq.getStock());
-                        existing.setSku(variantReq.getSku());
+                        existing.setPrice(vReq.getPrice());
+                        existing.setDiscountPrice(vReq.getDiscountPrice());
+                        existing.setStock(vReq.getStock());
+                        existing.setSku(vReq.getSku());
                         existing.setActive(true);
                     } else {
                         currentVariants.add(ProductVariant.builder()
                                 .product(product)
-                                .size(variantReq.getSize())
-                                .price(variantReq.getPrice())
-                                .discountPrice(variantReq.getDiscountPrice())
-                                .stock(variantReq.getStock())
-                                .sku(variantReq.getSku())
+                                .size(vReq.getSize())
+                                .price(vReq.getPrice())
+                                .discountPrice(vReq.getDiscountPrice())
+                                .stock(vReq.getStock())
+                                .sku(vReq.getSku())
                                 .active(true)
                                 .build());
                     }
                 }
             }
 
-            // Log state before save
-            log.info("Sending update request for ID {} to database. Current Price: {}, Stock: {}",
+            // 5. Explicitly Flush to Database
+            log.info("Persisting state for ID: {}. Price: {}, Stock: {}. Calling saveAndFlush...",
                     id, product.getPrice(), product.getStock());
 
-            // saveAndFlush() is critical for forcing Hibernate to emit SQL immediately
             Product updated = productRepository.saveAndFlush(product);
 
-            log.info("Database confirmed update for ID: {}. Changes persisted successfully.", updated.getId());
+            log.info("Persistence confirmed for ID: {}. Changes committed to DB context. Entity IdentityHash: {}",
+                    updated.getId(), System.identityHashCode(updated));
 
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
             log.error("Conflict updating product {}: {}", id, e.getMessage());
-            throw new RuntimeException(
-                    "Data integrity issue: Cannot remove variants that are referenced in orders. Try deactivating them.");
+            throw new RuntimeException("Data integrity issue: Cannot remove variants referenced in orders.");
         } catch (Exception e) {
-            log.error("Failed to commit work for Product {}: {}", id, e.getMessage());
+            log.error("Failed to commit Product update {}: {}", id, e.getMessage());
             throw e;
         }
     }
