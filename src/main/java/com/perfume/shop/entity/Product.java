@@ -44,8 +44,8 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Integer stock;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Convert(converter = CategoryConverter.class)
     private Category category; // PARFUM, PREMIUM_ATTARS, OUD_RESERVE, BAKHOOR, AROMA_CHEMICALS
 
     private String type; // Eau de Parfum, Eau de Toilette, etc.
