@@ -199,35 +199,49 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        log.info("Processing Absolute Persistence Update for Product ID: {}", id);
+        log.info("Executing robust update for Product ID: {}", id);
         validateProductRequest(request);
 
-        // 1. Fetch the MANAGED entity. We must modify THIS specific object instance.
+        // Fetch the managed entity
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
-        log.info("Fetched managed entity: {} (IdentityHash: {})", product.getName(), System.identityHashCode(product));
+        log.debug("Managed Entity Identity: {} (Hash: {})", product.getName(), System.identityHashCode(product));
 
         try {
-            // 2. Map fields from the Request DTO directly to the Managed Entity.
-            // Using standard setters on the managed object triggers Hibernate dirty
-            // checking.
-            product.setName(request.getName());
-            product.setBrand(request.getBrand());
-            product.setDescription(request.getDescription());
-            product.setPrice(request.getPrice());
-            product.setDiscountPrice(request.getDiscountPrice());
-            product.setStock(request.getStock());
-            product.setCategory(request.getCategory());
-            product.setType(request.getType());
-            product.setVolume(request.getVolume());
-            product.setImageUrl(request.getImageUrl());
-            product.setFeatured(request.getFeatured() != null && request.getFeatured());
-            product.setActive(request.getActive() != null && request.getActive());
+            // Update basic fields with null safety and normalization
+            if (request.getName() != null)
+                product.setName(request.getName().trim());
+            if (request.getBrand() != null)
+                product.setBrand(request.getBrand().trim());
+            if (request.getDescription() != null)
+                product.setDescription(request.getDescription().trim());
+            if (request.getPrice() != null)
+                product.setPrice(request.getPrice());
+            if (request.getDiscountPrice() != null)
+                product.setDiscountPrice(request.getDiscountPrice());
+            if (request.getStock() != null)
+                product.setStock(request.getStock());
 
-            // 3. Synchronize @ElementCollections (Images, Notes)
-            // clear() followed by addAll() ensures the collection contents are updated
-            // without breaking the Hibernate-managed collection reference.
+            // Normalize Category to ENUM-style (e.g., "premium attars" -> "PREMIUM_ATTARS")
+            if (request.getCategory() != null) {
+                String normalized = request.getCategory().trim().toUpperCase().replace(" ", "_");
+                product.setCategory(normalized);
+                log.debug("Category normalized: {} -> {}", request.getCategory(), normalized);
+            }
+
+            if (request.getType() != null)
+                product.setType(request.getType());
+            if (request.getVolume() != null)
+                product.setVolume(request.getVolume());
+            if (request.getImageUrl() != null)
+                product.setImageUrl(request.getImageUrl());
+            if (request.getFeatured() != null)
+                product.setFeatured(request.getFeatured());
+            if (request.getActive() != null)
+                product.setActive(request.getActive());
+
+            // Handle @ElementCollections
             if (request.getAdditionalImages() != null) {
                 product.getAdditionalImages().clear();
                 product.getAdditionalImages().addAll(request.getAdditionalImages());
@@ -237,8 +251,9 @@ public class ProductService {
                 product.getFragranceNotes().addAll(request.getFragranceNotes());
             }
 
-            // 4. Synchronize @OneToMany ProductVariants
+            // Synchronize @OneToMany Variants
             if (request.getVariants() != null) {
+                log.debug("Syncing variants for product: {}", id);
                 List<ProductVariant> currentVariants = product.getVariants();
                 Map<Integer, ProductVariant> existingMap = currentVariants.stream()
                         .collect(Collectors.toMap(ProductVariant::getSize, v -> v, (v1, v2) -> v1));
@@ -247,10 +262,10 @@ public class ProductService {
                         .map(ProductVariantRequest::getSize)
                         .collect(Collectors.toSet());
 
-                // Remove orphans (variants missing from new request)
+                // Remove orphans
                 currentVariants.removeIf(v -> !requestSizes.contains(v.getSize()));
 
-                // Update existing or add new
+                // Update/Add
                 for (var vReq : request.getVariants()) {
                     ProductVariant existing = existingMap.get(vReq.getSize());
                     if (existing != null) {
@@ -273,20 +288,17 @@ public class ProductService {
                 }
             }
 
-            // 5. Explicitly Flush to Database
-            log.info("Persisting state for ID: {}. Price: {}, Stock: {}. Calling saveAndFlush...",
-                    id, product.getPrice(), product.getStock());
-
+            log.info("Flushing changes to DB for Product ID: {}. Current Name: {}", id, product.getName());
             Product updated = productRepository.saveAndFlush(product);
 
-            log.info("Persistence confirmed for ID: {}. Changes committed to DB context. Entity IdentityHash: {}",
+            log.info("Successfully persisted update for ID: {}. Return entity IdentityHash: {}",
                     updated.getId(), System.identityHashCode(updated));
-
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
-            log.error("Conflict updating product {}: {}", id, e.getMessage());
-            throw new RuntimeException("Data integrity issue: Cannot remove variants referenced in orders.");
+            log.error("Integrity violation for product {}: {}", id, e.getMessage());
+            throw new RuntimeException(
+                    "Data integrity issue: One or more variants cannot be removed because they are linked to existing orders. Try deactivating them instead.");
         } catch (Exception e) {
             log.error("Failed to commit Product update {}: {}", id, e.getMessage());
             throw e;
@@ -296,40 +308,50 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse partialUpdateProduct(Long id, ProductRequest request) {
+        log.info("Partial update for Product ID: {}", id);
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
         if (request.getName() != null)
-            product.setName(request.getName());
+            product.setName(request.getName().trim());
         if (request.getBrand() != null)
-            product.setBrand(request.getBrand());
+            product.setBrand(request.getBrand().trim());
         if (request.getDescription() != null)
-            product.setDescription(request.getDescription());
+            product.setDescription(request.getDescription().trim());
         if (request.getPrice() != null)
             product.setPrice(request.getPrice());
         if (request.getDiscountPrice() != null)
             product.setDiscountPrice(request.getDiscountPrice());
         if (request.getStock() != null)
             product.setStock(request.getStock());
-        if (request.getCategory() != null)
-            product.setCategory(request.getCategory());
+
+        if (request.getCategory() != null) {
+            String normalized = request.getCategory().trim().toUpperCase().replace(" ", "_");
+            product.setCategory(normalized);
+        }
+
         if (request.getType() != null)
             product.setType(request.getType());
         if (request.getVolume() != null)
             product.setVolume(request.getVolume());
         if (request.getImageUrl() != null)
             product.setImageUrl(request.getImageUrl());
-        if (request.getAdditionalImages() != null)
-            product.setAdditionalImages(request.getAdditionalImages());
-        if (request.getFragranceNotes() != null)
-            product.setFragranceNotes(request.getFragranceNotes());
+
+        if (request.getAdditionalImages() != null) {
+            product.getAdditionalImages().clear();
+            product.getAdditionalImages().addAll(request.getAdditionalImages());
+        }
+        if (request.getFragranceNotes() != null) {
+            product.getFragranceNotes().clear();
+            product.getFragranceNotes().addAll(request.getFragranceNotes());
+        }
         if (request.getFeatured() != null)
             product.setFeatured(request.getFeatured());
         if (request.getActive() != null)
             product.setActive(request.getActive());
 
-        Product updated = productRepository.save(product);
-        log.info("Product partially updated: {} (ID: {})", updated.getName(), updated.getId());
+        Product updated = productRepository.saveAndFlush(product);
+        log.info("Partial update persisted for ID: {}", updated.getId());
 
         return ProductResponse.fromEntity(updated);
     }
