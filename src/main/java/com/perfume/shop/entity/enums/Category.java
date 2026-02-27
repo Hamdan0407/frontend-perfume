@@ -45,8 +45,8 @@ public enum Category {
                 return MEN;
             if (normalized.equals("WOMEN") || normalized.equals("WOMENS") || normalized.equals("FEMALE"))
                 return WOMEN;
-            if (normalized.equals("UNISEX"))
-                return UNISEX;
+            if (normalized.equals("UNISEX") || normalized.equals("UNDEFINED"))
+                return null;
 
             // Fallback for unknown categories to prevent mapping crashes
             return Category.PARFUM;

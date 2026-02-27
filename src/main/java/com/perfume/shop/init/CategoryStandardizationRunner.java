@@ -65,11 +65,13 @@ public class CategoryStandardizationRunner implements CommandLineRunner {
                     "UPDATE products SET category = 'WOMEN' WHERE UPPER(category) IN ('WOMEN', 'WOMENS', 'FEMALE')");
             jdbcTemplate.update("UPDATE products SET category = 'UNISEX' WHERE UPPER(category) IN ('UNISEX')");
 
-            // Final safety: ensure no nulls or broken categories remain
-            int fixedNulls = jdbcTemplate
-                    .update("UPDATE products SET category = 'UNISEX' WHERE category IS NULL OR category = ''");
-            if (fixedNulls > 0)
-                log.info("✓ Fixed {} null/empty categories", fixedNulls);
+            // Final safety: force ANY string that isn't in our enum list to 'UNISEX'
+            // This prevents Hibernate from crashing with "No enum constant" errors
+            int fixedInvalid = jdbcTemplate.update(
+                    "UPDATE products SET category = 'UNISEX' WHERE category NOT IN " +
+                            "('PARFUM', 'PREMIUM_ATTARS', 'OUD_RESERVE', 'BAKHOOR', 'AROMA_CHEMICALS', 'MEN', 'WOMEN', 'UNISEX') OR category IS NULL OR category = ''");
+            if (fixedInvalid > 0)
+                log.info("✓ fixed {} invalid/misformatted categories to UNISEX", fixedInvalid);
 
             log.info("✅ Category Standardization Migration Completed.");
         } catch (Exception e) {
