@@ -275,7 +275,7 @@ public class AdminController {
         Long totalActive = productService.getTotalActiveProducts();
         Long totalOutOfStock = productService.getTotalOutOfStockProducts();
         List<String> brands = productService.getAllBrands();
-        List<String> categories = productService.getAllCategories();
+        List<Category> categories = productService.getAllCategories();
 
         Map<String, Object> stats = Map.of(
                 "totalActiveProducts", totalActive,

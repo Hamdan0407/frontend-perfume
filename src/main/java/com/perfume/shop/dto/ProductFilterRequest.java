@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.perfume.shop.entity.enums.Category;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -13,21 +14,25 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ProductFilterRequest {
-    
+
     private String searchQuery;
-    private String category;
+    private Category category;
     private List<String> brands;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private Boolean featured;
     private Integer minRating;
     private Boolean inStock;
-    
+
     // Pagination
+    @Builder.Default
     private Integer page = 0;
+    @Builder.Default
     private Integer size = 12;
-    
+
     // Sorting
+    @Builder.Default
     private String sortBy = "createdAt"; // name, price, rating, createdAt
+    @Builder.Default
     private String sortDir = "DESC"; // ASC or DESC
 }

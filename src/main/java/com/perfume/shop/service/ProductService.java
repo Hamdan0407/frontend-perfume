@@ -6,6 +6,9 @@ import com.perfume.shop.dto.ProductResponse;
 import com.perfume.shop.dto.ProductVariantRequest;
 import com.perfume.shop.entity.Product;
 import com.perfume.shop.entity.ProductVariant;
+import com.perfume.shop.entity.enums.Category;
+import com.perfume.shop.exception.ApplicationException;
+import com.perfume.shop.exception.ErrorType;
 import com.perfume.shop.exception.ResourceNotFoundException;
 import com.perfume.shop.repository.ProductRepository;
 import com.perfume.shop.repository.ProductVariantRepository;
@@ -58,7 +61,7 @@ public class ProductService {
     }
 
     @Cacheable(value = "categories", key = "#category + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public Page<ProductResponse> getProductsByCategory(String category, Pageable pageable) {
+    public Page<ProductResponse> getProductsByCategory(Category category, Pageable pageable) {
         return productRepository.findByCategoryAndActiveTrue(category, pageable)
                 .map(ProductResponse::fromEntity);
     }
@@ -118,7 +121,7 @@ public class ProductService {
         return productRepository.findDistinctBrandByActiveTrue();
     }
 
-    public List<String> getAllCategories() {
+    public List<Category> getAllCategories() {
         return productRepository.findDistinctCategories();
     }
 
@@ -224,8 +227,7 @@ public class ProductService {
                 product.setStock(request.getStock());
 
             if (request.getCategory() != null) {
-                String normalized = request.getCategory().trim().toUpperCase().replace(" ", "_");
-                product.setCategory(normalized);
+                product.setCategory(request.getCategory());
             }
 
             if (request.getType() != null)
@@ -327,7 +329,9 @@ public class ProductService {
 
         } catch (DataIntegrityViolationException e) {
             log.error("Data Integrity Error updating product {}: {}", id, e.getMessage());
-            throw new RuntimeException("Cannot remove variants linked to orders. Update failed.");
+            throw new ApplicationException(
+                    "Cannot remove or modify variants that are already linked to orders. Please mark them as inactive instead.",
+                    ErrorType.CONFLICT, 409);
         } catch (Exception e) {
             log.error("Unexpected error updating product {}: {}", id, e.getMessage());
             throw e;
@@ -355,8 +359,7 @@ public class ProductService {
             product.setStock(request.getStock());
 
         if (request.getCategory() != null) {
-            String normalized = request.getCategory().trim().toUpperCase().replace(" ", "_");
-            product.setCategory(normalized);
+            product.setCategory(request.getCategory());
         }
 
         if (request.getType() != null)

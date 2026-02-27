@@ -5,6 +5,7 @@ import com.perfume.shop.dto.ProductResponse;
 import com.perfume.shop.entity.Product;
 import com.perfume.shop.exception.ResourceNotFoundException;
 import com.perfume.shop.repository.ProductRepository;
+import com.perfume.shop.entity.enums.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ class ProductServiceTest {
                 .description("Classic perfume")
                 .price(new BigDecimal("150.00"))
                 .stock(50)
-                .category("Women")
+                .category(Category.WOMEN)
                 .type("Eau de Parfum")
                 .volume(100)
                 .imageUrl("https://example.com/image.jpg")
@@ -67,7 +68,7 @@ class ProductServiceTest {
         productRequest.setDescription("Test Description");
         productRequest.setPrice(new BigDecimal("100.00"));
         productRequest.setStock(30);
-        productRequest.setCategory("Unisex");
+        productRequest.setCategory(Category.UNISEX);
         productRequest.setType("Eau de Toilette");
         productRequest.setVolume(50);
         productRequest.setImageUrl("https://example.com/new.jpg");
@@ -157,16 +158,16 @@ class ProductServiceTest {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<Product> productPage = new PageImpl<>(Arrays.asList(testProduct));
-        when(productRepository.findByCategoryAndActiveTrue("Women", pageable))
+        when(productRepository.findByCategoryAndActiveTrue(Category.WOMEN, pageable))
                 .thenReturn(productPage);
 
         // When
-        Page<ProductResponse> result = productService.getProductsByCategory("Women", pageable);
+        Page<ProductResponse> result = productService.getProductsByCategory(Category.WOMEN, pageable);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getCategory()).isEqualTo("Women");
+        assertThat(result.getContent().get(0).getCategory()).isEqualTo(Category.WOMEN);
     }
 
     @Test
@@ -358,14 +359,14 @@ class ProductServiceTest {
         Product relatedProduct = Product.builder()
                 .name("Chanel No. 19")
                 .brand("Chanel")
-                .category("Women")
+                .category(Category.WOMEN)
                 .active(true)
                 .build();
         relatedProduct.setId(2L);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(productRepository.findByCategoryAndBrandAndActiveTrueAndIdNot(
-                eq("Women"), eq("Chanel"), eq(1L), any(Pageable.class)))
+                eq(Category.WOMEN), eq("Chanel"), eq(1L), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(Arrays.asList(relatedProduct)));
 
         // When

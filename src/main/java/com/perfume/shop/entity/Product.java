@@ -2,6 +2,7 @@ package com.perfume.shop.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.perfume.shop.entity.enums.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,8 +44,9 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Integer stock;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String category; // Men, Women, Unisex
+    private Category category; // PARFUM, PREMIUM_ATTARS, OUD_RESERVE, BAKHOOR, AROMA_CHEMICALS
 
     private String type; // Eau de Parfum, Eau de Toilette, etc.
 
@@ -66,15 +68,19 @@ public class Product extends BaseEntity {
     private List<String> fragranceNotes = new ArrayList<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean featured = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private Double rating = 0.0;
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer reviewCount = 0;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
