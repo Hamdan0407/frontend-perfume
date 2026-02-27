@@ -32,10 +32,10 @@ public class CategoryStandardizationRunner implements CommandLineRunner {
             if (attarsUpdated > 0)
                 log.info("✓ Updated {} products to PREMIUM_ATTARS", attarsUpdated);
 
-            // Standardize to PARFUM
+            // Standardize to PARFUM (catch plural and singular variations)
             int parfumUpdated = jdbcTemplate.update(
                     "UPDATE products SET category = 'PARFUM' WHERE " +
-                            "UPPER(category) LIKE '%PERFUME%' OR UPPER(category) LIKE '%PARFUM%'");
+                            "UPPER(category) LIKE '%PERFUME%' OR UPPER(category) LIKE '%PARFUM%' OR UPPER(category) LIKE '%FRAGRANCE%' OR category IN ('Perfumes', 'parfums', 'perfumes', 'Perfume', 'perfum')");
             if (parfumUpdated > 0)
                 log.info("✓ Updated {} products to PARFUM", parfumUpdated);
 

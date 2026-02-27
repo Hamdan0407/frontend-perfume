@@ -31,7 +31,7 @@ public enum Category {
             return Category.valueOf(normalized);
         } catch (IllegalArgumentException e) {
             // Check common variations and loose matches
-            if (normalized.equals("PERFUME") || normalized.equals("FRAGRANCE"))
+            if (normalized.contains("PERFUME") || normalized.contains("PARFUM") || normalized.contains("FRAGRANCE"))
                 return PARFUM;
             if (normalized.contains("ATTAR"))
                 return PREMIUM_ATTARS;
