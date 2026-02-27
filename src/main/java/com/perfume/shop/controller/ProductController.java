@@ -101,13 +101,14 @@ public class ProductController {
      */
     @GetMapping("/category/{category}")
     public ResponseEntity<Page<ProductResponse>> getProductsByCategory(
-            @PathVariable Category category,
+            @PathVariable String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
+        Category categoryEnum = Category.fromString(category);
         Pageable pageable = createPageable(page, size, sortBy, sortDir);
-        return ResponseEntity.ok(productService.getProductsByCategory(category, pageable));
+        return ResponseEntity.ok(productService.getProductsByCategory(categoryEnum, pageable));
     }
 
     /**

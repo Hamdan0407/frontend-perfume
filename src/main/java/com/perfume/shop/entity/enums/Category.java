@@ -48,7 +48,8 @@ public enum Category {
             if (normalized.equals("UNISEX"))
                 return UNISEX;
 
-            return null; // Return null instead of throwing exception for safer filtering
+            // Fallback for unknown categories to prevent mapping crashes
+            return Category.PARFUM;
         }
     }
 
