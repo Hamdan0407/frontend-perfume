@@ -31,7 +31,7 @@ public class ProductVariant extends BaseEntity {
         @Column(nullable = false)
         private Integer size;
 
-        @Column(length = 20)
+        @Column(name = "unit", length = 20)
         private String unit; // ml, kg, g, ltr
 
         @Column(nullable = false, precision = 10, scale = 2)

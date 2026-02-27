@@ -271,19 +271,22 @@ public class ProductService {
                 for (ProductVariant existing : existingVariants) {
                     String key = existing.getSize() + "|" + (existing.getUnit() != null ? existing.getUnit() : "");
                     if (!requestKeys.contains(key)) {
-                        log.debug("Deleting orphaned variant: {}", key);
+                        log.debug("Removing orphaned variant: {}", key);
                         product.getVariants().remove(existing);
                         productVariantRepository.delete(existing);
                     }
                 }
+
+                // CRITICAL: Flush deletions before adding new ones to prevent unique constraint
+                // collisions on (product_id, size, unit)
+                productVariantRepository.flush();
 
                 // Update or Add
                 for (var vReq : request.getVariants()) {
                     String key = vReq.getSize() + "|" + (vReq.getUnit() != null ? vReq.getUnit() : "");
                     ProductVariant existing = existingMap.get(key);
                     if (existing != null) {
-                        log.debug("Updating variant: {} | Price: {} -> {}",
-                                key, existing.getPrice(), vReq.getPrice());
+                        log.debug("Updating existing variant: {}", key);
                         existing.setPrice(vReq.getPrice());
                         existing.setDiscountPrice(vReq.getDiscountPrice());
                         existing.setStock(vReq.getStock());
@@ -291,7 +294,7 @@ public class ProductService {
                         existing.setActive(true);
                         productVariantRepository.save(existing);
                     } else {
-                        log.debug("Adding new variant: {}", key);
+                        log.debug("Creating new variant: {}", key);
                         ProductVariant newVariant = ProductVariant.builder()
                                 .product(product)
                                 .size(vReq.getSize())
@@ -306,6 +309,9 @@ public class ProductService {
                         productVariantRepository.save(newVariant);
                     }
                 }
+
+                // Final flush for variants
+                productVariantRepository.flush();
             }
 
             // Forced Flush and Return
