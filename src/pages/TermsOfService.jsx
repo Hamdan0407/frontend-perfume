@@ -6,7 +6,7 @@ export default function TermsOfService() {
             <div className="space-y-6 text-gray-700">
                 <section>
                     <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
-                    <p>By accessing and using the Muwas website (muwas.in), you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
+                    <p>By accessing and using our website, you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
                 </section>
 
                 <section>
@@ -31,7 +31,7 @@ export default function TermsOfService() {
 
                 <section>
                     <h2 className="text-xl font-semibold mb-3">6. Intellectual Property</h2>
-                    <p>All content on this website, including text, graphics, logos, and images, is the property of Muwas and is protected by applicable intellectual property laws.</p>
+                    <p>All content on this website, including text, graphics, logos, and images, is our property and is protected by applicable intellectual property laws.</p>
                 </section>
 
                 <section>
