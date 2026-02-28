@@ -25,7 +25,7 @@ temp_*/
 tmp/
 
 # --- Frontend (Ignored for Backend Repo) ---
-frontend/
+# frontend/
 node_modules/
 dist/
 build/
