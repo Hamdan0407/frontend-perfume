@@ -83,7 +83,7 @@ export default function Footer() {
             <div>
               <h4 className="font-semibold text-white mb-4">Follow Us</h4>
               <div className="flex gap-4">
-                <a href="#" target="_blank" rel="noopener noreferrer" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
+                <a href="https://www.instagram.com/muwasperfumes/" target="_blank" rel="noopener noreferrer" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
                   <Instagram className="h-5 w-5" />
                 </a>
                 <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">

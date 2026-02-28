@@ -422,7 +422,8 @@ export default function AdminPanel() {
       imageUrl: '',
       size: '30ml', // default for perfume
       type: 'Eau de Parfum',
-      active: true
+      active: true,
+      featured: false
     });
     setProductVariants([]);
     setImagePreview(null);
@@ -446,7 +447,8 @@ export default function AdminPanel() {
       imageUrl: product.imageUrl || '',
       size: product.size || (product.category === 'attar' ? '6ml' : '30ml'),
       type: product.type || 'Eau de Parfum',
-      active: product.active !== false
+      active: product.active !== false,
+      featured: product.featured === true
     };
     setProductForm(initialForm);
     formRef.current = initialForm;
@@ -565,7 +567,7 @@ export default function AdminPanel() {
       size: topLevelSize,
       type: currentForm.type || 'Eau de Parfum',
       active: currentForm.active !== false,
-      featured: false,
+      featured: currentForm.featured === true,
       volume: parseInt(primaryVariant.size) || 0,
       variants: variantsData
     };
@@ -2585,6 +2587,17 @@ export default function AdminPanel() {
                         <option value="active">✓ Active</option>
                         <option value="inactive">✗ Inactive</option>
                       </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="flex items-center gap-2 cursor-pointer mt-7">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          checked={productForm.featured || false}
+                          onChange={(e) => setProductForm({ ...productForm, featured: e.target.checked })}
+                        />
+                        <span className="text-sm font-medium">Featured Product</span>
+                      </label>
                     </div>
                   </div>
 

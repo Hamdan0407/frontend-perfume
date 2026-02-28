@@ -41,10 +41,18 @@ export default function Home() {
     setError(null);
 
     try {
+      console.log('[Home] Fetching featured products...');
       const data = await productAPI.getFeaturedProducts(8);
+      console.log('[Home] Featured products response received:', data);
+
       // Backend returns a direct List<ProductResponse> for featured products
       const productsList = Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : []);
-      setFeaturedProducts(groupProducts(productsList));
+      console.log('[Home] Raw products list size:', productsList.length);
+
+      const grouped = groupProducts(productsList);
+      console.log('[Home] Grouped products size:', grouped.length);
+
+      setFeaturedProducts(grouped);
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to load featured products';
       setError(message);
@@ -393,7 +401,7 @@ export default function Home() {
 
               <div>
                 <Link
-                  to="/products?category=Featured"
+                  to="/products"
                   className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold px-8 py-4 rounded-lg transition-colors text-lg"
                 >
                   Try Now

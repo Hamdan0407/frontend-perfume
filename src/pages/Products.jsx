@@ -45,7 +45,32 @@ export default function Products() {
     setProducts([]); // Clear products before fetching as requested
 
     try {
-      // Use the unified filtering system (POST /api/products/filter)
+      // If we only have a category filter, use the standard GET /products?category=...
+      // This satisfies the user request for the URL format products?category=PARFUM
+      if (category && !search && !brand && !type && !minPrice && !maxPrice && !inStockOnly) {
+        const categoryEnum = toCategoryEnum(category);
+        console.log(`[Products] Requesting: GET /api/products?category=${categoryEnum}`);
+
+        const { data } = await api.get('products', {
+          params: {
+            category: categoryEnum,
+            page,
+            size: 15,
+            sortBy,
+            sortDir
+          }
+        });
+
+        console.log('[Products] GET Category Param Response:', data);
+        let content = data.content || (Array.isArray(data) ? data : []);
+        const grouped = groupProducts(content);
+        setProducts(grouped);
+        setTotalPages(data.totalPages || 1);
+        setLoading(false);
+        return;
+      }
+
+      // Use the unified filtering system for complex filters (POST products/filter)
       const filterBody = {
         searchQuery: search || null,
         category: category ? toCategoryEnum(category) : null,
@@ -60,15 +85,21 @@ export default function Products() {
         sortDir: sortDir
       };
 
-      console.log(`[Products] Requesting: POST /api/products/filter`);
+      console.log(`[Products] Requesting: POST products/filter`);
       console.log(`[Products] Payload:`, filterBody);
 
-      const { data } = await api.post('/products/filter', filterBody);
+      // Fix: Removed leading slash to ensure axios appends to baseURL properly
+      const { data } = await api.post('products/filter', filterBody);
+      console.log('[Products] POST Filter Response received:', data);
 
       // Standardize response content
       let content = data.content || (Array.isArray(data) ? data : []);
+      console.log(`[Products] Raw items for category ${category}:`, content.length);
 
-      setProducts(groupProducts(content));
+      const grouped = groupProducts(content);
+      console.log(`[Products] Grouped items to display:`, grouped.length);
+
+      setProducts(grouped);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);

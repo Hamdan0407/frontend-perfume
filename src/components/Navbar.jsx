@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, ChevronDown, Menu, TrendingUp } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, ChevronDown, Menu, TrendingUp, Instagram } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
 import { CATEGORY_LIST } from '../constants/productCategories';
+import BulkInquiryModal from './BulkInquiryModal';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -20,6 +21,7 @@ export default function Navbar() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -109,7 +111,7 @@ export default function Navbar() {
                         </Link>
                       ))}
                     </div>
-                    {isAuthenticated && (
+                    {isAuthenticated ? (
                       <div className="space-y-2 pt-4 border-t">
                         <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent">
                           <User className="h-4 w-4" /> My Profile
@@ -132,6 +134,33 @@ export default function Navbar() {
                         )}
                         <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="flex items-center gap-2 py-2 text-base text-red-600 w-full text-left">
                           <LogOut className="h-4 w-4" /> Logout
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 pt-4 border-t">
+                        <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium">
+                          <User className="h-4 w-4" /> Login
+                        </Link>
+                        <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium">
+                          <TrendingUp className="h-4 w-4" /> Create Account
+                        </Link>
+                        <a
+                          href="https://www.instagram.com/muwasperfumes/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 py-2 text-base text-pink-600 font-medium"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Instagram className="h-4 w-4" /> Follow on Instagram
+                        </a>
+                        <button
+                          onClick={() => {
+                            setBulkInquiryOpen(true);
+                            setMobileMenuOpen(false);
+                          }}
+                          className="flex items-center gap-2 py-2 text-base text-amber-600 font-medium w-full text-left"
+                        >
+                          <TrendingUp className="h-4 w-4" /> Bulk Enquiry
                         </button>
                       </div>
                     )}
@@ -256,7 +285,15 @@ export default function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Bulk Pricing Link */}
+            {/* Instagram Link */}
+            <a
+              href="https://www.instagram.com/muwasperfumes/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-pink-600 transition-colors hidden sm:block"
+            >
+              <Instagram className="h-5 w-5" />
+            </a>
 
             {/* Mobile Search Toggle */}
             <Button
@@ -344,7 +381,15 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBulkInquiryOpen(true)}
+                  className="hidden md:inline-flex border-amber-200 text-amber-700 hover:bg-amber-50"
+                >
+                  Bulk Enquiry
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
                   <Link to="/login">Login</Link>
                 </Button>
                 <Button size="sm" asChild>
@@ -424,6 +469,7 @@ export default function Navbar() {
           </div>
         )}
       </div>
+      <BulkInquiryModal isOpen={bulkInquiryOpen} onOpenChange={setBulkInquiryOpen} />
     </nav>
   );
 }
