@@ -285,16 +285,6 @@ export default function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Instagram Link */}
-            <a
-              href="https://www.instagram.com/muwasperfumes/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-pink-600 transition-colors hidden sm:block"
-            >
-              <Instagram className="h-5 w-5" />
-            </a>
-
             {/* Mobile Search Toggle */}
             <Button
               variant="ghost"
@@ -306,6 +296,15 @@ export default function Navbar() {
             </Button>
 
             {/* Theme Toggle removed for static light theme */}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkInquiryOpen(true)}
+              className="hidden md:inline-flex border-amber-200 text-amber-700 hover:bg-amber-50"
+            >
+              Bulk Enquiry
+            </Button>
 
             {isAuthenticated ? (
               <>
@@ -381,14 +380,6 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setBulkInquiryOpen(true)}
-                  className="hidden md:inline-flex border-amber-200 text-amber-700 hover:bg-amber-50"
-                >
-                  Bulk Enquiry
-                </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/login">Login</Link>
                 </Button>
