@@ -1,0 +1,109 @@
+import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin, TrendingUp } from 'lucide-react';
+
+export default function Footer() {
+  return (
+    <footer className="bg-white text-gray-800 mt-16 border-t border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          {/* About */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-10 w-auto" />
+            </div>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Your destination for luxury fragrances. Discover the perfect scent for every occasion.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="font-semibold mb-4 text-gray-900">Quick Links</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
+              <li><Link to="/products" className="hover:text-amber-500 transition-colors">Shop All</Link></li>
+              <li><Link to="/products?category=men" className="hover:text-amber-500 transition-colors">Men's Fragrances</Link></li>
+              <li><Link to="/products?category=women" className="hover:text-amber-500 transition-colors">Women's Fragrances</Link></li>
+              <li><Link to="/products?featured=true" className="hover:text-amber-500 transition-colors">Featured</Link></li>
+            </ul>
+          </div>
+
+          {/* Customer Service */}
+          <div>
+            <h4 className="font-semibold mb-4 text-gray-900">Customer Service</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
+              <li><Link to="/shipping" className="hover:text-amber-500 transition-colors">Shipping Info</Link></li>
+              <li><Link to="/returns" className="hover:text-amber-500 transition-colors">Exchange Policy</Link></li>
+              <li><Link to="/faq" className="hover:text-amber-500 transition-colors">FAQ</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h4 className="font-semibold mb-4 text-gray-900">Contact Us</h4>
+            <ul className="space-y-3 text-sm text-gray-500">
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-amber-500" />
+                <a href="mailto:muwas2021@gmail.com" className="hover:text-amber-500 transition-colors">muwas2021@gmail.com</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-amber-500" />
+                <a href="tel:+918247327106" className="hover:text-amber-500 transition-colors">+91 8247327106</a>
+              </li>
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-amber-500 mt-0.5" />
+                <span>India</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h4 className="font-semibold mb-4 text-gray-900">Newsletter</h4>
+            <p className="text-sm text-gray-500 mb-4">
+              Subscribe for exclusive deals and updates.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="px-3 py-2 rounded border border-gray-300 flex-1 min-w-0 text-sm text-gray-900"
+              />
+              <button className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded transition-colors font-semibold whitespace-nowrap flex-shrink-0">
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Follow Us / Copyright - Dark Section */}
+      <div className="bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <div>
+              <h4 className="font-semibold text-white mb-4">Follow Us</h4>
+              <div className="flex gap-4">
+                <a href="https://www.instagram.com/muwasperfumes/" target="_blank" rel="noopener noreferrer" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
+                  <Twitter className="h-5 w-5" />
+                </a>
+                <a href="#" className="bg-slate-800 hover:bg-amber-500 p-3 rounded-full transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              </div>
+            </div>
+
+            <div className="text-center text-sm text-gray-400">
+              <p>&copy; 2026 Muwas Perfumes. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

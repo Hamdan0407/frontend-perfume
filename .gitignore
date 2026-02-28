@@ -1,54 +1,21 @@
-# --- Maven ---
-target/
-!.mvn/wrapper/maven-wrapper.jar
-*.jar
-*.war
-*.ear
-*.class
-
-# --- IDE ---
-.idea/
-.vscode/
-*.iml
-*.ipr
-*.iws
-.settings/
-.classpath
-.project
-.DS_Store
-
-# --- Logs & Temp ---
-logs/
-*.log
-*.txt
-temp_*/
-tmp/
-
-# --- Frontend (Ignored for Backend Repo) ---
-# frontend/
+# Dependencies
 node_modules/
+package-lock.json
+
+# Build
 dist/
 build/
 
-# --- Environment & Secrets ---
+# IDE
+.vscode/
+.idea/
+
+# Environment
 .env
-.env.*
-*.bak
-secrets/
+.env.local
 
-# --- Database ---
-*.sql
+# Logs
+*.log
 
-*.db
-*.sqlite
-
-# --- OS & Misc ---
-Thumbs.db
-Desktop.ini
-
-# --- Generated Documentation (Optional: Ignore if not needed) ---
-*_SUMMARY.md
-*_REPORT.md
-*_CHECKLIST.md
-*_GUIDE.md
-*_INDEX.md
+# OS
+.DS_Store

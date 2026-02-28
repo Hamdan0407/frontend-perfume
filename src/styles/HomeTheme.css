@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700;800&display=swap');
+
+.theme-home {
+    /* Font Family - Assistant */
+    font-family: 'Assistant', sans-serif;
+    --font-sans: 'Assistant', sans-serif;
+
+    /* Radius - Sharp */
+    --radius: 0px;
+
+    /* Colors - Black & White (Formulators Inc.) */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    --primary: 0 0% 7%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 7% 94%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 48 96% 51%;
+    /* Gold Accent for Stars */
+    --accent-foreground: 0 0% 7%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 7%;
+}
+
+/* Dark Mode Overrides for Home Page */
+.dark .theme-home {
+    /* Colors - Inverted for Dark Mode */
+    --background: 0 0% 7%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 7%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 48 96% 51%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 80%;
+}
+
+/* Enforce Sharp Corners within Home Page */
+.theme-home .rounded-sm,
+.theme-home .rounded-md,
+.theme-home .rounded-lg,
+.theme-home .rounded-xl,
+.theme-home .rounded-2xl,
+.theme-home .rounded-3xl,
+.theme-home .rounded-full,
+.theme-home .rounded {
+    border-radius: 0 !important;
+}
+
+/* Enforce Font Family */
+.theme-home h1,
+.theme-home h2,
+.theme-home h3,
+.theme-home h4,
+.theme-home h5,
+.theme-home h6,
+.theme-home p,
+.theme-home span,
+.theme-home div,
+.theme-home button,
+.theme-home input {
+    font-family: 'Assistant', sans-serif;
+}
