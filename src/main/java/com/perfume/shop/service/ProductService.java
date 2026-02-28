@@ -74,10 +74,21 @@ public class ProductService {
 
     @Cacheable(value = "featured-products", key = "'all'")
     public List<ProductResponse> getFeaturedProducts() {
-        log.info("Fetching featured products - querying database");
+        log.info("DEBUG: getFeaturedProducts() called");
         try {
+            long totalCount = productRepository.count();
+            long activeCount = productRepository.countActiveProducts();
             List<Product> products = productRepository.findByFeaturedTrueAndActiveTrueOrderByUpdatedAtDesc();
-            log.info("Found {} featured products", products.size());
+
+            log.info("DEBUG: Database Stats - Total: {}, Active: {}, Featured: {}",
+                    totalCount, activeCount, products.size());
+
+            if (!products.isEmpty()) {
+                log.info("DEBUG: Featured product names: {}",
+                        products.stream().map(Product::getName).collect(Collectors.joining(", ")));
+            } else {
+                log.warn("DEBUG: No featured products found in database!");
+            }
 
             List<ProductResponse> responses = products.stream()
                     .map(product -> {
@@ -437,6 +448,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse activateProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -449,6 +461,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse deactivateProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -461,6 +474,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse toggleFeatured(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
