@@ -47,7 +47,7 @@ export default function Products() {
     try {
       // Use the unified filtering system (POST /api/products/filter)
       const filterBody = {
-        query: search || null,
+        searchQuery: search || null,
         category: category ? toCategoryEnum(category) : null,
         type: type || null,
         brands: brand ? [brand] : null,

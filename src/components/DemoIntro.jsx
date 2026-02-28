@@ -35,7 +35,7 @@ export default function DemoIntro({ onComplete }) {
                 <div className="w-40 h-40 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-200 shadow-xl">
                     <Sparkles className="w-20 h-20 text-amber-500 animate-pulse" />
                 </div>
-                <h1 className="text-4xl font-extrabold tracking-tighter text-gray-900 mt-4">LUXURY</h1>
+                <h1 className="text-4xl font-extrabold tracking-tighter text-gray-900 mt-4">MUWAS</h1>
                 <p className="text-amber-600 font-bold tracking-widest text-sm uppercase">Fragrances & Attars</p>
             </div>
         </div>

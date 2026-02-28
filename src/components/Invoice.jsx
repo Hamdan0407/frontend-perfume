@@ -5,14 +5,14 @@ import { Separator } from './ui/separator';
 
 const Invoice = forwardRef(({ order, company }, ref) => {
   const defaultCompany = {
-    name: 'LUXURY FRAGRANCES',
+    name: 'MUWAS PERFUMES',
     tagline: 'Premium Scents & Luxury Attars',
     address: '📍 No 3, Modi Ibrahim Street, Ambur',
     city: 'Tamil Nadu 635802',
     country: 'India',
-    email: 'support@luxuryfragrances.com',
+    email: 'muwas2021@gmail.com',
     phone: '+91 9629004158',
-    website: 'www.luxuryfragrances.com',
+    website: 'www.muwas.in',
     gst: 'GSTIN: 33AAAAA0000A1Z5',
     pan: 'PAN: AAAAA0000A',
     ...company
@@ -50,7 +50,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
               <div className="h-16 w-16 bg-primary rounded-xl flex items-center justify-center">
                 <Package className="h-10 w-10 text-white" />
               </div>
-              <span className="text-3xl font-extrabold tracking-tight">LUXURY</span>
+              <span className="text-3xl font-extrabold tracking-tight">MUWAS</span>
             </div>
             <p className="text-sm text-muted-foreground font-medium">{defaultCompany.tagline}</p>
           </div>
