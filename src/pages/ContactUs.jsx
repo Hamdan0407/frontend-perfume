@@ -63,7 +63,7 @@ export default function ContactUs() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg">muwas2021@yahoo.com</p>
+                        <p className="text-lg">support@luxuryfragrances.com</p>
                         <p className="text-sm text-muted-foreground mt-1">
                             We'll respond within 24 hours
                         </p>

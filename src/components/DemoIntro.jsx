@@ -32,8 +32,11 @@ export default function DemoIntro({ onComplete }) {
         >
             <div className={`flex flex-col items-center gap-4 transition-all duration-1000 transform ${stage >= 1 ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90'
                 }`}>
-                <img src="/muwas-logo-nobg.png" alt="MUWAS" className="w-56 sm:w-72 h-auto object-contain" />
-                <p className="text-gray-400 tracking-widest text-sm uppercase">Luxury Fragrances</p>
+                <div className="w-40 h-40 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-200 shadow-xl">
+                    <Sparkles className="w-20 h-20 text-amber-500 animate-pulse" />
+                </div>
+                <h1 className="text-4xl font-extrabold tracking-tighter text-gray-900 mt-4">LUXURY</h1>
+                <p className="text-amber-600 font-bold tracking-widest text-sm uppercase">Fragrances & Attars</p>
             </div>
         </div>
     );

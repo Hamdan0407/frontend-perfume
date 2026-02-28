@@ -87,7 +87,7 @@ export default function ReturnsExchange() {
                                 <div>
                                     <p className="font-medium">Contact Us</p>
                                     <p className="text-sm text-muted-foreground">
-                                        Email us at muwas2021@yahoo.com with your order number
+                                        Email us at support@luxuryfragrances.com with your order number
                                     </p>
                                 </div>
                             </div>
@@ -133,8 +133,8 @@ export default function ReturnsExchange() {
                     <CardContent className="pt-6">
                         <p className="text-sm text-blue-900 dark:text-blue-100">
                             <strong>Need Help?</strong> Contact our customer support at{' '}
-                            <a href="mailto:muwas2021@yahoo.com" className="underline">
-                                muwas2021@yahoo.com
+                            <a href="mailto:support@luxuryfragrances.com" className="underline">
+                                support@luxuryfragrances.com
                             </a>{' '}
                             or call +91-9894722186
                         </p>
