@@ -13,8 +13,6 @@ const Invoice = forwardRef(({ order, company }, ref) => {
     email: 'muwas2021@gmail.com',
     phone: '+91 9629004158',
     website: 'www.muwas.in',
-    gst: 'GSTIN: 33AAAAA0000A1Z5',
-    pan: 'PAN: AAAAA0000A',
     ...company
   };
 
@@ -57,7 +55,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
 
           {/* Invoice Info */}
           <div className="text-right">
-            <h2 className="text-2xl font-extrabold tracking-widest text-primary uppercase mb-3">TAX INVOICE</h2>
+            <h2 className="text-2xl font-extrabold tracking-widest text-primary uppercase mb-3">INVOICE</h2>
             <div className="bg-secondary rounded-2xl p-6 shadow-sm border border-border">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between items-center gap-6">
@@ -103,8 +101,6 @@ const Invoice = forwardRef(({ order, company }, ref) => {
               <span className="font-medium">{defaultCompany.website}</span>
             </div>
             <div className="text-xs">
-              <div>{defaultCompany.gst}</div>
-              <div>{defaultCompany.pan}</div>
             </div>
           </div>
         </div>
@@ -236,10 +232,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
                 </div>
               )}
 
-              <div className="flex justify-between items-center py-2 text-muted-foreground">
-                <span className="font-medium">GST (18%):</span>
-                <span className="font-semibold text-foreground tabular-nums">{formatCurrency(Math.round(calculateSubtotal() * 0.18))}</span>
-              </div>
+
             </div>
 
             <div className="border-t-2 border-border"></div>

@@ -841,10 +841,6 @@ export default function Checkout() {
                     <span className="font-medium">₹{cart?.subtotal?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax (18% GST)</span>
-                    <span className="font-medium">₹{cart?.tax?.toFixed(2) || '0.00'}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
                     <div>
                       <span className="text-muted-foreground">Shipping</span>
                       <p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight max-w-[200px]">

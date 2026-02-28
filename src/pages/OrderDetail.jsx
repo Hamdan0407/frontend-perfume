@@ -238,10 +238,6 @@ export default function OrderDetail() {
                 <span>₹{order.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tax</span>
-                <span>₹{order.tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
                 <span>₹{order.shippingCost.toFixed(2)}</span>
               </div>
