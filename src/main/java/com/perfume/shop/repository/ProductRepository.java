@@ -25,7 +25,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
        Page<Product> findByBrandAndActiveTrue(String brand, Pageable pageable);
 
-       List<Product> findByFeaturedTrueAndActiveTrue();
+       List<Product> findByFeaturedTrueAndActiveTrueOrderByUpdatedAtDesc();
 
        @Query("SELECT p FROM Product p WHERE p.active = true AND " +
                      "(LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +

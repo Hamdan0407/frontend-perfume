@@ -76,7 +76,7 @@ public class ProductService {
     public List<ProductResponse> getFeaturedProducts() {
         log.info("Fetching featured products - querying database");
         try {
-            List<Product> products = productRepository.findByFeaturedTrueAndActiveTrue();
+            List<Product> products = productRepository.findByFeaturedTrueAndActiveTrueOrderByUpdatedAtDesc();
             log.info("Found {} featured products", products.size());
 
             List<ProductResponse> responses = products.stream()
@@ -198,8 +198,8 @@ public class ProductService {
                 .imageUrl(request.getImageUrl())
                 .additionalImages(null)
                 .fragranceNotes(null)
-                .featured(false)
-                .active(true)
+                .featured(request.getFeatured() != null ? request.getFeatured() : false)
+                .active(request.getActive() != null ? request.getActive() : true)
                 .rating(0.0)
                 .reviewCount(0)
                 .build();
