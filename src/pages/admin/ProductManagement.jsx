@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
+import { toCategoryEnum } from '../../lib/utils';
+import { PRODUCT_CATEGORIES } from '../../constants/productCategories';
 
 export default function ProductManagement() {
   const [products, setProducts] = useState([]);
@@ -59,6 +61,7 @@ export default function ProductManagement() {
     // Convert string values to proper types
     const submitData = {
       ...formData,
+      category: toCategoryEnum(formData.category),
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
     };
@@ -226,9 +229,12 @@ export default function ProductManagement() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Category</option>
-                  <option value="perfume">Perfume</option>
-                  <option value="attar">Attar</option>
-                  <option value="aroma chemicals">Aroma Chemicals</option>
+                  {Object.values(PRODUCT_CATEGORIES).map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                  <option value="men">Men</option>
+                  <option value="women">Women</option>
+                  <option value="unisex">Unisex</option>
                 </select>
               </div>
               <div>

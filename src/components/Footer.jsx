@@ -8,7 +8,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* About */}
           <div>
-            <img src="/muwas-logo.jfif" alt="MUWAS" className="h-10 w-auto object-contain mb-4" />
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="h-8 w-8 text-amber-500" />
+              <span className="text-xl font-bold tracking-tight text-white">LUXURY</span>
+            </div>
             <p className="text-gray-500 text-sm leading-relaxed">
               Your destination for luxury fragrances. Discover the perfect scent for every occasion.
             </p>
@@ -19,8 +22,8 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-gray-900">Quick Links</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li><Link to="/products" className="hover:text-amber-500 transition-colors">Shop All</Link></li>
-              <li><Link to="/products?category=Men" className="hover:text-amber-500 transition-colors">Men's Fragrances</Link></li>
-              <li><Link to="/products?category=Women" className="hover:text-amber-500 transition-colors">Women's Fragrances</Link></li>
+              <li><Link to="/products?category=men" className="hover:text-amber-500 transition-colors">Men's Fragrances</Link></li>
+              <li><Link to="/products?category=women" className="hover:text-amber-500 transition-colors">Women's Fragrances</Link></li>
               <li><Link to="/products?featured=true" className="hover:text-amber-500 transition-colors">Featured</Link></li>
             </ul>
           </div>
@@ -41,7 +44,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-gray-500">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-amber-500" />
-                <a href="mailto:muwas2021@yahoo.com" className="hover:text-amber-500 transition-colors">muwas2021@yahoo.com</a>
+                <a href="mailto:support@luxuryfragrances.com" className="hover:text-amber-500 transition-colors">support@luxuryfragrances.com</a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-amber-500" />
@@ -97,7 +100,7 @@ export default function Footer() {
             </div>
 
             <div className="text-center text-sm text-gray-400">
-              <p>&copy; 2026 MUWAS. All rights reserved.</p>
+              <p>&copy; 2026 Luxury Fragrances. All rights reserved.</p>
             </div>
           </div>
         </div>

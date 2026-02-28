@@ -10,7 +10,7 @@ import { jsPDF } from 'jspdf';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../context/ToastContext';
 import { formatCategory } from '../lib/utils';
-import api from '../api/axios';
+import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
 
 export default function AdminPanel() {
@@ -1345,10 +1345,10 @@ export default function AdminPanel() {
       <aside className={`admin-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
         <div className="sidebar-brand">
           <div className="brand-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div className="logo-icon" style={{ width: '32px', height: '32px', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/muwas-logo-nobg.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <div className="logo-icon" style={{ width: '32px', height: '32px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+              <TrendingUp size={20} />
             </div>
-            {sidebarOpen && <span className="brand-text">Admin Panel</span>}
+            {sidebarOpen && <span className="brand-text">Luxury Admin</span>}
           </div>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}

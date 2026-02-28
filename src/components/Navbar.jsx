@@ -7,6 +7,7 @@ import api from '../api/axios';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
+import { CATEGORY_LIST } from '../constants/productCategories';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -86,7 +87,10 @@ export default function Navbar() {
                 <SheetContent side="left" className="w-[300px] sm:w-[400px]">
                   <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
-                      <img src="/muwas-logo.jfif" alt="MUWAS" className="h-8 w-auto object-contain" />
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-8 w-8 text-amber-600" />
+                        <span className="text-xl font-bold tracking-tight">LUXURY</span>
+                      </div>
                     </SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-4 mt-8">
@@ -95,21 +99,16 @@ export default function Navbar() {
                     </Link>
                     <div className="space-y-2">
                       <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Collections</p>
-                      <Link to="/products?type=Parfum" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Parfum
-                      </Link>
-                      <Link to="/products?category=premium attars" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Premium Attars
-                      </Link>
-                      <Link to="/products?category=oud reserve" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Oud Reserve
-                      </Link>
-                      <Link to="/products?category=bakhoor" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Bakhoor
-                      </Link>
-                      <Link to="/products?category=aroma chemicals" onClick={() => setMobileMenuOpen(false)} className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors">
-                        Aroma Chemicals
-                      </Link>
+                      {CATEGORY_LIST.map(cat => (
+                        <Link
+                          key={cat.value}
+                          to={cat.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors"
+                        >
+                          {cat.label}
+                        </Link>
+                      ))}
                     </div>
                     {isAuthenticated && (
                       <div className="space-y-2 pt-4 border-t">
@@ -144,7 +143,10 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-1.5 ml-1 sm:ml-0">
-              <img src="/muwas-logo.jfif" alt="MUWAS" className="h-8 sm:h-10 w-auto object-contain" />
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-8 w-8 text-amber-600" />
+                <span className="text-xl font-bold tracking-tight">LUXURY</span>
+              </div>
               <span className="text-[8px] sm:text-[10px] font-bold text-accent border border-accent/30 px-1 rounded opacity-60 hidden xs:inline">v2.1</span>
             </Link>
           </div>
@@ -165,30 +167,15 @@ export default function Navbar() {
                 <ChevronDown className="h-4 w-4" />
               </button>
               <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <Link
-                  to="/products?type=Parfum"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg"
-                >
-                  Parfum
-                </Link>
-                <Link
-                  to="/products?category=premium attars"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  Premium Attars
-                </Link>
-                <Link
-                  to="/products?category=oud reserve"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  Oud Reserve
-                </Link>
-                <Link
-                  to="/products?category=bakhoor"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors last:rounded-b-lg"
-                >
-                  Bakhoor
-                </Link>
+                {CATEGORY_LIST.filter(cat => cat.value !== 'aroma chemicals').map(cat => (
+                  <Link
+                    key={cat.value}
+                    to={cat.path}
+                    className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  >
+                    {cat.label}
+                  </Link>
+                ))}
               </div>
             </div>
 

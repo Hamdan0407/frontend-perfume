@@ -11,6 +11,8 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
+import { CATEGORY_LIST, mapToCategoryEnum } from '../constants/productCategories';
+import { formatCategory, toCategoryEnum } from '../lib/utils';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,42 +42,31 @@ export default function Products() {
 
   const fetchProducts = async () => {
     setLoading(true);
-    setProducts([]); // Clear existing products
+    setProducts([]); // Clear products before fetching as requested
+
     try {
-      let url = `/products?page=${page}&size=12&sortBy=${sortBy}&sortDir=${sortDir}`;
+      // Use the unified filtering system (POST /api/products/filter)
+      const filterBody = {
+        query: search || null,
+        category: category ? toCategoryEnum(category) : null,
+        type: type || null,
+        brands: brand ? [brand] : null,
+        minPrice: minPrice ? parseFloat(minPrice) : null,
+        maxPrice: maxPrice ? parseFloat(maxPrice) : null,
+        inStock: inStockOnly || null,
+        page: page,
+        size: 12,
+        sortBy: sortBy,
+        sortDir: sortDir
+      };
 
-      // Add price range if specified
-      const params = new URLSearchParams();
-      params.append('page', page);
-      params.append('size', 12);
-      params.append('sortBy', sortBy);
-      params.append('sortDir', sortDir);
+      console.log(`[Products] Requesting: POST /api/products/filter`);
+      console.log(`[Products] Payload:`, filterBody);
 
-      if (minPrice) params.append('minPrice', minPrice);
-      if (maxPrice) params.append('maxPrice', maxPrice);
+      const { data } = await api.post('/products/filter', filterBody);
 
-      if (search) {
-        url = `/products/search?query=${search}&${params.toString()}`;
-      } else if (category) {
-        url = `/products/category/${category}?${params.toString()}`;
-      } else if (brand) {
-        url = `/products/brand/${brand}?${params.toString()}`;
-      } else if (type) {
-        url = `/products/type/${type}?${params.toString()}`;
-      } else {
-        url = `/products?${params.toString()}`;
-      }
-
-      console.log(`[Products] Requesting: ${url}`);
-      const { data } = await api.get(url);
-
-      // Standardize response content - handle both paginated content and direct list
+      // Standardize response content
       let content = data.content || (Array.isArray(data) ? data : []);
-
-      // Filter by stock if checkbox is checked
-      if (inStockOnly) {
-        content = content.filter(p => p.stock > 0);
-      }
 
       setProducts(groupProducts(content));
       setTotalPages(data.totalPages || 1);
@@ -124,7 +115,7 @@ export default function Products() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="mb-8 lg:mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 capitalize">
-            {category ? category : search ? 'Search Results' : 'All Products'}
+            {category ? (CATEGORY_LIST.find(c => c.value === category)?.label || formatCategory(category)) : search ? 'Search Results' : 'All Products'}
           </h1>
           {search && (
             <p className="text-muted-foreground">
@@ -324,11 +315,9 @@ function FiltersContent({
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Categories</option>
-            <option value="perfume">Parfum</option>
-            <option value="premium attars">Premium Attars</option>
-            <option value="oud reserve">Oud Reserve</option>
-            <option value="bakhoor">Bakhoor</option>
-            <option value="aroma chemicals">Aroma Chemicals</option>
+            {CATEGORY_LIST.map(cat => (
+              <option key={cat.value} value={cat.value}>{cat.label}</option>
+            ))}
           </select>
         </div>
 

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Search, Filter } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { formatCategory, toCategoryEnum } from '../lib/utils';
 import api from '../api/axios';
+import { PRODUCT_CATEGORIES, CATEGORY_LIST } from '../constants/productCategories';
 import '../styles/AdminProducts.css';
 
 export default function AdminProducts() {
@@ -80,7 +82,7 @@ export default function AdminProducts() {
       const payload = {
         name: formData.name.trim(),
         brand: formData.brand?.trim() || 'Unknown',
-        category: formData.category,
+        category: toCategoryEnum(formData.category),
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         description: formData.description.trim(),
@@ -176,11 +178,11 @@ export default function AdminProducts() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'All' || product.category === filterCategory;
+    const matchesCategory = filterCategory === 'All' || formatCategory(product.category) === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['All', 'Women', 'Men', 'Unisex'];
+  const categories = ['All', ...CATEGORY_LIST.map(c => c.label)];
 
   return (
     <div className="products-container">
@@ -215,6 +217,9 @@ export default function AdminProducts() {
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
+            <option value="Men">Men Only</option>
+            <option value="Women">Women Only</option>
+            <option value="Unisex">Unisex Only</option>
           </select>
         </div>
       </div>
@@ -247,7 +252,7 @@ export default function AdminProducts() {
                     </div>
                   </td>
                   <td>{product.brand || 'N/A'}</td>
-                  <td><span className="badge">{product.category}</span></td>
+                  <td><span className="badge">{formatCategory(product.category)}</span></td>
                   <td className="price">₹{product.price?.toFixed(2) || '0.00'}</td>
                   <td>
                     <span className={`stock ${product.stock < 20 ? 'low' : ''}`}>
@@ -304,9 +309,12 @@ export default function AdminProducts() {
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
-                    <option value="Women">Women</option>
-                    <option value="Men">Men</option>
-                    <option value="Unisex">Unisex</option>
+                    {CATEGORY_LIST.map(cat => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
+                    <option value="men">Men</option>
+                    <option value="women">Women</option>
+                    <option value="unisex">Unisex</option>
                   </select>
                 </div>
 

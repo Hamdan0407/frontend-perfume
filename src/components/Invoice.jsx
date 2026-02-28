@@ -5,14 +5,14 @@ import { Separator } from './ui/separator';
 
 const Invoice = forwardRef(({ order, company }, ref) => {
   const defaultCompany = {
-    name: 'MUWAS',
-    tagline: 'Luxury Fragrances & Premium Scents',
-    address: 'No 3, Modi Ibrahim Street, Ambur',
-    city: 'Ambur, Tamil Nadu 635802',
+    name: 'LUXURY FRAGRANCES',
+    tagline: 'Premium Scents & Luxury Attars',
+    address: '📍 No 3, Modi Ibrahim Street, Ambur',
+    city: 'Tamil Nadu 635802',
     country: 'India',
-    email: 'muwas2021@gmail.com',
-    phone: '+91 8247327106',
-    website: 'www.muwas.com',
+    email: 'support@luxuryfragrances.com',
+    phone: '+91 9629004158',
+    website: 'www.luxuryfragrances.com',
     gst: 'GSTIN: 33AAAAA0000A1Z5',
     pan: 'PAN: AAAAA0000A',
     ...company
@@ -47,12 +47,10 @@ const Invoice = forwardRef(({ order, company }, ref) => {
           {/* Company Branding */}
           <div className="space-y-3">
             <div className="flex items-center gap-3 mb-2">
-              <img
-                src="/muwas-logo.jfif"
-                alt="MUWAS"
-                className="h-16 w-auto object-contain"
-                style={{ maxWidth: '180px' }}
-              />
+              <div className="h-16 w-16 bg-primary rounded-xl flex items-center justify-center">
+                <Package className="h-10 w-10 text-white" />
+              </div>
+              <span className="text-3xl font-extrabold tracking-tight">LUXURY</span>
             </div>
             <p className="text-sm text-muted-foreground font-medium">{defaultCompany.tagline}</p>
           </div>

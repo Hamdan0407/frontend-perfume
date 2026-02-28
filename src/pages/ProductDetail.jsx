@@ -13,7 +13,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import StarRating from '../components/StarRating';
 import StockBadge from '../components/StockBadge';
 import RelatedProducts from '../components/RelatedProducts';
-import { cn } from '../lib/utils';
+import { cn, formatCategory } from '../lib/utils';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -363,7 +363,7 @@ export default function ProductDetail() {
               <CardContent className="grid grid-cols-2 gap-4 p-6">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Category</p>
-                  <p className="font-medium text-foreground">{product.category === 'perfume' ? 'Parfum' : (product.category.charAt(0).toUpperCase() + product.category.slice(1))}</p>
+                  <p className="font-medium text-foreground">{formatCategory(product.category)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Type</p>
@@ -402,7 +402,7 @@ export default function ProductDetail() {
             {/* Variant Selector */}
             {mergedVariants && mergedVariants.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-semibold text-foreground mb-3">{product?.category === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}</h3>
+                <h3 className="font-semibold text-foreground mb-3">{(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}</h3>
                 <div className="flex flex-wrap gap-3">
                   {mergedVariants.map((variant) => (
                     <button
@@ -417,7 +417,7 @@ export default function ProductDetail() {
                           : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                       )}
                     >
-                      {variant.size}{variant.unit || (product?.category === 'aroma chemicals' ? 'g' : 'ml')}
+                      {variant.size}{variant.unit || ((product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'g' : 'ml')}
                       {variant.stock === 0 && (
                         <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
                           Out

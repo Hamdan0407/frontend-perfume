@@ -1,4 +1,5 @@
 import api from './axios';
+import { toCategoryEnum } from '../lib/utils';
 
 /**
  * Products API Service
@@ -28,7 +29,11 @@ const productAPI = {
    * Direct list endpoints: [{ id, name, ... }, ...]
    */
   getProducts: async (params = {}) => {
-    const response = await api.get('products', { params });
+    const normalizedParams = { ...params };
+    if (normalizedParams.category) {
+      normalizedParams.category = toCategoryEnum(normalizedParams.category);
+    }
+    const response = await api.get('products', { params: normalizedParams });
     return response.data;
   },
 
@@ -48,12 +53,17 @@ const productAPI = {
   },
 
   getProductsByCategory: async (category, params = {}) => {
-    const response = await api.get(`products/category/${category}`, { params });
+    const normalizedCategory = toCategoryEnum(category);
+    const response = await api.get(`products/category/${normalizedCategory}`, { params });
     return response.data;
   },
 
   filterProducts: async (filters) => {
-    const response = await api.post('products/filter', filters);
+    const normalizedFilters = { ...filters };
+    if (normalizedFilters.category) {
+      normalizedFilters.category = toCategoryEnum(normalizedFilters.category);
+    }
+    const response = await api.post('products/filter', normalizedFilters);
     return response.data;
   },
 };

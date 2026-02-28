@@ -104,7 +104,8 @@ export default function ProductCard({ product, onQuickView }) {
               const displayVolume = product.size || product.volume || (product.variants && product.variants.length > 0 ? product.variants[0].size : null);
               if (!displayVolume) return null;
 
-              const displayUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (product.category === 'aroma chemicals' ? 'g' : 'ml'));
+              const currentCat = (product.category || '').toLowerCase().replace(/_/g, ' ');
+              const displayUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (currentCat === 'aroma chemicals' ? 'g' : 'ml'));
               return (
                 <div className="mb-2">
                   <span className="text-[10px] sm:text-xs font-semibold bg-secondary/80 px-2 py-0.5 rounded text-secondary-foreground">
