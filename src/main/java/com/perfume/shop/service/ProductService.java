@@ -259,7 +259,8 @@ public class ProductService {
                         .build();
                 savedProduct.getVariants().add(variant);
             }
-            savedProduct = productRepository.save(savedProduct);
+        }
+
         // Sync with variants if any
         syncProductWithVariants(savedProduct);
         savedProduct = productRepository.save(savedProduct);
