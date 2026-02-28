@@ -111,6 +111,17 @@ export default function Navbar() {
                         </Link>
                       ))}
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setBulkInquiryOpen(true);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2 py-2 text-base text-amber-600 font-medium w-full text-left"
+                    >
+                      <TrendingUp className="h-4 w-4" /> Bulk Enquiry
+                    </button>
+
                     {isAuthenticated ? (
                       <div className="space-y-2 pt-4 border-t">
                         <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent">
@@ -144,24 +155,6 @@ export default function Navbar() {
                         <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium">
                           <TrendingUp className="h-4 w-4" /> Create Account
                         </Link>
-                        <a
-                          href="https://www.instagram.com/muwasperfumes/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 py-2 text-base text-pink-600 font-medium"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <Instagram className="h-4 w-4" /> Follow on Instagram
-                        </a>
-                        <button
-                          onClick={() => {
-                            setBulkInquiryOpen(true);
-                            setMobileMenuOpen(false);
-                          }}
-                          className="flex items-center gap-2 py-2 text-base text-amber-600 font-medium w-full text-left"
-                        >
-                          <TrendingUp className="h-4 w-4" /> Bulk Enquiry
-                        </button>
                       </div>
                     )}
                   </div>
@@ -285,16 +278,6 @@ export default function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Instagram Link */}
-            <a
-              href="https://www.instagram.com/muwasperfumes/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-pink-600 transition-colors hidden sm:block"
-            >
-              <Instagram className="h-5 w-5" />
-            </a>
-
             {/* Mobile Search Toggle */}
             <Button
               variant="ghost"
@@ -306,6 +289,15 @@ export default function Navbar() {
             </Button>
 
             {/* Theme Toggle removed for static light theme */}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkInquiryOpen(true)}
+              className="hidden md:inline-flex border-amber-200 text-amber-700 hover:bg-amber-50"
+            >
+              Bulk Enquiry
+            </Button>
 
             {isAuthenticated ? (
               <>
@@ -381,14 +373,6 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setBulkInquiryOpen(true)}
-                  className="hidden md:inline-flex border-amber-200 text-amber-700 hover:bg-amber-50"
-                >
-                  Bulk Enquiry
-                </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/login">Login</Link>
                 </Button>
