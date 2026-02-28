@@ -269,11 +269,14 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        log.info("Starting Extreme Persistence Update for Product ID: {}", id);
+        log.info("Starting Persistence Update for Product ID: {}. New Category: {}", id, request.getCategory());
         validateProductRequest(request);
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
+
+        Category oldCategory = product.getCategory();
+        log.info("DEBUG: Old Category: {}, Targeted New Category: {}", oldCategory, request.getCategory());
 
         try {
             // Update basic fields
@@ -292,6 +295,7 @@ public class ProductService {
 
             if (request.getCategory() != null) {
                 product.setCategory(request.getCategory());
+                log.info("DEBUG: Set Category to: {}", product.getCategory());
             }
 
             if (request.getType() != null)
@@ -343,8 +347,7 @@ public class ProductService {
                     }
                 }
 
-                // CRITICAL: Flush deletions before adding new ones to prevent unique constraint
-                // collisions on (product_id, size, unit)
+                // CRITICAL: Flush deletions before adding new ones
                 productVariantRepository.flush();
 
                 // Update or Add
@@ -352,7 +355,6 @@ public class ProductService {
                     String key = vReq.getSize() + "|" + (vReq.getUnit() != null ? vReq.getUnit() : "");
                     ProductVariant existing = existingMap.get(key);
                     if (existing != null) {
-                        log.debug("Updating existing variant: {}", key);
                         existing.setPrice(vReq.getPrice());
                         existing.setDiscountPrice(vReq.getDiscountPrice());
                         existing.setStock(vReq.getStock());
@@ -360,7 +362,6 @@ public class ProductService {
                         existing.setActive(true);
                         productVariantRepository.save(existing);
                     } else {
-                        log.debug("Creating new variant: {}", key);
                         ProductVariant newVariant = ProductVariant.builder()
                                 .product(product)
                                 .size(vReq.getSize())
@@ -376,26 +377,19 @@ public class ProductService {
                     }
                 }
 
-                // Final flush for variants
                 productVariantRepository.flush();
             }
 
             // Forced Flush and Return
             Product updated = productRepository.saveAndFlush(product);
-
-            // Double-check the state through repository fetch (within same transaction)
-            List<ProductVariant> finalVariants = productVariantRepository.findByProductId(id);
-            log.info("Update complete. Final Variant count in DB: {}", finalVariants.size());
-            finalVariants.forEach(v -> log.info("Final Variant: Size={}, Price={}, Stock={}", v.getSize(), v.getPrice(),
-                    v.getStock()));
+            log.info("DEBUG: Persisted Category in DB: {}", updated.getCategory());
 
             return ProductResponse.fromEntity(updated);
 
         } catch (DataIntegrityViolationException e) {
             log.error("Data Integrity Error updating product {}: {}", id, e.getMessage());
             throw new ApplicationException(
-                    "Cannot remove or modify variants that are already linked to orders. Please mark them as inactive instead.",
-                    ErrorType.CONFLICT, 409);
+                    "Cannot remove or modify variants linked to orders.", ErrorType.CONFLICT, 409);
         } catch (Exception e) {
             log.error("Unexpected error updating product {}: {}", id, e.getMessage());
             throw e;
@@ -405,7 +399,7 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = { "products", "categories", "featured-products" }, allEntries = true)
     public ProductResponse partialUpdateProduct(Long id, ProductRequest request) {
-        log.info("Partial update for Product ID: {}", id);
+        log.info("Partial update for Product ID: {}. Category in request: {}", id, request.getCategory());
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", id.toString()));
 
@@ -424,6 +418,7 @@ public class ProductService {
 
         if (request.getCategory() != null) {
             product.setCategory(request.getCategory());
+            log.info("DEBUG: Partial update set Category to: {}", product.getCategory());
         }
 
         if (request.getType() != null)
@@ -447,8 +442,7 @@ public class ProductService {
             product.setActive(request.getActive());
 
         Product updated = productRepository.saveAndFlush(product);
-        log.info("Partial update persisted for ID: {}", updated.getId());
-
+        log.info("DEBUG: Partial update persisted Category: {}", updated.getCategory());
         return ProductResponse.fromEntity(updated);
     }
 
