@@ -10,7 +10,6 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-10 w-auto" />
-              <span className="text-xl font-bold tracking-tight text-gray-900">MUWAS</span>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed">
               Your destination for luxury fragrances. Discover the perfect scent for every occasion.

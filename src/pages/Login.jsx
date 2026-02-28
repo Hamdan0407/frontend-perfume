@@ -173,11 +173,7 @@ export default function Login() {
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-6">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center p-2">
-                <div className="w-full h-full flex items-center justify-center bg-amber-50 rounded-full border-2 border-amber-200">
-                  <Sparkles className="w-1/2 h-1/2 text-amber-500" />
-                </div>
-              </div>
+              <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-20 w-auto mb-4" />
             </div>
           </div>
           <CardDescription className="text-center">Sign in to your account</CardDescription>

@@ -89,7 +89,6 @@ export default function Navbar() {
                     <SheetTitle className="flex items-center gap-2">
                       <div className="flex items-center gap-2">
                         <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-10 w-auto" />
-                        <span className="text-xl font-bold tracking-tight">MUWAS</span>
                       </div>
                     </SheetTitle>
                   </SheetHeader>
@@ -145,7 +144,6 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-1.5 ml-1 sm:ml-0">
               <div className="flex items-center gap-2">
                 <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-10 w-auto" />
-                <span className="text-xl font-bold tracking-tight">MUWAS</span>
               </div>
               <span className="text-[8px] sm:text-[10px] font-bold text-accent border border-accent/30 px-1 rounded opacity-60 hidden xs:inline">v2.1</span>
             </Link>
