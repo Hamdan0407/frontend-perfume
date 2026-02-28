@@ -62,14 +62,26 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        Page<Product> findByActiveStatus(@Param("active") Boolean active, Pageable pageable);
 
        // Advanced filtering
-       @Query("SELECT p FROM Product p WHERE p.active = true " +
+       // Advanced filtering
+       @Query("SELECT DISTINCT p FROM Product p LEFT JOIN p.variants v " +
+                     "WHERE p.active = true " +
                      "AND (:category IS NULL OR p.category = :category) " +
                      "AND (:brands IS NULL OR p.brand IN :brands) " +
-                     "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-                     "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+                     "AND (" +
+                     "  (:minPrice IS NULL AND :maxPrice IS NULL) OR " +
+                     "  EXISTS (SELECT 1 FROM ProductVariant v2 WHERE v2.product = p AND v2.active = true AND " +
+                     "          COALESCE(v2.discountPrice, v2.price) >= COALESCE(:minPrice, 0) AND " +
+                     "          COALESCE(v2.discountPrice, v2.price) <= COALESCE(:maxPrice, 99999999)) OR " +
+                     "  (p.variants IS EMPTY AND " +
+                     "   COALESCE(p.discountPrice, p.price) >= COALESCE(:minPrice, 0) AND " +
+                     "   COALESCE(p.discountPrice, p.price) <= COALESCE(:maxPrice, 99999999))" +
+                     ") " +
                      "AND (:featured IS NULL OR p.featured = :featured) " +
                      "AND (:minRating IS NULL OR p.rating >= :minRating) " +
-                     "AND (:inStock IS NULL OR (:inStock = true AND p.stock > 0) OR (:inStock = false))")
+                     "AND (:inStock IS NULL OR :inStock = false OR " +
+                     "     EXISTS (SELECT 1 FROM ProductVariant v3 WHERE v3.product = p AND v3.active = true AND v3.stock > 0) OR "
+                     +
+                     "     (p.variants IS EMPTY AND p.stock > 0))")
        Page<Product> findByFilters(
                      @Param("category") Category category,
                      @Param("brands") List<String> brands,
@@ -80,13 +92,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                      @Param("inStock") Boolean inStock,
                      Pageable pageable);
 
-       @Query("SELECT p FROM Product p WHERE p.active = true " +
+       @Query("SELECT DISTINCT p FROM Product p LEFT JOIN p.variants v " +
+                     "WHERE p.active = true " +
                      "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
                      "OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :query, '%')) " +
                      "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :query, '%'))) " +
                      "AND (:category IS NULL OR p.category = :category) " +
-                     "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
-                     "AND (:maxPrice IS NULL OR p.price <= :maxPrice)")
+                     "AND (" +
+                     "  (:minPrice IS NULL AND :maxPrice IS NULL) OR " +
+                     "  EXISTS (SELECT 1 FROM ProductVariant v2 WHERE v2.product = p AND v2.active = true AND " +
+                     "          COALESCE(v2.discountPrice, v2.price) >= COALESCE(:minPrice, 0) AND " +
+                     "          COALESCE(v2.discountPrice, v2.price) <= COALESCE(:maxPrice, 99999999)) OR " +
+                     "  (p.variants IS EMPTY AND " +
+                     "   COALESCE(p.discountPrice, p.price) >= COALESCE(:minPrice, 0) AND " +
+                     "   COALESCE(p.discountPrice, p.price) <= COALESCE(:maxPrice, 99999999))" +
+                     ")")
        Page<Product> searchWithFilters(
                      @Param("query") String query,
                      @Param("category") Category category,

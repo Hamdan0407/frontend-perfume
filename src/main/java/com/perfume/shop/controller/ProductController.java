@@ -60,11 +60,16 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
+            @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
         Pageable pageable = createPageable(page, size, sortBy, sortDir);
+        if (category != null && !category.isBlank()) {
+            Category categoryEnum = Category.fromString(category);
+            return ResponseEntity.ok(productService.getProductsByCategory(categoryEnum, pageable));
+        }
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 

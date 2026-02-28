@@ -260,7 +260,9 @@ public class ProductService {
                 savedProduct.getVariants().add(variant);
             }
             savedProduct = productRepository.save(savedProduct);
-        }
+        // Sync with variants if any
+        syncProductWithVariants(savedProduct);
+        savedProduct = productRepository.save(savedProduct);
 
         log.info("Product created successfully with ID: {}", savedProduct.getId());
         return ProductResponse.fromEntity(savedProduct);
@@ -380,9 +382,13 @@ public class ProductService {
                 productVariantRepository.flush();
             }
 
+            // Sync Product price and stock with variants before final save
+            syncProductWithVariants(product);
+
             // Forced Flush and Return
             Product updated = productRepository.saveAndFlush(product);
-            log.info("DEBUG: Persisted Category in DB: {}", updated.getCategory());
+            log.info("DEBUG: Persisted Category in DB: {}, Price: {}, Stock: {}",
+                    updated.getCategory(), updated.getPrice(), updated.getStock());
 
             return ProductResponse.fromEntity(updated);
 
@@ -441,8 +447,10 @@ public class ProductService {
         if (request.getActive() != null)
             product.setActive(request.getActive());
 
+        syncProductWithVariants(product);
         Product updated = productRepository.saveAndFlush(product);
-        log.info("DEBUG: Partial update persisted Category: {}", updated.getCategory());
+        log.info("DEBUG: Partial update persisted Category: {}, Price: {}, Stock: {}",
+                updated.getCategory(), updated.getPrice(), updated.getStock());
         return ProductResponse.fromEntity(updated);
     }
 
@@ -670,5 +678,49 @@ public class ProductService {
                 request.getDiscountPrice().compareTo(request.getPrice()) >= 0) {
             throw new RuntimeException("Discount price must be less than regular price");
         }
+    }
+
+    /**
+     * Synchronizes a product's price and stock with its variants.
+     * Price is set to the minimum price across all variants.
+     * Stock is set to the sum of all variant stocks.
+     */
+    private void syncProductWithVariants(Product product) {
+        List<ProductVariant> variants = product.getVariants();
+        if (variants == null || variants.isEmpty()) {
+            return;
+        }
+
+        BigDecimal minPrice = null;
+        BigDecimal minDiscountPrice = null;
+        int totalStock = 0;
+
+        for (ProductVariant variant : variants) {
+            if (variant.getActive() == null || variant.getActive()) {
+                BigDecimal effectivePrice = variant.getDiscountPrice() != null ? variant.getDiscountPrice()
+                        : variant.getPrice();
+
+                if (minPrice == null || variant.getPrice().compareTo(minPrice) < 0) {
+                    minPrice = variant.getPrice();
+                }
+
+                if (variant.getDiscountPrice() != null) {
+                    if (minDiscountPrice == null || variant.getDiscountPrice().compareTo(minDiscountPrice) < 0) {
+                        minDiscountPrice = variant.getDiscountPrice();
+                    }
+                }
+
+                totalStock += (variant.getStock() != null ? variant.getStock() : 0);
+            }
+        }
+
+        if (minPrice != null) {
+            product.setPrice(minPrice);
+        }
+        product.setDiscountPrice(minDiscountPrice);
+        product.setStock(totalStock);
+
+        log.info("Synced Product {} with variants: Price={}, Discount={}, Stock={}",
+                product.getId(), product.getPrice(), product.getDiscountPrice(), product.getStock());
     }
 }
