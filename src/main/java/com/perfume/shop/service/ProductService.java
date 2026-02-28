@@ -120,38 +120,65 @@ public class ProductService {
     }
 
     public Page<ProductResponse> filterProducts(ProductFilterRequest filter) {
-        log.info("Filtering products with criteria: {}", filter);
+        log.info("DEBUG: Filter Request - Category: {}, Search: {}, Brands: {}, Price: {} - {}, InStock: {}",
+                filter.getCategory(), filter.getSearchQuery(), filter.getBrands(),
+                filter.getMinPrice(), filter.getMaxPrice(), filter.getInStock());
 
-        // Ensure defaults if missing from JSON
-        String sortBy = filter.getSortBy() != null ? filter.getSortBy() : "createdAt";
-        String sortDir = filter.getSortDir() != null ? filter.getSortDir() : "DESC";
         int page = filter.getPage() != null ? filter.getPage() : 0;
         int size = filter.getSize() != null ? filter.getSize() : 12;
+        String sortBy = filter.getSortBy() != null ? filter.getSortBy() : "createdAt";
+        String sortDir = filter.getSortDir() != null ? filter.getSortDir() : "DESC";
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Product> productPage;
-        if (filter.getSearchQuery() != null && !filter.getSearchQuery().isBlank()) {
-            productPage = productRepository.searchWithFilters(
-                    filter.getSearchQuery(),
-                    filter.getCategory(),
-                    filter.getMinPrice(),
-                    filter.getMaxPrice(),
-                    pageable);
-        } else {
-            productPage = productRepository.findByFilters(
-                    filter.getCategory(),
-                    filter.getBrands(),
-                    filter.getMinPrice(),
-                    filter.getMaxPrice(),
-                    filter.getFeatured(),
-                    filter.getMinRating(),
-                    filter.getInStock(),
-                    pageable);
-        }
+        try {
+            if (filter.getSearchQuery() != null && !filter.getSearchQuery().isBlank()) {
+                productPage = productRepository.searchWithFilters(
+                        filter.getSearchQuery(),
+                        filter.getCategory(),
+                        filter.getMinPrice(),
+                        filter.getMaxPrice(),
+                        pageable);
+            } else {
+                productPage = productRepository.findByFilters(
+                        filter.getCategory(),
+                        filter.getBrands(),
+                        filter.getMinPrice(),
+                        filter.getMaxPrice(),
+                        filter.getFeatured(),
+                        filter.getMinRating(),
+                        filter.getInStock(),
+                        pageable);
+            }
 
-        return productPage.map(ProductResponse::fromEntity);
+            log.info("DEBUG: Filter Result - Total Elements: {}", productPage.getTotalElements());
+
+            // If PARFUM is requested and result is empty, log some stats
+            if (filter.getCategory() == Category.PARFUM && productPage.isEmpty()) {
+                long totalParfum = productRepository.findAll().stream()
+                        .filter(p -> p.getCategory() == Category.PARFUM)
+                        .count();
+                long activeParfum = productRepository.findAll().stream()
+                        .filter(p -> p.getCategory() == Category.PARFUM && p.getActive())
+                        .count();
+                log.warn("DEBUG: No Parfum products found in filter! DB Stats - Total Parfum: {}, Active Parfum: {}",
+                        totalParfum, activeParfum);
+            }
+
+            return productPage.map(product -> {
+                try {
+                    return ProductResponse.fromEntity(product);
+                } catch (Exception e) {
+                    log.error("DEBUG: Error converting product ID {}: {}", product.getId(), e.getMessage());
+                    throw e;
+                }
+            });
+        } catch (Exception e) {
+            log.error("DEBUG: Filter operation failed", e);
+            throw new RuntimeException("Filter failed: " + e.getMessage());
+        }
     }
 
     public List<String> getAllBrands() {

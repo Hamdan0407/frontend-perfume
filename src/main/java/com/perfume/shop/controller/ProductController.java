@@ -106,7 +106,9 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
+        System.out.println("DEBUG: GET Category Request: " + category);
         Category categoryEnum = Category.fromString(category);
+        System.out.println("DEBUG: Resolved Category Enum: " + categoryEnum);
         Pageable pageable = createPageable(page, size, sortBy, sortDir);
         return ResponseEntity.ok(productService.getProductsByCategory(categoryEnum, pageable));
     }

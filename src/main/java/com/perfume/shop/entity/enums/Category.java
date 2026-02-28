@@ -46,10 +46,11 @@ public enum Category {
             if (normalized.equals("WOMEN") || normalized.equals("WOMENS") || normalized.equals("FEMALE"))
                 return WOMEN;
             if (normalized.equals("UNISEX") || normalized.equals("UNDEFINED"))
-                return null;
+                return UNISEX;
 
-            // Fallback for unknown categories to prevent mapping crashes
-            return Category.PARFUM;
+            // Log attempt to parse unknown category
+            System.err.println("Unknown category string: " + value);
+            return null;
         }
     }
 
