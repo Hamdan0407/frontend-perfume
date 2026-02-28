@@ -62,7 +62,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        // Advanced filtering
        @Query("SELECT p FROM Product p WHERE p.active = true " +
                      "AND (:category IS NULL OR p.category = :category) " +
-                     "AND (:brand IS NULL OR p.brand IN :brands) " +
+                     "AND (:brands IS NULL OR p.brand IN :brands) " +
                      "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
                      "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
                      "AND (:featured IS NULL OR p.featured = :featured) " +
