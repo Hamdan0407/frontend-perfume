@@ -96,7 +96,6 @@ export default function AdminPanel() {
     storeEmail: 'admin@perfumeshop.com',
     supportPhone: '+91 98765 43210',
     currency: 'INR',
-    taxRate: '18',
     freeShippingThreshold: '899',
     defaultShippingCost: '99'
   });
@@ -1147,7 +1146,6 @@ export default function AdminPanel() {
     yPos += 8;
 
     const subtotal = itemSubtotal;
-    const tax = 0; // GST Removed
     const shipping = order.shippingCost || 0;
     const grandTotal = order.totalAmount || (subtotal + shipping);
 

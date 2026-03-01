@@ -27,7 +27,7 @@ const orderAPI = {
    * Response:
    * {
    *   id, orderNumber, userId, status, items: [...],
-   *   subtotal, tax, shippingCost, total,
+   *   subtotal, shippingCost, total,
    *   shippingAddress, billingAddress,
    *   estimatedDelivery, createdAt
    * }
@@ -76,7 +76,7 @@ const orderAPI = {
    * {
    *   id, orderNumber, userId, status, paymentStatus,
    *   items: [{ id, product, quantity, price }],
-   *   subtotal, tax, shippingCost, total,
+   *   subtotal, shippingCost, total,
    *   shippingAddress, billingAddress,
    *   trackingNumber, estimatedDelivery,
    *   timeline: [{ status, date, note }],

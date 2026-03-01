@@ -9,7 +9,6 @@ export default function AdminSettings() {
     phoneNumber: '8247327106',
     address: '123 Fashion Street, NY',
     currency: 'USD',
-    taxRate: '10',
     freeShippingThreshold: '100',
     notificationsEmail: true,
     notificationsSMS: false,

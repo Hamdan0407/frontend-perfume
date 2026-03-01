@@ -24,7 +24,7 @@ const cartAPI = {
    *   id, userId, items: [
    *     { id, productId, product: {...}, quantity, price }
    *   ],
-   *   subtotal, tax, total, itemCount
+   *   subtotal, total, itemCount
    * }
    * 
    * Errors:

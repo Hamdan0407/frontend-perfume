@@ -337,7 +337,7 @@ export default function ProductDetail() {
 
               <div className="flex items-center gap-2 mb-6">
                 <StarRating value={product.rating} readOnly={true} size="md" />
-                <span className="text-sm text-muted-foreground">({product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount} reviews)</span>
+                <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
               </div>
             </div>
 
@@ -487,7 +487,7 @@ export default function ProductDetail() {
             <div className="flex items-center gap-2">
               <StarRating value={product.rating} readOnly={true} size="md" />
               <span className="text-sm text-muted-foreground">
-                {product.rating.toFixed(1)} ({product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount} reviews)
+                {product.rating.toFixed(1)} ({product.reviewCount} reviews)
               </span>
             </div>
           </div>
