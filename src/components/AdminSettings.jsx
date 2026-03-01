@@ -9,7 +9,6 @@ export default function AdminSettings() {
     phoneNumber: '8247327106',
     address: '123 Fashion Street, NY',
     currency: 'USD',
-    taxRate: '10',
     freeShippingThreshold: '100',
     notificationsEmail: true,
     notificationsSMS: false,
@@ -94,9 +93,9 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        {/* Payment & Tax */}
+        {/* Payment & Shipping */}
         <div className="settings-section">
-          <h3><Lock size={18} /> Payment & Tax</h3>
+          <h3><Lock size={18} /> Payment & Shipping</h3>
           <div className="form-row">
             <div className="form-group">
               <label>Currency</label>
@@ -106,15 +105,6 @@ export default function AdminSettings() {
                 <option>GBP</option>
                 <option>INR</option>
               </select>
-            </div>
-            <div className="form-group">
-              <label>Tax Rate (%)</label>
-              <input
-                type="number"
-                name="taxRate"
-                value={settings.taxRate}
-                onChange={handleChange}
-              />
             </div>
           </div>
           <div className="form-group">

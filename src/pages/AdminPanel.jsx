@@ -96,7 +96,6 @@ export default function AdminPanel() {
     storeEmail: 'admin@perfumeshop.com',
     supportPhone: '+91 98765 43210',
     currency: 'INR',
-    taxRate: '18',
     freeShippingThreshold: '899',
     defaultShippingCost: '99'
   });
@@ -973,7 +972,7 @@ export default function AdminPanel() {
     doc.setFont('helvetica', 'normal');
     doc.text('Luxury Fragrances & Premium Scents', 20, 35);
 
-    // TAX INVOICE Badge (right side)
+    // INVOICE Badge (right side)
     doc.setFillColor(255, 255, 255);
     const badgeWidth = 55;
     const badgeX = pageWidth - badgeWidth - 15; // 15 = margin
@@ -981,7 +980,7 @@ export default function AdminPanel() {
     doc.setTextColor(...primaryColor);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('TAX INVOICE', badgeX + (badgeWidth / 2), 27, { align: 'center' });
+    doc.text('INVOICE', badgeX + (badgeWidth / 2), 27, { align: 'center' });
 
     // Invoice Details (right side, below badge)
     doc.setTextColor(255, 255, 255);
@@ -1001,8 +1000,6 @@ export default function AdminPanel() {
     doc.text('📞 +91 9629004158', 18, 73);
     doc.text('✉ muwas2021@gmail.com', 18, 78);
     doc.text('🌐 www.muwas.in', pageWidth - 18, 68, { align: 'right' });
-    doc.text('GSTIN: 33AAAAA0000A1Z5', pageWidth - 18, 73, { align: 'right' });
-    doc.text('PAN: AAAAA0000A', pageWidth - 18, 78, { align: 'right' });
 
     // Bill To & Ship To Section
     let yPos = 95;
@@ -1149,7 +1146,6 @@ export default function AdminPanel() {
     yPos += 8;
 
     const subtotal = itemSubtotal;
-    const tax = Math.round(subtotal * 0.18); // 18% GST
     const shipping = order.shippingCost || 0;
     const grandTotal = order.totalAmount || (subtotal + shipping);
 
@@ -1158,13 +1154,7 @@ export default function AdminPanel() {
     doc.setFont('helvetica', 'normal');
     doc.text('Subtotal:', summaryX, yPos);
     doc.setTextColor(...darkColor);
-    doc.text(`₹${(subtotal - tax).toLocaleString('en-IN')}`, summaryX + summaryWidth - 5, yPos, { align: 'right' });
-
-    yPos += 7;
-    doc.setTextColor(...grayColor);
-    doc.text('GST (18%):', summaryX, yPos);
-    doc.setTextColor(...darkColor);
-    doc.text(`₹${tax.toLocaleString('en-IN')}`, summaryX + summaryWidth - 5, yPos, { align: 'right' });
+    doc.text(`₹${subtotal.toLocaleString('en-IN')}`, summaryX + summaryWidth - 5, yPos, { align: 'right' });
 
     yPos += 7;
     doc.setTextColor(...grayColor);
@@ -2274,15 +2264,6 @@ export default function AdminPanel() {
                       <option value="EUR">EUR - Euro</option>
                       <option value="GBP">GBP - British Pound</option>
                     </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Tax Rate (%)</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={settingsForm.taxRate}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, taxRate: e.target.value })}
-                    />
                   </div>
                 </div>
 
