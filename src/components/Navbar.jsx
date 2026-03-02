@@ -9,7 +9,7 @@ import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
 import { CATEGORY_LIST } from '../constants/productCategories';
 import BulkInquiryModal from './BulkInquiryModal';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
