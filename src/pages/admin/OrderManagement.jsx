@@ -73,12 +73,14 @@ export default function OrderManagement() {
       SHIPPED: 'bg-indigo-100 text-indigo-700',
       DELIVERED: 'bg-green-100 text-green-700',
       CANCELLED: 'bg-red-100 text-red-700',
-      EXCHANGED: 'bg-gray-100 text-gray-700',
+      HANDOVER: 'bg-orange-100 text-orange-700',
+      OUT_FOR_DELIVERY: 'bg-teal-100 text-teal-700',
+      REFUNDED: 'bg-pink-100 text-pink-700',
     };
     return colors[status] || 'bg-gray-100 text-gray-700';
   };
 
-  const statusOptions = ['PLACED', 'CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'EXCHANGED'];
+  const statusOptions = ['PLACED', 'CONFIRMED', 'PACKED', 'HANDOVER', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
 
   if (loading && orders.length === 0) {
     return <div className="text-center py-8">Loading orders...</div>;
