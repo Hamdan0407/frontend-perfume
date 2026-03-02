@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import productAPI from '../api/productAPI';
 import ProductCard from '../components/ProductCard';
@@ -207,7 +207,7 @@ export default function Home() {
 
                     {/* Explore / Coming Soon Link */}
                     <span className="mt-4 text-[10px] sm:text-xs text-white/40 group-hover:text-white/80 tracking-widest uppercase transition-all duration-300 flex items-center gap-1">
-                      {isComingSoon ? 'Stay Tuned ✨' : (
+                      {isComingSoon ? 'Stay Tuned âœ¨' : (
                         <>
                           Explore
                           <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
@@ -230,7 +230,7 @@ export default function Home() {
                     key={cat.value}
                     className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
                     style={{ animationDelay: `${idx * 100}ms` }}
-                    onClick={() => toast.info('🔜 Parfum collection is coming very soon! Stay tuned.')}
+                    onClick={() => toast.info('ðŸ”œ Parfum collection is coming very soon! Stay tuned.')}
                   >
                     {cardContent}
                   </div>
@@ -428,7 +428,7 @@ export default function Home() {
                 <Truck className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Fast Delivery</h3>
-              <p className="text-muted-foreground">Pan-India delivery • 4 business days</p>
+              <p className="text-muted-foreground">Pan-India delivery â€¢ 6 business days</p>
             </div>
 
             <div className="text-center space-y-4 sm:col-span-2 lg:col-span-1">
@@ -448,7 +448,7 @@ export default function Home() {
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. 💡
+              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. ðŸ’¡
             </p>
           </div>
 
@@ -464,7 +464,7 @@ export default function Home() {
               },
               {
                 question: "How long does delivery take?",
-                answer: "Standard delivery takes about 4 business days across India. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
+                answer: "Standard delivery takes about 6 business days across India. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
               },
               {
                 question: "Can I return or exchange a product?",
@@ -472,7 +472,7 @@ export default function Home() {
               },
               {
                 question: "Do you offer samples or trial sizes?",
-                answer: "Yes! We have a trial pack collection starting at just ₹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
+                answer: "Yes! We have a trial pack collection starting at just â‚¹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
               },
               {
                 question: "How do I choose the right fragrance for me?",
@@ -543,7 +543,7 @@ export default function Home() {
                 {
                   step: "4",
                   title: "Fast Delivery",
-                  desc: "Non-returnable product. Pan-India delivery in 4 business days"
+                  desc: "Non-returnable product. Pan-India delivery in 6 business days"
                 }
               ].map((item, idx) => (
                 <div key={idx} className="bg-slate-800/50 border border-amber-600/30 rounded-lg p-6 hover:bg-slate-800/70 transition-colors">
@@ -590,7 +590,7 @@ function FAQItem({ question, answer, index }) {
       >
         <span className="font-semibold text-white text-base sm:text-lg pr-4">{question}</span>
         <span className={`flex-shrink-0 text-accent text-xl transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-          ▼
+          â–¼
         </span>
       </button>
 
