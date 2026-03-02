@@ -74,11 +74,11 @@ export default function ContactUs() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Phone className="h-5 w-5" />
-                            Phone
+                            Phone / WhatsApp
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg">+91 8247327106</p>
+                        <a href="https://wa.me/918247327106" target="_blank" rel="noopener noreferrer" className="text-lg text-primary hover:underline">+91 8247327106</a>
                         <p className="text-sm text-muted-foreground mt-1">
                             Available Mon-Sat, 9AM-8PM
                         </p>

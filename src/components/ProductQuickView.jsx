@@ -182,7 +182,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {product.rating.toFixed(1)}
-                  {product.reviewCount > 0 && ` (${product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount} reviews)`}
+                  {product.reviewCount > 0 && ` (${product.reviewCount} reviews)`}
                 </span>
               </div>
             )}

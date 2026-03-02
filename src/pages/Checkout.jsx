@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X } from 'lucide-react';
+import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/button';
@@ -279,6 +279,7 @@ export default function Checkout() {
     recipientName: '',
     shippingAddress: '',
     shippingCity: '',
+    shippingState: '',
     shippingCountry: 'India',
     shippingZipCode: '',
     shippingPhone: ''
@@ -290,42 +291,88 @@ export default function Checkout() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
 
+  // Checkout breakdown state
+  const [breakdown, setBreakdown] = useState(null);
+  const [breakdownLoading, setBreakdownLoading] = useState(false);
+
   // Fetch cart on mount to ensure we have the latest data
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const { data } = await api.get('cart');
-        setCart(data);
-      } catch (error) {
-        toast.error('Failed to load cart. Please try again.');
-      }
-    };
+    let isMounted = true;
 
-    // Load user profile to pre-fill shipping info
-    const fetchUserProfile = async () => {
+    const loadCheckoutData = async () => {
       try {
-        const { data } = await api.get('users/profile');
-        // Pre-fill shipping with user's saved profile
-        setShippingInfo(prev => ({
-          ...prev,
-          recipientName: (data.firstName || '') + (data.lastName ? ' ' + data.lastName : ''),
-          shippingAddress: data.address || '',
-          shippingCity: data.city || '',
-          shippingCountry: data.country || 'India',
-          shippingZipCode: data.zipCode || '',
-          shippingPhone: data.phoneNumber || ''
-        }));
-      } catch (error) {
-        console.log('Could not load profile for pre-fill:', error);
-        // If profile fails, continue with empty form
+        // Fetch cart and profile in parallel
+        const [cartResult, profileResult] = await Promise.allSettled([
+          api.get('cart'),
+          api.get('users/profile'),
+        ]);
+
+        if (!isMounted) return;
+
+        // Handle cart result
+        if (cartResult.status === 'fulfilled') {
+          setCart(cartResult.value.data);
+        } else {
+          console.error('Failed to load cart:', cartResult.reason);
+          toast.error('Failed to load cart. Please try again.');
+        }
+
+        // Handle profile result (pre-fill shipping)
+        if (profileResult.status === 'fulfilled') {
+          const data = profileResult.value.data;
+          setShippingInfo(prev => ({
+            ...prev,
+            recipientName: (data.firstName || '') + (data.lastName ? ' ' + data.lastName : ''),
+            shippingAddress: data.address || '',
+            shippingCity: data.city || '',
+            shippingState: data.state || '',
+            shippingCountry: data.country || 'India',
+            shippingZipCode: data.zipCode || '',
+            shippingPhone: data.phoneNumber || ''
+          }));
+        } else {
+          console.log('Could not load profile for pre-fill:', profileResult.reason);
+        }
       } finally {
-        setCartLoading(false);
+        if (isMounted) {
+          setCartLoading(false);
+        }
       }
     };
 
-    fetchCart();
-    fetchUserProfile();
+    loadCheckoutData();
+
+    return () => { isMounted = false; };
   }, [setCart]);
+
+  // Fetch breakdown from backend
+  useEffect(() => {
+    const fetchBreakdown = async () => {
+      setBreakdownLoading(true);
+      try {
+        const params = {};
+        if (appliedCoupon?.coupon?.code) {
+          params.couponCode = appliedCoupon.coupon.code;
+        } else if (couponCode && appliedCoupon) { // if code was just entered
+          params.couponCode = couponCode;
+        }
+
+        const { data } = await api.get('orders/checkout-breakdown', { params });
+        setBreakdown(data);
+        if (data.discount) {
+          setDiscount(data.discount);
+        }
+      } catch (error) {
+        console.error('Failed to fetch checkout breakdown:', error);
+      } finally {
+        setBreakdownLoading(false);
+      }
+    };
+
+    if (cart && cart.items && cart.items.length > 0) {
+      fetchBreakdown();
+    }
+  }, [cart, appliedCoupon]);
 
   // Validate form fields
   const validateForm = () => {
@@ -343,6 +390,10 @@ export default function Checkout() {
 
     if (!shippingInfo.shippingCity.trim()) {
       newErrors.shippingCity = 'City is required';
+    }
+
+    if (!shippingInfo.shippingState.trim()) {
+      newErrors.shippingState = 'State is required';
     }
 
     if (!shippingInfo.shippingCountry.trim()) {
@@ -403,12 +454,6 @@ export default function Checkout() {
     toast.info('Coupon removed');
   };
 
-  // Calculate final total with discount
-  const finalTotal = () => {
-    const baseTotal = cart?.total || 0;
-    return Math.max(0, baseTotal - discount);
-  };
-
   // Show loading while cart is being fetched
   if (cartLoading) {
     return (
@@ -422,8 +467,7 @@ export default function Checkout() {
 
   // Redirect if cart is empty (after loading is complete)
   if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
-    navigate('/cart');
-    return null;
+    return <Navigate to="/cart" replace />;
   }
 
   /**
@@ -641,6 +685,32 @@ export default function Checkout() {
                       </div>
 
                       <div className="space-y-2">
+                        <Label htmlFor="state" className="text-sm font-medium">
+                          State <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="state"
+                          type="text"
+                          required
+                          value={shippingInfo.shippingState}
+                          onChange={(e) => {
+                            setShippingInfo({ ...shippingInfo, shippingState: e.target.value });
+                            if (errors.shippingState) setErrors({ ...errors, shippingState: '' });
+                          }}
+                          placeholder="e.g., Maharashtra"
+                          className={errors.shippingState ? 'border-destructive' : ''}
+                        />
+                        {errors.shippingState && (
+                          <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.shippingState}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
                         <Label htmlFor="country" className="text-sm font-medium">
                           Country <span className="text-destructive">*</span>
                         </Label>
@@ -773,7 +843,7 @@ export default function Checkout() {
                       {shippingInfo.shippingAddress}
                     </p>
                     <p className="text-sm text-muted-foreground font-medium">
-                      {shippingInfo.shippingCity}, {shippingInfo.shippingCountry} - {shippingInfo.shippingZipCode}
+                      {shippingInfo.shippingCity}, {shippingInfo.shippingState}, {shippingInfo.shippingCountry} - {shippingInfo.shippingZipCode}
                     </p>
                     <p className="text-sm text-muted-foreground font-medium">
                       📱 {shippingInfo.shippingPhone}
@@ -838,7 +908,7 @@ export default function Checkout() {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium">₹{cart?.subtotal?.toFixed(2) || '0.00'}</span>
+                    <span className="font-medium">₹{breakdown ? breakdown.subtotal.toFixed(2) : (cart?.subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <div>
@@ -847,20 +917,32 @@ export default function Checkout() {
                         (Please Note: For orders outside India, in some regions, additional import duties at destination may be applicable)
                       </p>
                     </div>
-                    <span className="font-medium">₹{cart?.shippingCost?.toFixed(2) || '0.00'}</span>
+                    <span className={cn("font-medium", breakdown?.isFreeShipping ? "text-green-600" : "")}>
+                      {breakdown ? (breakdown.isFreeShipping ? 'FREE' : `₹${breakdown.shippingCost.toFixed(2)}`) : 'Calculating...'}
+                    </span>
                   </div>
 
+                  {/* GST Row - Only shown if tax > 0 */}
+                  {breakdown?.tax > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">GST (Included)</span>
+                      <span className="font-medium">₹{breakdown.tax.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   {/* Discount Row */}
-                  {discount > 0 && (
+                  {(breakdown?.discount > 0 || discount > 0) && (
                     <div className="flex justify-between text-sm text-green-600">
                       <span className="font-medium">Discount</span>
-                      <span className="font-medium">-₹{discount.toFixed(2)}</span>
+                      <span className="font-medium">-₹{(breakdown?.discount || discount).toFixed(2)}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between text-base font-bold pt-2 border-t">
                     <span>Total</span>
-                    <span className="text-lg">₹{razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : finalTotal().toFixed(2)}</span>
+                    <span className="text-lg">
+                      {breakdownLoading ? 'Calculating...' : `₹${razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : (breakdown?.total || 0).toFixed(2)}`}
+                    </span>
                   </div>
                 </div>
 

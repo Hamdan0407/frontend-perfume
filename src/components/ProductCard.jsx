@@ -92,11 +92,9 @@ export default function ProductCard({ product, onQuickView }) {
             {product.rating > 0 && (
               <div className="flex items-center gap-1 mb-2">
                 <StarRating value={product.rating} readOnly={true} size="sm" />
-                {product.reviewCount > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    ({product.reviewCount > 50 ? (35 + (product.id % 16)) : product.reviewCount})
-                  </span>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  ({product.reviewCount})
+                </span>
               </div>
             )}
 

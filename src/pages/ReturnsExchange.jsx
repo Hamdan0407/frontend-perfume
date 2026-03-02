@@ -136,7 +136,7 @@ export default function ReturnsExchange() {
                             <a href="mailto:muwas2021@gmail.com" className="underline">
                                 muwas2021@gmail.com
                             </a>{' '}
-                            or call +91-9894722186
+                            or <a href="https://wa.me/918247327106" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp us at +91 8247327106</a>
                         </p>
                     </CardContent>
                 </Card>
