@@ -334,7 +334,7 @@ export default function Home() {
               },
               {
                 icon: Users,
-                to: 500,
+                to: 243,
                 suffix: '+',
                 label: 'Happy Customers',
                 color: '#38bdf8',
