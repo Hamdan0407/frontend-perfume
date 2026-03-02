@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Package, ShoppingBag, Calendar, Truck, Eye } from 'lucide-react';
+import { Package, ShoppingBag, Calendar, Eye } from 'lucide-react';
 import api from '../api/axios';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
 import { cn } from '../lib/utils';
@@ -21,33 +21,18 @@ export default function Orders() {
 
   const fetchOrders = async () => {
     try {
-      // Use /orders/page endpoint with large page size to get all orders
       const { data } = await api.get('orders/page', {
         params: {
           page: 0,
           size: 1000
         }
       });
-      // Extract content from paginated response
       setOrders(Array.isArray(data.content) ? data.content : Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error('Failed to load orders');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getStatusColor = (status) => {
-    const variants = {
-      PLACED: 'default',
-      CONFIRMED: 'secondary',
-      PACKED: 'outline',
-      SHIPPED: 'default',
-      DELIVERED: 'default',
-      CANCELLED: 'destructive',
-      EXCHANGED: 'outline',
-    };
-    return variants[status] || 'default';
   };
 
   const getStatusBadgeClass = (status) => {
@@ -98,7 +83,6 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
       <div className="mb-6 flex flex-wrap gap-2">
         {['ALL', 'PLACED', 'CONFIRMED', 'PACKED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'].map((status) => (
           <Button
@@ -121,9 +105,7 @@ export default function Orders() {
               {filterStatus === 'ALL' ? 'No orders yet' : `No ${filterStatus.toLowerCase()} orders`}
             </h3>
             <p className="text-muted-foreground mb-6">
-              {filterStatus === 'ALL'
-                ? 'Start shopping to place your first order!'
-                : 'Try a different filter or start shopping'}
+              {filterStatus === 'ALL' ? 'Start shopping to place your first order!' : 'Try a different filter or start shopping'}
             </p>
             <Button asChild>
               <Link to="/products">
@@ -138,65 +120,65 @@ export default function Orders() {
           {filteredOrders.map((order) => (
             <Card key={order.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  {/* Order Info */}
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-center justify-between lg:justify-start gap-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground">
-                          Order #{order.orderNumber}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(order.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}</span>
-                        </div>
-                      </div>
-                      <Badge className={cn("lg:ml-4", getStatusBadgeClass(order.status))}>
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-lg font-semibold text-foreground">Order #{order.orderNumber}</h3>
+                      <Badge className={getStatusBadgeClass(order.status)}>
                         {order.status.replace('_', ' ')}
                       </Badge>
+                      {order.shipmentStatus && (
+                        <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                          {order.shipmentStatus}
+                        </Badge>
+                      )}
+                      {order.paymentStatus && (
+                        <Badge variant="outline" className={cn(order.paymentStatus === 'PAID' ? 'border-green-200 text-green-700 bg-green-50' : 'border-yellow-200 text-yellow-700 bg-yellow-50')}>
+                          {order.paymentStatus}
+                        </Badge>
+                      )}
                     </div>
 
-                    {/* Order Items Preview */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      {(order.items || order.orderItems || []).slice(0, 3).map((item) => (
-                        <div key={item.id} className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      {order.trackingNumber && (
+                        <>
+                          <span className="mx-1">•</span>
+                          <span className="font-mono text-foreground font-medium">AWB: {order.trackingNumber}</span>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4">
+                      {order.items?.slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-center gap-3 bg-muted/30 p-2 rounded-lg border border-border/50">
                           <img
-                            src={item.product.imageUrl || 'https://via.placeholder.com/40'}
-                            alt={item.product.name}
-                            className="w-10 h-10 object-cover rounded"
+                            src={item.productImage || item.product?.imageUrl || 'https://via.placeholder.com/40'}
+                            alt={item.productName || item.product?.name}
+                            className="w-12 h-12 object-cover rounded shadow-sm"
                           />
                           <div className="text-xs">
-                            <p className="font-medium truncate max-w-[150px]">
-                              {item.product.name} {item.variant ? `(${item.variant.size}${item.variant.unit || 'ml'})` : ''}
-                            </p>
-                            <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                            <p className="font-medium truncate max-w-[150px]">{item.productName || item.product?.name}</p>
+                            <p className="text-muted-foreground">Qty: {item.quantity} {item.variantSize ? `• ${item.variantSize}` : ''}</p>
                           </div>
                         </div>
                       ))}
-                      {(order.items || order.orderItems || []).length > 3 && (
-                        <span className="text-sm text-muted-foreground">
-                          +{(order.items || order.orderItems || []).length - 3} more
-                        </span>
+                      {order.items?.length > 3 && (
+                        <span className="text-sm text-muted-foreground font-medium">+ {order.items.length - 3} more</span>
                       )}
                     </div>
                   </div>
 
-                  {/* Total and Action */}
-                  <div className="flex items-center justify-between lg:flex-col lg:items-end gap-4">
+                  <div className="flex items-center justify-between lg:flex-col lg:items-end gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-border">
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Total Amount</p>
-                      <p className="text-2xl font-bold text-primary">
-                        ₹{order.totalAmount.toFixed(2)}
-                      </p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total Amount</p>
+                      <p className="text-2xl font-bold text-primary">₹{order.totalAmount.toFixed(2)}</p>
+                      {order.shippingCost > 0 && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Includes ₹{order.shippingCost.toFixed(2)} delivery</p>
+                      )}
                     </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate(`/orders/${order.id}`)}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/orders/${order.id}`)} className="shadow-sm">
                       <Eye className="h-4 w-4 mr-2" />
                       View Details
                     </Button>

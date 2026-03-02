@@ -155,10 +155,37 @@ export default function OrderDetail() {
             })}
           </p>
         </div>
-        <Badge className={cn("text-sm px-4 py-2", getStatusBadgeClass(order.status))}>
-          {order.status.replace('_', ' ')}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className={cn("text-sm px-4 py-2", getStatusBadgeClass(order.status))}>
+            {order.status.replace('_', ' ')}
+          </Badge>
+          {order.shipmentStatus && (
+            <Badge variant="outline" className="text-sm px-4 py-2 border-blue-200 text-blue-700 bg-blue-50">
+              {order.shipmentStatus}
+            </Badge>
+          )}
+          {order.paymentStatus && (
+            <Badge variant="outline" className={cn("text-sm px-4 py-2", order.paymentStatus === 'PAID' ? 'border-green-200 text-green-700 bg-green-50' : 'border-yellow-200 text-yellow-700 bg-yellow-50')}>
+              {order.paymentStatus}
+            </Badge>
+          )}
+        </div>
       </div>
+
+      {order.trackingNumber && (
+        <div className="mb-6 p-4 bg-muted/30 border rounded-lg flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-primary" />
+            <span className="font-semibold">Tracking ID (AWB):</span>
+            <span className="font-mono text-lg select-all">{order.trackingNumber}</span>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <a href={`https://shiprocket.co/tracking/${order.trackingNumber}`} target="_blank" rel="noopener noreferrer">
+              Track Order External
+            </a>
+          </Button>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Content */}
@@ -241,6 +268,12 @@ export default function OrderDetail() {
                 <span className="text-muted-foreground">Shipping</span>
                 <span>₹{order.shippingCost.toFixed(2)}</span>
               </div>
+              {order.tax > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">GST (Included)</span>
+                  <span>₹{order.tax.toFixed(2)}</span>
+                </div>
+              )}
               <Separator />
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>

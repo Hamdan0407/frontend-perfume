@@ -187,13 +187,22 @@ export default function Cart() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium text-foreground">₹10.00</span>
-                  </div>
-                  <div className="border-t border-border pt-3 flex justify-between">
-                    <span className="text-lg font-bold text-foreground">Total</span>
-                    <span className="text-lg font-bold text-foreground">
-                      ₹{(cart.total + 10).toFixed(2)}
+                    <span className={cn("font-medium", cart.shippingCost === 0 ? "text-green-600" : "text-foreground")}>
+                      {cart.shippingCost === 0 ? 'FREE' : `₹${cart.shippingCost.toFixed(2)}`}
                     </span>
+                  </div>
+
+                  {/* GST Row - Only shown if tax > 0 */}
+                  {cart.tax > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">GST (Included)</span>
+                      <span className="font-medium text-foreground">₹{cart.tax.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  <div className="border-t border-border pt-3 flex justify-between text-lg font-bold text-foreground">
+                    <span>Total</span>
+                    <span>₹{cart.total.toFixed(2)}</span>
                   </div>
                 </div>
 

@@ -171,10 +171,12 @@ export default function FAQ() {
                             Email Us
                         </a>
                         <a
-                            href="tel:+919894722186"
+                            href="https://wa.me/918247327106"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition"
                         >
-                            Call Us
+                            WhatsApp Us
                         </a>
                     </div>
                 </CardContent>
