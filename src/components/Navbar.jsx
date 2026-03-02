@@ -9,7 +9,6 @@ import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
 import { CATEGORY_LIST } from '../constants/productCategories';
 import BulkInquiryModal from './BulkInquiryModal';
-import { toast } from 'react-toastify';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -102,24 +101,14 @@ export default function Navbar() {
                     <div className="space-y-2">
                       <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Collections</p>
                       {CATEGORY_LIST.map(cat => (
-                        cat.value === 'parfum' ? (
-                          <button
-                            key={cat.value}
-                            onClick={() => { setMobileMenuOpen(false); toast('🔜 Parfum collection is coming very soon! Stay tuned.'); }}
-                            className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors text-left w-full opacity-70"
-                          >
-                            {cat.label} <span className="text-xs text-accent ml-1">Soon</span>
-                          </button>
-                        ) : (
                           <Link
                             key={cat.value}
                             to={cat.path}
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors"
+                            className={`block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors ${cat.value === 'parfum' ? 'opacity-70' : ''}`}
                           >
-                            {cat.label}
+                            {cat.label}{cat.value === 'parfum' && <span className="text-xs text-accent ml-1">Soon</span>}
                           </Link>
-                        )
                       ))}
                     </div>
 
@@ -199,23 +188,13 @@ export default function Navbar() {
               </button>
               <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 {CATEGORY_LIST.filter(cat => cat.value !== 'aroma chemicals').map(cat => (
-                  cat.value === 'parfum' ? (
-                    <button
-                      key={cat.value}
-                      onClick={() => toast('🔜 Parfum collection is coming very soon! Stay tuned.')}
-                      className="block w-full text-left px-4 py-2 text-sm text-foreground/60 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                    >
-                      {cat.label} <span className="text-xs text-accent">Soon</span>
-                    </button>
-                  ) : (
                     <Link
                       key={cat.value}
                       to={cat.path}
-                      className="block px-4 py-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                      className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg ${cat.value === 'parfum' ? 'text-foreground/60' : 'text-foreground'}`}
                     >
-                      {cat.label}
+                      {cat.label}{cat.value === 'parfum' && <span className="text-xs text-accent ml-1">Soon</span>}
                     </Link>
-                  )
                 ))}
               </div>
             </div>

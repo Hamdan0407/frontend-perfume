@@ -13,6 +13,7 @@ import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
 import { CATEGORY_LIST, mapToCategoryEnum } from '../constants/productCategories';
 import { formatCategory, toCategoryEnum } from '../lib/utils';
+import SplitText from '../components/ui/SplitText';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -140,6 +141,66 @@ export default function Products() {
     setMaxPrice('');
     setInStockOnly(false);
   };
+
+  // Show "Coming Soon" page for Parfum category
+  if (category === 'parfum') {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <div className="text-center max-w-2xl mx-auto">
+          <div className="mb-6">
+            <span className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-sm font-medium tracking-wide">
+              Coming Soon
+            </span>
+          </div>
+          <SplitText
+            text="Parfum Collection"
+            className="text-5xl sm:text-6xl md:text-7xl font-bold text-foreground"
+            tag="h1"
+            delay={80}
+            duration={0.8}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 80, rotateX: -40 }}
+            to={{ opacity: 1, y: 0, rotateX: 0 }}
+            threshold={0.1}
+            rootMargin="-50px"
+          />
+          <div className="mt-8">
+            <SplitText
+              text="We're crafting something extraordinary. Our exclusive Parfum collection will be available very soon."
+              className="text-lg sm:text-xl text-muted-foreground leading-relaxed"
+              tag="p"
+              delay={30}
+              duration={0.6}
+              ease="power2.out"
+              splitType="words"
+              from={{ opacity: 0, y: 30 }}
+              to={{ opacity: 1, y: 0 }}
+              threshold={0.1}
+              rootMargin="-50px"
+            />
+          </div>
+          <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/products"
+              className="inline-flex items-center justify-center px-8 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-accent/90 transition-colors"
+            >
+              Browse Other Collections
+            </a>
+            <a
+              href="/"
+              className="inline-flex items-center justify-center px-8 py-3 border border-border text-foreground rounded-lg font-semibold hover:bg-accent/10 transition-colors"
+            >
+              Back to Home
+            </a>
+          </div>
+          <div className="mt-16 opacity-40">
+            <p className="text-sm text-muted-foreground">Stay tuned for updates</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
