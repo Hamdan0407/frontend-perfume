@@ -428,7 +428,7 @@ export default function Home() {
                 <Truck className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Fast Delivery</h3>
-              <p className="text-muted-foreground">Pan-India delivery • 3-5 business days</p>
+              <p className="text-muted-foreground">Pan-India delivery • 4 business days</p>
             </div>
 
             <div className="text-center space-y-4 sm:col-span-2 lg:col-span-1">
@@ -464,11 +464,11 @@ export default function Home() {
               },
               {
                 question: "How long does delivery take?",
-                answer: "Standard delivery takes 3-5 business days across India. Express delivery (1-2 days) is available for selected locations. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
+                answer: "Standard delivery takes about 4 business days across India. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
               },
               {
                 question: "Can I return or exchange a product?",
-                answer: "Yes! We offer 30-day returns on unopened products. If a fragrance doesn't suit you, we can help you exchange it for another. Simply contact our customer support with your order details."
+                answer: "Our products are non-returnable. However, if you receive a damaged product, you can request an exchange within 7 days of delivery. Simply contact our customer support with your order details and photos of the damage."
               },
               {
                 question: "Do you offer samples or trial sizes?",
@@ -537,13 +537,13 @@ export default function Home() {
                 },
                 {
                   step: "3",
-                  title: "30-Day Returns",
-                  desc: "Try risk-free. Return or exchange within 30 days"
+                  title: "7-Day Exchange",
+                  desc: "Exchange within 7 days of delivery if product is damaged"
                 },
                 {
                   step: "4",
                   title: "Fast Delivery",
-                  desc: "Pan-India delivery in 3-5 business days"
+                  desc: "Non-returnable product. Pan-India delivery in 4 business days"
                 }
               ].map((item, idx) => (
                 <div key={idx} className="bg-slate-800/50 border border-amber-600/30 rounded-lg p-6 hover:bg-slate-800/70 transition-colors">
