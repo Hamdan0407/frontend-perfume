@@ -732,13 +732,16 @@ export default function AdminPanel() {
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await api.put(`admin/orders/${orderId}/status`, { status: newStatus });
-      toast.success(`Order status updated to ${newStatus}`);
+      const res = await api.put(`admin/orders/${orderId}/status`, { status: newStatus });
+      toast.success(res.data?.message || `Order status updated to ${newStatus}`);
       fetchOrders();
       setShowOrderModal(false);
     } catch (err) {
-      console.error('Order update error:', err);
-      toast.error('Failed to update order status');
+      console.error('Order update error:', err?.response?.data || err);
+      const msg = err?.response?.data?.error || err?.response?.data?.message || 'Failed to update order status';
+      toast.error(msg);
+      // Re-fetch to reset dropdown to actual status
+      fetchOrders();
     }
   };
 
