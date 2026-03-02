@@ -192,14 +192,6 @@ export default function Cart() {
                     </span>
                   </div>
 
-                  {/* GST Row - Only shown if tax > 0 */}
-                  {cart.tax > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">GST (Included)</span>
-                      <span className="font-medium text-foreground">₹{cart.tax.toFixed(2)}</span>
-                    </div>
-                  )}
-
                   <div className="border-t border-border pt-3 flex justify-between text-lg font-bold text-foreground">
                     <span>Total</span>
                     <span>₹{cart.total.toFixed(2)}</span>

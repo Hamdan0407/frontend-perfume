@@ -10,6 +10,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { LoadingSpinner } from '../components/ui/spinner';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { cn } from '../lib/utils';
 
 /**
  * Razorpay payment form component
@@ -921,14 +922,6 @@ export default function Checkout() {
                       {breakdown ? (breakdown.isFreeShipping ? 'FREE' : `₹${breakdown.shippingCost.toFixed(2)}`) : 'Calculating...'}
                     </span>
                   </div>
-
-                  {/* GST Row - Only shown if tax > 0 */}
-                  {breakdown?.tax > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">GST (Included)</span>
-                      <span className="font-medium">₹{breakdown.tax.toFixed(2)}</span>
-                    </div>
-                  )}
 
                   {/* Discount Row */}
                   {(breakdown?.discount > 0 || discount > 0) && (
