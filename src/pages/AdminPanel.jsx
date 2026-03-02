@@ -120,7 +120,6 @@ export default function AdminPanel() {
       'DELIVERED': 'success',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
-      'EXCHANGED': 'secondary',
       'HANDOVER': 'info',
       'OUT_FOR_DELIVERY': 'primary',
       'REFUNDED': 'danger'
@@ -226,7 +225,7 @@ export default function AdminPanel() {
     toast.success('Type removed successfully');
   };
 
-  const orderStatuses = ['PLACED', 'CONFIRMED', 'PACKED', 'HANDOVER', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REFUNDED', 'EXCHANGED'];
+  const orderStatuses = ['PLACED', 'CONFIRMED', 'PACKED', 'HANDOVER', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
 
   // Size options based on category
   const getSizeOptions = (category) => {
