@@ -11,8 +11,9 @@ import { Skeleton } from '../components/ui/skeleton';
 import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
+import CountUp from '../components/ui/CountUp';
 import { useToast } from '../context/ToastContext';
-import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin } from 'lucide-react';
 import { CATEGORY_LIST } from '../constants/productCategories';
 
 import '../styles/HomeTheme.css';
@@ -301,6 +302,89 @@ export default function Home() {
 
       {/* Recently Viewed Section */}
       <RecentlyViewed />
+
+      {/* Stats / Numbers Section */}
+      <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Ambur?</h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Numbers that speak for our commitment to quality
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {[
+              {
+                icon: Package,
+                to: 50,
+                suffix: '+',
+                label: 'Premium Products',
+                color: '#c9a96e',
+              },
+              {
+                icon: Award,
+                to: 100,
+                suffix: '%',
+                label: 'Authentic & Genuine',
+                color: '#a78bfa',
+              },
+              {
+                icon: Users,
+                to: 500,
+                suffix: '+',
+                label: 'Happy Customers',
+                color: '#38bdf8',
+              },
+              {
+                icon: MapPin,
+                to: 28,
+                suffix: '+',
+                label: 'States Delivered',
+                color: '#f59e0b',
+              },
+            ].map((stat, idx) => (
+              <div
+                key={idx}
+                className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 sm:p-8 text-center hover:border-slate-600/80 transition-all duration-500 hover:bg-slate-800/60"
+              >
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-2/3 transition-all duration-500 rounded-full"
+                  style={{ backgroundColor: stat.color }}
+                />
+
+                {/* Icon */}
+                <div
+                  className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 transition-transform duration-300 group-hover:scale-110"
+                  style={{ backgroundColor: `${stat.color}15` }}
+                >
+                  <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+                </div>
+
+                {/* Count */}
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 tabular-nums">
+                  <CountUp
+                    from={0}
+                    to={stat.to}
+                    duration={2.5}
+                    delay={idx * 0.15}
+                    separator=","
+                    className="inline-block"
+                  />
+                  <span style={{ color: stat.color }}>{stat.suffix}</span>
+                </div>
+
+                {/* Label */}
+                <p className="text-slate-400 text-sm sm:text-base font-medium">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Features */}
       <section className="py-16 sm:py-20 lg:py-24">
