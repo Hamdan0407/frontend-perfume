@@ -146,15 +146,10 @@ export default function Home() {
                 'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' }
               }[cat.value] || { subtitle: 'Explore', accent: '#c9a96e' };
 
-              return (
-                <Link
-                  key={cat.value}
-                  to={cat.path}
-                  className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
-                  style={{
-                    animationDelay: `${idx * 100}ms`,
-                  }}
-                >
+              const isComingSoon = cat.value === 'parfum';
+
+              const cardContent = (
+                <>
                   {/* Black gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-black to-gray-900 transition-all duration-500" />
 
@@ -191,7 +186,7 @@ export default function Home() {
                       className="text-[10px] sm:text-xs tracking-[0.25em] uppercase font-light mb-2 opacity-50 group-hover:opacity-80 transition-opacity duration-300"
                       style={{ color: metadata.accent }}
                     >
-                      {metadata.subtitle}
+                      {isComingSoon ? 'Coming Very Soon' : metadata.subtitle}
                     </span>
 
                     {/* Category Name */}
@@ -210,10 +205,14 @@ export default function Home() {
                       style={{ backgroundColor: metadata.accent }}
                     />
 
-                    {/* Explore Link */}
+                    {/* Explore / Coming Soon Link */}
                     <span className="mt-4 text-[10px] sm:text-xs text-white/40 group-hover:text-white/80 tracking-widest uppercase transition-all duration-300 flex items-center gap-1">
-                      Explore
-                      <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
+                      {isComingSoon ? 'Stay Tuned ✨' : (
+                        <>
+                          Explore
+                          <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
+                        </>
+                      )}
                     </span>
                   </div>
 
@@ -222,6 +221,32 @@ export default function Home() {
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-3/4 transition-all duration-500 ease-out rounded-full"
                     style={{ backgroundColor: metadata.accent }}
                   />
+                </>
+              );
+
+              if (isComingSoon) {
+                return (
+                  <div
+                    key={cat.value}
+                    className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                    onClick={() => toast.info('🔜 Parfum collection is coming very soon! Stay tuned.')}
+                  >
+                    {cardContent}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={cat.value}
+                  to={cat.path}
+                  className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
+                  style={{
+                    animationDelay: `${idx * 100}ms`,
+                  }}
+                >
+                  {cardContent}
                 </Link>
               )
             })}
