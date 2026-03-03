@@ -8,11 +8,11 @@ const faqs = [
         questions: [
             {
                 q: 'How long does shipping take?',
-                a: 'Standard delivery takes 5-7 business days, Express delivery 2-3 days, and Same Day delivery is available in select cities.'
+                a: 'Standard delivery takes about 6 business days across India. All orders are carefully packed to ensure the fragrance arrives in perfect condition.'
             },
             {
                 q: 'How long does delivery take?',
-                a: 'Standard delivery takes 5-7 business days across India. Express delivery (2-3 days) is available in select cities.'
+                a: 'Standard delivery takes about 6 business days across India. All orders are carefully packed to ensure the fragrance arrives in perfect condition.'
             },
             {
                 q: 'Can I track my order?',
@@ -46,7 +46,7 @@ const faqs = [
         questions: [
             {
                 q: 'Are your perfumes authentic?',
-                a: 'Yes! We source all our perfumes directly from authorized distributors and guarantee 100% authenticity.'
+                a: 'Yes! All our fragrances are 100% genuine luxury products, proudly manufactured in-house with the finest ingredients.'
             },
             {
                 q: 'How should I store my perfume?',

@@ -420,7 +420,7 @@ export default function Home() {
                 <CheckCircle className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Authentic Products</h3>
-              <p className="text-muted-foreground">100% genuine luxury fragrances from authorized distributors</p>
+              <p className="text-muted-foreground">100% Genuine Luxury Fragrance, Proudly Manufactured In-House</p>
             </div>
 
             <div className="text-center space-y-4">
@@ -428,7 +428,7 @@ export default function Home() {
                 <Truck className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Fast Delivery</h3>
-              <p className="text-muted-foreground">Pan-India delivery â€¢ 6 business days</p>
+              <p className="text-muted-foreground">Pan-India delivery in 6 business days</p>
             </div>
 
             <div className="text-center space-y-4 sm:col-span-2 lg:col-span-1">
@@ -472,7 +472,7 @@ export default function Home() {
               },
               {
                 question: "Do you offer samples or trial sizes?",
-                answer: "Yes! We have a trial pack collection starting at just â‚¹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
+                answer: "Yes! We have a trial pack collection starting at just ₹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
               },
               {
                 question: "How do I choose the right fragrance for me?",
