@@ -172,21 +172,6 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {order.trackingNumber && (
-        <div className="mb-6 p-4 bg-muted/30 border rounded-lg flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            <span className="font-semibold">Tracking ID (AWB):</span>
-            <span className="font-mono text-lg select-all">{order.trackingNumber}</span>
-          </div>
-          <Button variant="outline" size="sm" asChild>
-            <a href={`https://shiprocket.co/tracking/${order.trackingNumber}`} target="_blank" rel="noopener noreferrer">
-              Track Order External
-            </a>
-          </Button>
-        </div>
-      )}
-
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
