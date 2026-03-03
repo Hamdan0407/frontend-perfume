@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Star, Minus, Plus, ShoppingCart, Package, Tag } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown } from 'lucide-react';
 import api from '../api/axios';
-import reviewAPI from '../api/reviewAPI';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/button';
@@ -31,6 +30,11 @@ export default function ProductDetail() {
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [hasPurchased, setHasPurchased] = useState(false);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewPage, setReviewPage] = useState(0);
+  const [hasMoreReviews, setHasMoreReviews] = useState(false);
+  const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
 
   // Scroll to top on mount/route change
   useEffect(() => {
@@ -142,13 +146,28 @@ export default function ProductDetail() {
     }
   };
 
-  const fetchReviews = async () => {
+  const fetchReviews = async (page = 0, append = false) => {
     try {
-      const { data } = await api.get(`reviews/product/${id}`);
-      setReviews(data.content);
+      if (page > 0) setLoadingMoreReviews(true);
+      const { data } = await api.get(`products/${id}/reviews?page=${page}&size=10`);
+      if (append) {
+        setReviews(prev => [...prev, ...(data.reviews || [])]);
+      } else {
+        setReviews(data.reviews || []);
+      }
+      setTotalReviews(data.totalReviews || 0);
+      setAverageRating(data.averageRating || 0);
+      setHasMoreReviews(data.hasMore || false);
+      setReviewPage(page);
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
+    } finally {
+      setLoadingMoreReviews(false);
     }
+  };
+
+  const handleLoadMoreReviews = () => {
+    fetchReviews(reviewPage + 1, true);
   };
 
   const handleAddToCart = async () => {
@@ -193,11 +212,14 @@ export default function ProductDetail() {
 
     setSubmittingReview(true);
     try {
-      await reviewAPI.createReview(product.id, reviewRating, reviewComment);
+      await api.post(`products/${product.id}/reviews`, {
+        rating: reviewRating,
+        comment: reviewComment
+      });
       toast.success('Review submitted successfully!');
       setReviewRating(0);
       setReviewComment('');
-      fetchReviews();
+      fetchReviews(0, false);
       fetchProduct(); // Refresh product to update rating
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit review');
@@ -336,8 +358,8 @@ export default function ProductDetail() {
               </div>
 
               <div className="flex items-center gap-2 mb-6">
-                <StarRating value={product.rating} readOnly={true} size="md" />
-                <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
+                <StarRating value={averageRating || product.rating} readOnly={true} size="md" />
+                <span className="text-sm text-muted-foreground">({totalReviews || product.reviewCount} reviews)</span>
               </div>
             </div>
 
@@ -481,14 +503,21 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Reviews Section */}
-          <div className="flex items-center justify-between mb-8">
+        {/* ==================== REVIEWS SECTION ==================== */}
+        <div className="col-span-full mt-8">
+          {/* Reviews Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Customer Reviews</h2>
-            <div className="flex items-center gap-2">
-              <StarRating value={product.rating} readOnly={true} size="md" />
-              <span className="text-sm text-muted-foreground">
-                {product.rating.toFixed(1)} ({product.reviewCount} reviews)
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-bold text-foreground">{(averageRating || product.rating || 0).toFixed(1)}</span>
+                <div>
+                  <StarRating value={averageRating || product.rating} readOnly={true} size="md" />
+                  <span className="text-sm text-muted-foreground">
+                    {totalReviews || product.reviewCount} reviews
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -541,28 +570,58 @@ export default function ProductDetail() {
           )}
 
           {/* Reviews List */}
-          {reviews.length > 0 ? (
-            <div className="grid gap-6">
-              {reviews.map((review) => (
-                <Card key={review.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-medium text-foreground">{review.userName}</span>
-                          <StarRating value={review.rating} readOnly={true} size="sm" />
+          {reviews && reviews.length > 0 ? (
+            <div className="space-y-4">
+              <div className="grid gap-4">
+                {reviews.map((review) => (
+                  <Card key={review.id} className="border border-border">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-primary">
+                                {review.userName?.charAt(0)?.toUpperCase() || 'U'}
+                              </span>
+                            </div>
+                            <span className="font-medium text-foreground">{review.userName}</span>
+                            <StarRating value={review.rating} readOnly={true} size="sm" />
+                          </div>
+                          {review.comment && (
+                            <p className="text-muted-foreground leading-relaxed ml-11">{review.comment}</p>
+                          )}
                         </div>
-                        {review.comment && (
-                          <p className="text-muted-foreground leading-relaxed">{review.comment}</p>
-                        )}
+                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
+                          {new Date(review.createdAt).toLocaleDateString('en-IN', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              {hasMoreReviews && (
+                <div className="text-center pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleLoadMoreReviews}
+                    disabled={loadingMoreReviews}
+                    className="min-w-[200px]"
+                  >
+                    {loadingMoreReviews ? (
+                      'Loading...'
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                        Load More Reviews
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <Card>
@@ -575,6 +634,7 @@ export default function ProductDetail() {
               </CardContent>
             </Card>
           )}
+        </div>
         </div>
       </div>
 
