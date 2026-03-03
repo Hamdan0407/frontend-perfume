@@ -421,12 +421,6 @@ export default function Profile() {
                         {errors.zipCode}
                       </p>
                     )}
-                    {deliveryInfo && (
-                      <p className="text-xs text-green-600 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Delivery available — Est. {deliveryInfo.days} days via {deliveryInfo.courier}
-                      </p>
-                    )}
                   </div>
 
                   <div className="space-y-2">
