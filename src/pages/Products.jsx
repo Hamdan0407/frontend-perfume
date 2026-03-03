@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Filter, X, Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { useSearchParams, Link as RouterLink } from 'react-router-dom';
+import { Filter, X, Search, ChevronDown, SlidersHorizontal, ArrowRight } from 'lucide-react';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
@@ -13,6 +13,7 @@ import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
 import { CATEGORY_LIST, mapToCategoryEnum } from '../constants/productCategories';
 import { formatCategory, toCategoryEnum } from '../lib/utils';
+import SplitText from '../components/ui/SplitText';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -140,6 +141,72 @@ export default function Products() {
     setMaxPrice('');
     setInStockOnly(false);
   };
+
+  // Show "Coming Soon" page for Parfum category
+  if (category === 'parfum') {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <div className="text-center max-w-2xl mx-auto">
+          <div className="mb-6">
+            <span className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-sm font-medium tracking-wide">
+              Coming Soon
+            </span>
+          </div>
+          <SplitText
+            text="Parfum Collection"
+            className="text-5xl sm:text-6xl md:text-7xl font-bold text-foreground"
+            tag="h1"
+            delay={80}
+            duration={0.8}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 80, rotateX: -40 }}
+            to={{ opacity: 1, y: 0, rotateX: 0 }}
+            threshold={0.1}
+            rootMargin="-50px"
+          />
+          <div className="mt-8">
+            <SplitText
+              text="We're crafting something extraordinary. Our exclusive Parfum collection will be available very soon."
+              className="text-lg sm:text-xl text-muted-foreground leading-relaxed"
+              tag="p"
+              delay={30}
+              duration={0.6}
+              ease="power2.out"
+              splitType="words"
+              from={{ opacity: 0, y: 30 }}
+              to={{ opacity: 1, y: 0 }}
+              threshold={0.1}
+              rootMargin="-50px"
+            />
+          </div>
+          <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/products"
+              className="inline-flex items-center justify-center px-8 py-3 bg-accent text-white rounded-lg font-semibold hover:bg-accent/90 transition-colors"
+            >
+              Browse Other Collections
+            </a>
+            <a
+              href="/"
+              className="inline-flex items-center justify-center px-8 py-3 border border-border text-foreground rounded-lg font-semibold hover:bg-accent/10 transition-colors"
+            >
+              Back to Home
+            </a>
+          </div>
+          <div className="mt-16 opacity-40">
+            <p className="text-sm text-muted-foreground">Stay tuned for updates</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show category-wise "All Products" view when no category/search is selected
+  const isAllProducts = !category && !search && !brand && !type;
+  if (isAllProducts) {
+    return <AllProductsByCategory />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -445,6 +512,107 @@ function FiltersContent({
         </div>
       </CardContent>
     </>
+  );
+}
+
+// Categories to show in the "All Products" view (excluding parfum)
+const ALL_PRODUCT_CATEGORIES = CATEGORY_LIST.filter(c => c.value !== 'parfum');
+
+function CategorySection({ cat }) {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchCategoryProducts = async () => {
+      try {
+        const categoryEnum = toCategoryEnum(cat.value);
+        const { data } = await api.get('products', {
+          params: { category: categoryEnum, page: 0, size: 50, sortBy: 'createdAt', sortDir: 'DESC' }
+        });
+        const content = data.content || (Array.isArray(data) ? data : []);
+        setProducts(groupProducts(content));
+      } catch (err) {
+        console.error(`Failed to fetch ${cat.label}:`, err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategoryProducts();
+  }, [cat.value]);
+
+  if (!loading && products.length === 0) return null;
+
+  return (
+    <section className="mb-16">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{cat.label}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {loading ? 'Loading...' : `${products.length} product${products.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <RouterLink
+          to={cat.path}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent/80 transition-colors group/link"
+        >
+          View All
+          <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
+        </RouterLink>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onQuickView={(p) => {
+                setQuickViewProduct(p);
+                setIsQuickViewOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      <ProductQuickView
+        product={quickViewProduct}
+        isOpen={isQuickViewOpen}
+        onClose={() => {
+          setIsQuickViewOpen(false);
+          setQuickViewProduct(null);
+        }}
+      />
+    </section>
+  );
+}
+
+function AllProductsByCategory() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="mb-10 lg:mb-14">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">All Collections</h1>
+          <p className="text-muted-foreground">Explore our premium fragrance collections</p>
+        </div>
+
+        {ALL_PRODUCT_CATEGORIES.map((cat) => (
+          <CategorySection key={cat.value} cat={cat} />
+        ))}
+      </div>
+    </div>
   );
 }
 

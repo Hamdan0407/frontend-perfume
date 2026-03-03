@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import productAPI from '../api/productAPI';
 import ProductCard from '../components/ProductCard';
@@ -11,8 +11,9 @@ import { Skeleton } from '../components/ui/skeleton';
 import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
+import CountUp from '../components/ui/CountUp';
 import { useToast } from '../context/ToastContext';
-import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin } from 'lucide-react';
 import { CATEGORY_LIST } from '../constants/productCategories';
 
 import '../styles/HomeTheme.css';
@@ -145,15 +146,10 @@ export default function Home() {
                 'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' }
               }[cat.value] || { subtitle: 'Explore', accent: '#c9a96e' };
 
-              return (
-                <Link
-                  key={cat.value}
-                  to={cat.path}
-                  className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
-                  style={{
-                    animationDelay: `${idx * 100}ms`,
-                  }}
-                >
+              const isComingSoon = cat.value === 'parfum';
+
+              const cardContent = (
+                <>
                   {/* Black gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-black to-gray-900 transition-all duration-500" />
 
@@ -190,7 +186,7 @@ export default function Home() {
                       className="text-[10px] sm:text-xs tracking-[0.25em] uppercase font-light mb-2 opacity-50 group-hover:opacity-80 transition-opacity duration-300"
                       style={{ color: metadata.accent }}
                     >
-                      {metadata.subtitle}
+                      {isComingSoon ? 'Coming Very Soon' : metadata.subtitle}
                     </span>
 
                     {/* Category Name */}
@@ -209,10 +205,14 @@ export default function Home() {
                       style={{ backgroundColor: metadata.accent }}
                     />
 
-                    {/* Explore Link */}
+                    {/* Explore / Coming Soon Link */}
                     <span className="mt-4 text-[10px] sm:text-xs text-white/40 group-hover:text-white/80 tracking-widest uppercase transition-all duration-300 flex items-center gap-1">
-                      Explore
-                      <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
+                      {isComingSoon ? 'Stay Tuned âœ¨' : (
+                        <>
+                          Explore
+                          <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
+                        </>
+                      )}
                     </span>
                   </div>
 
@@ -221,6 +221,32 @@ export default function Home() {
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-3/4 transition-all duration-500 ease-out rounded-full"
                     style={{ backgroundColor: metadata.accent }}
                   />
+                </>
+              );
+
+              if (isComingSoon) {
+                return (
+                  <div
+                    key={cat.value}
+                    className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                    onClick={() => toast.info('ðŸ”œ Parfum collection is coming very soon! Stay tuned.')}
+                  >
+                    {cardContent}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={cat.value}
+                  to={cat.path}
+                  className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
+                  style={{
+                    animationDelay: `${idx * 100}ms`,
+                  }}
+                >
+                  {cardContent}
                 </Link>
               )
             })}
@@ -302,6 +328,89 @@ export default function Home() {
       {/* Recently Viewed Section */}
       <RecentlyViewed />
 
+      {/* Stats / Numbers Section */}
+      <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose MUWAS?</h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Numbers that speak for our commitment to quality
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {[
+              {
+                icon: Package,
+                to: 50,
+                suffix: '+',
+                label: 'Premium Products',
+                color: '#c9a96e',
+              },
+              {
+                icon: Award,
+                to: 100,
+                suffix: '%',
+                label: 'Authentic & Genuine',
+                color: '#a78bfa',
+              },
+              {
+                icon: Users,
+                to: 243,
+                suffix: '+',
+                label: 'Happy Customers',
+                color: '#38bdf8',
+              },
+              {
+                icon: MapPin,
+                to: 28,
+                suffix: '+',
+                label: 'States Delivered',
+                color: '#f59e0b',
+              },
+            ].map((stat, idx) => (
+              <div
+                key={idx}
+                className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 sm:p-8 text-center hover:border-slate-600/80 transition-all duration-500 hover:bg-slate-800/60"
+              >
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-2/3 transition-all duration-500 rounded-full"
+                  style={{ backgroundColor: stat.color }}
+                />
+
+                {/* Icon */}
+                <div
+                  className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 transition-transform duration-300 group-hover:scale-110"
+                  style={{ backgroundColor: `${stat.color}15` }}
+                >
+                  <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+                </div>
+
+                {/* Count */}
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 tabular-nums">
+                  <CountUp
+                    from={0}
+                    to={stat.to}
+                    duration={2.5}
+                    delay={idx * 0.15}
+                    separator=","
+                    className="inline-block"
+                  />
+                  <span style={{ color: stat.color }}>{stat.suffix}</span>
+                </div>
+
+                {/* Label */}
+                <p className="text-slate-400 text-sm sm:text-base font-medium">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="py-16 sm:py-20 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -319,7 +428,7 @@ export default function Home() {
                 <Truck className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Fast Delivery</h3>
-              <p className="text-muted-foreground">Pan-India delivery • 3-5 business days</p>
+              <p className="text-muted-foreground">Pan-India delivery â€¢ 6 business days</p>
             </div>
 
             <div className="text-center space-y-4 sm:col-span-2 lg:col-span-1">
@@ -339,7 +448,7 @@ export default function Home() {
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. 💡
+              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. ðŸ’¡
             </p>
           </div>
 
@@ -355,15 +464,15 @@ export default function Home() {
               },
               {
                 question: "How long does delivery take?",
-                answer: "Standard delivery takes 3-5 business days across India. Express delivery (1-2 days) is available for selected locations. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
+                answer: "Standard delivery takes about 6 business days across India. All orders are carefully packed to ensure the fragrance arrives in perfect condition."
               },
               {
                 question: "Can I return or exchange a product?",
-                answer: "Yes! We offer 30-day returns on unopened products. If a fragrance doesn't suit you, we can help you exchange it for another. Simply contact our customer support with your order details."
+                answer: "Our products are non-returnable. However, if you receive a damaged product, you can request an exchange within 7 days of delivery. Simply contact our customer support with your order details and photos of the damage."
               },
               {
                 question: "Do you offer samples or trial sizes?",
-                answer: "Yes! We have a trial pack collection starting at just ₹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
+                answer: "Yes! We have a trial pack collection starting at just â‚¹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
               },
               {
                 question: "How do I choose the right fragrance for me?",
@@ -428,13 +537,13 @@ export default function Home() {
                 },
                 {
                   step: "3",
-                  title: "30-Day Returns",
-                  desc: "Try risk-free. Return or exchange within 30 days"
+                  title: "7-Day Exchange",
+                  desc: "Exchange within 7 days of delivery if product is damaged"
                 },
                 {
                   step: "4",
                   title: "Fast Delivery",
-                  desc: "Pan-India delivery in 3-5 business days"
+                  desc: "Non-returnable product. Pan-India delivery in 6 business days"
                 }
               ].map((item, idx) => (
                 <div key={idx} className="bg-slate-800/50 border border-amber-600/30 rounded-lg p-6 hover:bg-slate-800/70 transition-colors">
@@ -481,7 +590,7 @@ function FAQItem({ question, answer, index }) {
       >
         <span className="font-semibold text-white text-base sm:text-lg pr-4">{question}</span>
         <span className={`flex-shrink-0 text-accent text-xl transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-          ▼
+          â–¼
         </span>
       </button>
 
