@@ -745,6 +745,31 @@ export default function AdminPanel() {
     }
   };
 
+  const handleCreateShipment = async (orderId) => {
+    try {
+      toast.info('Creating shipment...');
+      const res = await api.post(`admin/shiprocket/orders/${orderId}/create-shipment`);
+      const awb = res.data?.awbCode || res.data?.trackingNumber;
+      toast.success(awb ? `Shipment created! AWB: ${awb}` : 'Shipment created!');
+      fetchOrders();
+    } catch (err) {
+      console.error('Shipment error:', err?.response?.data || err);
+      toast.error(err?.response?.data?.error || 'Failed to create shipment');
+    }
+  };
+
+  const handleRefreshTracking = async (orderId) => {
+    try {
+      toast.info('Refreshing tracking...');
+      const res = await api.post(`admin/shiprocket/orders/${orderId}/refresh-tracking`);
+      toast.success('Tracking refreshed!');
+      fetchOrders();
+    } catch (err) {
+      console.error('Refresh tracking error:', err?.response?.data || err);
+      toast.error('Failed to refresh tracking');
+    }
+  };
+
   // ==================== USER OPERATIONS ====================
 
   const openUserModal = (user) => {
@@ -1932,6 +1957,7 @@ export default function AdminPanel() {
                         <th>Date</th>
                         <th>Total</th>
                         <th>Status</th>
+                        <th>Shipping</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -1962,6 +1988,39 @@ export default function AdminPanel() {
                                 <option key={status} value={status}>{status}</option>
                               ))}
                             </select>
+                          </td>
+                          <td>
+                            <div className="shipping-cell">
+                              {order.trackingNumber ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 600, color: '#059669' }}>
+                                    AWB: {order.trackingNumber}
+                                  </span>
+                                  {order.shipmentStatus && (
+                                    <span style={{ fontSize: '11px', color: '#6b7280' }}>{order.shipmentStatus}</span>
+                                  )}
+                                  <button
+                                    onClick={() => handleRefreshTracking(order.id)}
+                                    style={{ fontSize: '11px', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+                                  >
+                                    <RefreshCw size={12} style={{ display: 'inline', marginRight: '3px' }} />
+                                    Refresh
+                                  </button>
+                                </div>
+                              ) : ['PACKED', 'CONFIRMED'].includes(order.status) ? (
+                                <button
+                                  onClick={() => handleCreateShipment(order.id)}
+                                  style={{
+                                    fontSize: '12px', padding: '6px 12px', background: '#7c3aed', color: 'white',
+                                    border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  Create Shipment
+                                </button>
+                              ) : (
+                                <span style={{ fontSize: '12px', color: '#9ca3af' }}>—</span>
+                              )}
+                            </div>
                           </td>
                           <td>
                             <div className="action-buttons">
