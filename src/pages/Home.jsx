@@ -207,7 +207,7 @@ export default function Home() {
 
                     {/* Explore / Coming Soon Link */}
                     <span className="mt-4 text-[10px] sm:text-xs text-white/40 group-hover:text-white/80 tracking-widest uppercase transition-all duration-300 flex items-center gap-1">
-                      {isComingSoon ? 'Stay Tuned âœ¨' : (
+                      {isComingSoon ? 'Stay Tuned ✨' : (
                         <>
                           Explore
                           <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
@@ -230,7 +230,7 @@ export default function Home() {
                     key={cat.value}
                     className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
                     style={{ animationDelay: `${idx * 100}ms` }}
-                    onClick={() => toast.info('ðŸ”œ Parfum collection is coming very soon! Stay tuned.')}
+                    onClick={() => toast.info('📜 Parfum collection is coming very soon! Stay tuned.')}
                   >
                     {cardContent}
                   </div>
@@ -448,7 +448,7 @@ export default function Home() {
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. ðŸ’¡
+              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. 💡
             </p>
           </div>
 
@@ -590,7 +590,7 @@ function FAQItem({ question, answer, index }) {
       >
         <span className="font-semibold text-white text-base sm:text-lg pr-4">{question}</span>
         <span className={`flex-shrink-0 text-accent text-xl transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-          â–¼
+          ▼
         </span>
       </button>
 
