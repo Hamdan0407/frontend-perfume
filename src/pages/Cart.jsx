@@ -7,7 +7,6 @@ import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
-import { cn } from '../lib/utils';
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -187,14 +186,14 @@ export default function Cart() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className={cn("font-medium", cart.shippingCost === 0 ? "text-green-600" : "text-foreground")}>
-                      {cart.shippingCost === 0 ? 'FREE' : `₹${cart.shippingCost.toFixed(2)}`}
+                    <span className="font-medium text-muted-foreground text-xs">
+                      Calculated at checkout
                     </span>
                   </div>
 
                   <div className="border-t border-border pt-3 flex justify-between text-lg font-bold text-foreground">
-                    <span>Total</span>
-                    <span>₹{cart.total.toFixed(2)}</span>
+                    <span>Subtotal</span>
+                    <span>₹{cart.subtotal.toFixed(2)}</span>
                   </div>
                 </div>
 

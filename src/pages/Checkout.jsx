@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone, Truck, Loader2 } from 'lucide-react';
+import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone, Truck, Loader2, Pencil } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/button';
@@ -301,6 +301,13 @@ export default function Checkout() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState('');
 
+  // Pincode-validated city/state (auto-filled, read-only)
+  const [pincodeValidated, setPincodeValidated] = useState(false);
+
+  // Profile-based address state
+  const [profileComplete, setProfileComplete] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
+
   // Fetch cart on mount to ensure we have the latest data
   useEffect(() => {
     let isMounted = true;
@@ -326,18 +333,28 @@ export default function Checkout() {
         // Handle profile result (pre-fill shipping)
         if (profileResult.status === 'fulfilled') {
           const data = profileResult.value.data;
-          setShippingInfo(prev => ({
-            ...prev,
-            recipientName: (data.firstName || '') + (data.lastName ? ' ' + data.lastName : ''),
+          const name = (data.firstName || '') + (data.lastName ? ' ' + data.lastName : '');
+          const info = {
+            recipientName: name,
             shippingAddress: data.address || '',
             shippingCity: data.city || '',
             shippingState: data.state || '',
             shippingCountry: data.country || 'India',
             shippingZipCode: data.zipCode || '',
             shippingPhone: data.phoneNumber || ''
-          }));
+          };
+          setShippingInfo(prev => ({ ...prev, ...info }));
+          // If all required fields are filled, mark profile as complete
+          const allFilled = info.recipientName.trim() && info.shippingAddress.trim() &&
+            info.shippingCity.trim() && info.shippingState.trim() &&
+            info.shippingZipCode.trim() && info.shippingPhone.trim() &&
+            /^[1-9][0-9]{5}$/.test(info.shippingZipCode) &&
+            /^[6-9]\d{9}$/.test(info.shippingPhone.replace(/\D/g, '').slice(-10));
+          setProfileComplete(!!allFilled);
+          setEditingAddress(!allFilled);
         } else {
           console.log('Could not load profile for pre-fill:', profileResult.reason);
+          setEditingAddress(true);
         }
       } finally {
         if (isMounted) {
@@ -380,12 +397,13 @@ export default function Checkout() {
     }
   }, [cart, appliedCoupon]);
 
-  // Fetch dynamic shipping rate when pincode changes
+  // Fetch dynamic shipping rate + validate pincode when pincode changes
   useEffect(() => {
     const pincode = shippingInfo.shippingZipCode;
     if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
       setShippingRate(null);
       setShippingError('');
+      setPincodeValidated(false);
       return;
     }
 
@@ -393,20 +411,46 @@ export default function Checkout() {
       setShippingLoading(true);
       setShippingError('');
       try {
-        const params = { pincode };
-        if (breakdown?.subtotal) params.subtotal = breakdown.subtotal;
-        const { data } = await api.get('shipping/calculate', { params });
-        if (data.serviceable) {
-          setShippingRate(data);
-          setShippingError('');
+        // Call both APIs in parallel: validate pincode + calculate shipping
+        const [validateRes, shippingRes] = await Promise.allSettled([
+          api.get('shipping/validate-pincode', { params: { pincode } }),
+          api.get('shipping/calculate', { params: { pincode, ...(breakdown?.subtotal ? { subtotal: breakdown.subtotal } : {}) } })
+        ]);
+
+        // Handle pincode validation (auto-fill city/state)
+        if (validateRes.status === 'fulfilled' && validateRes.value.data.valid) {
+          const { city, state } = validateRes.value.data;
+          setShippingInfo(prev => ({ ...prev, shippingCity: city || prev.shippingCity, shippingState: state || prev.shippingState }));
+          setPincodeValidated(true);
+          setErrors(prev => ({ ...prev, shippingCity: '', shippingState: '' }));
+        } else {
+          setPincodeValidated(false);
+          const errMsg = validateRes.status === 'fulfilled' ? validateRes.value.data.error : 'Unable to validate pincode';
+          setShippingError(errMsg);
+          setShippingRate(null);
+          setShippingLoading(false);
+          return;
+        }
+
+        // Handle shipping rate
+        if (shippingRes.status === 'fulfilled') {
+          const data = shippingRes.value.data;
+          if (data.serviceable) {
+            setShippingRate(data);
+            setShippingError('');
+          } else {
+            setShippingRate(null);
+            setShippingError(data.error || 'Delivery not available to this pincode');
+          }
         } else {
           setShippingRate(null);
-          setShippingError(data.error || 'Delivery not available to this pincode');
+          setShippingError('Unable to calculate shipping.');
         }
       } catch (err) {
-        console.error('Shipping rate fetch error:', err);
+        console.error('Pincode validation/shipping error:', err);
         setShippingRate(null);
-        setShippingError('Unable to calculate shipping. Please try again.');
+        setShippingError('Unable to validate pincode. Please try again.');
+        setPincodeValidated(false);
       } finally {
         setShippingLoading(false);
       }
@@ -442,9 +486,13 @@ export default function Checkout() {
     }
 
     if (!shippingInfo.shippingZipCode.trim()) {
-      newErrors.shippingZipCode = 'Zip code is required';
-    } else if (!/^\d{5,6}$/.test(shippingInfo.shippingZipCode.trim())) {
-      newErrors.shippingZipCode = 'Please enter a valid zip code';
+      newErrors.shippingZipCode = 'Pincode is required';
+    } else if (!/^[1-9][0-9]{5}$/.test(shippingInfo.shippingZipCode.trim())) {
+      newErrors.shippingZipCode = 'Please enter a valid 6-digit Indian pincode';
+    } else if (!pincodeValidated) {
+      newErrors.shippingZipCode = 'Please wait for pincode validation';
+    } else if (shippingError) {
+      newErrors.shippingZipCode = shippingError;
     }
 
     if (!shippingInfo.shippingPhone.trim()) {
@@ -516,7 +564,7 @@ export default function Checkout() {
    * Creates order on backend and initializes Razorpay order
    */
   const handleShippingSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
 
     // Validate form
     if (!validateForm()) {
@@ -631,23 +679,92 @@ export default function Checkout() {
                     <div>
                       <CardTitle className="text-lg sm:text-xl">Shipping Information</CardTitle>
                       <CardDescription className="text-xs sm:text-sm">
-                        We'll deliver your order to this address
+                        {profileComplete && !editingAddress ? 'Delivering to your saved address' : "We'll deliver your order to this address"}
                       </CardDescription>
                     </div>
                   </div>
-                  <Alert className="mt-4 border-blue-200 bg-blue-50">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div className="text-xs sm:text-sm text-blue-900">
-                        <p className="font-semibold">💡 Tip: Save your default address</p>
-                        <p className="text-blue-800 mt-1">
-                          Go to your <Link to="/profile" className="font-semibold hover:underline">Profile</Link> to save your address and phone number. Next time, they'll auto-fill here!
-                        </p>
+                  {!profileComplete && (
+                    <Alert className="mt-4 border-blue-200 bg-blue-50">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs sm:text-sm text-blue-900">
+                          <p className="font-semibold">💡 Tip: Save your default address</p>
+                          <p className="text-blue-800 mt-1">
+                            Go to your <Link to="/profile" className="font-semibold hover:underline">Profile</Link> to save your address and phone number. Next time, they'll auto-fill here!
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Alert>
+                    </Alert>
+                  )}
                 </CardHeader>
                 <CardContent>
+                  {/* Saved Address Summary */}
+                  {profileComplete && !editingAddress && (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <p className="font-semibold text-foreground">{shippingInfo.recipientName}</p>
+                            <p className="text-sm text-muted-foreground">{shippingInfo.shippingAddress}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {shippingInfo.shippingCity}, {shippingInfo.shippingState} - {shippingInfo.shippingZipCode}
+                            </p>
+                            <p className="text-sm text-muted-foreground">{shippingInfo.shippingCountry}</p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> {shippingInfo.shippingPhone}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingAddress(true)}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Change
+                          </Button>
+                        </div>
+                        {shippingRate && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-green-600 flex items-center gap-1">
+                              <Truck className="h-3 w-3" />
+                              Delivery available — Est. {shippingRate.estimatedDeliveryDays} days via {shippingRate.courierName}
+                            </p>
+                          </div>
+                        )}
+                        {shippingLoading && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" /> Checking delivery availability...
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleShippingSubmit}
+                        disabled={loading || shippingLoading}
+                        className="w-full h-11 sm:h-12 text-base font-semibold"
+                        size="lg"
+                      >
+                        {loading ? (
+                          <>
+                            <div className="h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Validating...
+                          </>
+                        ) : (
+                          <>
+                            Continue to Payment
+                            <Lock className="h-4 w-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Full Form (shown when editing or profile incomplete) */}
+                  {(!profileComplete || editingAddress) && (
                   <form onSubmit={handleShippingSubmit} className="space-y-5">
                     {/* Recipient Name Field */}
                     <div className="space-y-2">
@@ -699,128 +816,11 @@ export default function Checkout() {
                       )}
                     </div>
 
-                    {/* City and Country */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="city" className="text-sm font-medium">
-                          City <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          id="city"
-                          type="text"
-                          required
-                          value={shippingInfo.shippingCity}
-                          onChange={(e) => {
-                            setShippingInfo({ ...shippingInfo, shippingCity: e.target.value });
-                            if (errors.shippingCity) setErrors({ ...errors, shippingCity: '' });
-                          }}
-                          placeholder="e.g., Mumbai"
-                          className={errors.shippingCity ? 'border-destructive' : ''}
-                        />
-                        {errors.shippingCity && (
-                          <p className="text-xs text-destructive flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            {errors.shippingCity}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="state" className="text-sm font-medium">
-                          State <span className="text-destructive">*</span>
-                        </Label>
-                        <select
-                          id="state"
-                          required
-                          value={shippingInfo.shippingState}
-                          onChange={(e) => {
-                            setShippingInfo({ ...shippingInfo, shippingState: e.target.value });
-                            if (errors.shippingState) setErrors({ ...errors, shippingState: '' });
-                          }}
-                          className={cn(
-                            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                            !shippingInfo.shippingState && "text-muted-foreground",
-                            errors.shippingState ? 'border-destructive' : ''
-                          )}
-                        >
-                          <option value="">Select State</option>
-                          <option value="Andhra Pradesh">Andhra Pradesh</option>
-                          <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                          <option value="Assam">Assam</option>
-                          <option value="Bihar">Bihar</option>
-                          <option value="Chhattisgarh">Chhattisgarh</option>
-                          <option value="Goa">Goa</option>
-                          <option value="Gujarat">Gujarat</option>
-                          <option value="Haryana">Haryana</option>
-                          <option value="Himachal Pradesh">Himachal Pradesh</option>
-                          <option value="Jharkhand">Jharkhand</option>
-                          <option value="Karnataka">Karnataka</option>
-                          <option value="Kerala">Kerala</option>
-                          <option value="Madhya Pradesh">Madhya Pradesh</option>
-                          <option value="Maharashtra">Maharashtra</option>
-                          <option value="Manipur">Manipur</option>
-                          <option value="Meghalaya">Meghalaya</option>
-                          <option value="Mizoram">Mizoram</option>
-                          <option value="Nagaland">Nagaland</option>
-                          <option value="Odisha">Odisha</option>
-                          <option value="Punjab">Punjab</option>
-                          <option value="Rajasthan">Rajasthan</option>
-                          <option value="Sikkim">Sikkim</option>
-                          <option value="Tamil Nadu">Tamil Nadu</option>
-                          <option value="Telangana">Telangana</option>
-                          <option value="Tripura">Tripura</option>
-                          <option value="Uttar Pradesh">Uttar Pradesh</option>
-                          <option value="Uttarakhand">Uttarakhand</option>
-                          <option value="West Bengal">West Bengal</option>
-                          <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                          <option value="Chandigarh">Chandigarh</option>
-                          <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-                          <option value="Delhi">Delhi</option>
-                          <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                          <option value="Ladakh">Ladakh</option>
-                          <option value="Lakshadweep">Lakshadweep</option>
-                          <option value="Puducherry">Puducherry</option>
-                        </select>
-                        {errors.shippingState && (
-                          <p className="text-xs text-destructive flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            {errors.shippingState}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="country" className="text-sm font-medium">
-                          Country <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          id="country"
-                          type="text"
-                          required
-                          value={shippingInfo.shippingCountry}
-                          onChange={(e) => {
-                            setShippingInfo({ ...shippingInfo, shippingCountry: e.target.value });
-                            if (errors.shippingCountry) setErrors({ ...errors, shippingCountry: '' });
-                          }}
-                          placeholder="e.g., India"
-                          className={errors.shippingCountry ? 'border-destructive' : ''}
-                        />
-                        {errors.shippingCountry && (
-                          <p className="text-xs text-destructive flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            {errors.shippingCountry}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Zip Code & Phone */}
+                    {/* Pincode & Phone - MOVED ABOVE City/State */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="zipcode" className="text-sm font-medium">
-                          Zip Code <span className="text-destructive">*</span>
+                          Pincode <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="zipcode"
@@ -828,12 +828,14 @@ export default function Checkout() {
                           required
                           value={shippingInfo.shippingZipCode}
                           onChange={(e) => {
-                            setShippingInfo({ ...shippingInfo, shippingZipCode: e.target.value });
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            setShippingInfo({ ...shippingInfo, shippingZipCode: val });
                             if (errors.shippingZipCode) setErrors({ ...errors, shippingZipCode: '' });
+                            if (val.length < 6) { setPincodeValidated(false); }
                           }}
-                          placeholder="e.g., 400001"
+                          placeholder="e.g., 635802"
                           maxLength="6"
-                          className={errors.shippingZipCode ? 'border-destructive' : ''}
+                          className={errors.shippingZipCode || shippingError ? 'border-destructive' : pincodeValidated ? 'border-green-500' : ''}
                         />
                         {errors.shippingZipCode && (
                           <p className="text-xs text-destructive flex items-center gap-1">
@@ -844,7 +846,7 @@ export default function Checkout() {
                         {shippingLoading && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <Loader2 className="h-3 w-3 animate-spin" />
-                            Checking delivery availability...
+                            Validating pincode...
                           </p>
                         )}
                         {shippingError && !errors.shippingZipCode && (
@@ -889,6 +891,79 @@ export default function Checkout() {
                       </div>
                     </div>
 
+                    {/* City and State - AUTO-FILLED from pincode */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city" className="text-sm font-medium">
+                          City {pincodeValidated && <span className="text-xs text-green-600 font-normal">(auto-filled)</span>}
+                        </Label>
+                        <Input
+                          id="city"
+                          type="text"
+                          required
+                          value={shippingInfo.shippingCity}
+                          onChange={(e) => {
+                            if (!pincodeValidated) {
+                              setShippingInfo({ ...shippingInfo, shippingCity: e.target.value });
+                              if (errors.shippingCity) setErrors({ ...errors, shippingCity: '' });
+                            }
+                          }}
+                          readOnly={pincodeValidated}
+                          placeholder={pincodeValidated ? '' : 'Enter pincode first'}
+                          className={cn(
+                            pincodeValidated ? 'bg-muted/50 cursor-default' : '',
+                            errors.shippingCity ? 'border-destructive' : ''
+                          )}
+                        />
+                        {errors.shippingCity && (
+                          <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.shippingCity}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="state" className="text-sm font-medium">
+                          State {pincodeValidated && <span className="text-xs text-green-600 font-normal">(auto-filled)</span>}
+                        </Label>
+                        <Input
+                          id="state"
+                          type="text"
+                          required
+                          value={shippingInfo.shippingState}
+                          readOnly={true}
+                          placeholder={pincodeValidated ? '' : 'Enter pincode first'}
+                          className={cn(
+                            'bg-muted/50 cursor-default',
+                            errors.shippingState ? 'border-destructive' : ''
+                          )}
+                        />
+                        {errors.shippingState && (
+                          <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.shippingState}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="country" className="text-sm font-medium">
+                          Country <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="country"
+                          type="text"
+                          required
+                          value={shippingInfo.shippingCountry}
+                          readOnly={true}
+                          className="bg-muted/50 cursor-default"
+                        />
+                      </div>
+                    </div>
+
                     {/* Submit Button */}
                     <div className="pt-4">
                       <Button
@@ -911,6 +986,7 @@ export default function Checkout() {
                       </Button>
                     </div>
                   </form>
+                  )}
                 </CardContent>
               </Card>
             ) : (
