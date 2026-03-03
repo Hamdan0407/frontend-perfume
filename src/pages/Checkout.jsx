@@ -421,7 +421,18 @@ export default function Checkout() {
         if (cart?.totalWeightInGrams) {
           params.weight = (cart.totalWeightInGrams / 1000).toFixed(3);
         }
+        // Log what we're sending
+        console.log('[SHIPPING] Fetching rate with params:', params);
+
         const { data } = await api.get('shipping/calculate', { params });
+
+        // Log FULL Shiprocket response for debugging
+        console.log('[SHIPPING] Full API response:', JSON.stringify(data, null, 2));
+        console.log('[SHIPPING] shippingCost=₹' + data.shippingCost +
+          ', freightCharge=₹' + data.freightCharge +
+          ', chargeWeight=' + data.chargeWeightKg + 'kg' +
+          ', requestedWeight=' + data.requestedWeightKg + 'kg' +
+          ', courier=' + data.courierName);
 
         if (data.serviceable) {
           setShippingRate(data);
@@ -444,7 +455,7 @@ export default function Checkout() {
           setShippingError(data.error || 'Delivery not available to this pincode');
         }
       } catch (err) {
-        console.error('Shipping rate fetch error:', err);
+        console.error('[SHIPPING] Fetch error:', err);
         setShippingRate(null);
         setShippingError('Unable to calculate shipping. Please try again.');
         setPincodeValidated(false);
@@ -1090,7 +1101,11 @@ export default function Checkout() {
                           via {shippingRate.courierName} • Est. {shippingRate.estimatedDeliveryDays} days
                         </p>
                       )}
-
+                      {shippingRate?.chargeWeightKg > 0 && (
+                        <p className="text-[10px] text-muted-foreground/50 leading-tight">
+                          Charged weight: {shippingRate.chargeWeightKg}kg
+                        </p>
+                      )}
                     </div>
                     <span className={cn("font-medium", (shippingRate && shippingRate.shippingCost === 0) ? "text-green-600" : breakdown?.isFreeShipping ? "text-green-600" : "")}>
                       {shippingLoading ? (
