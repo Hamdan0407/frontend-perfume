@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone, Truck, Loader2 } from 'lucide-react';
+import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone, Truck, Loader2, Pencil } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/button';
@@ -301,6 +301,10 @@ export default function Checkout() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState('');
 
+  // Profile-based address state
+  const [profileComplete, setProfileComplete] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
+
   // Fetch cart on mount to ensure we have the latest data
   useEffect(() => {
     let isMounted = true;
@@ -326,18 +330,28 @@ export default function Checkout() {
         // Handle profile result (pre-fill shipping)
         if (profileResult.status === 'fulfilled') {
           const data = profileResult.value.data;
-          setShippingInfo(prev => ({
-            ...prev,
-            recipientName: (data.firstName || '') + (data.lastName ? ' ' + data.lastName : ''),
+          const name = (data.firstName || '') + (data.lastName ? ' ' + data.lastName : '');
+          const info = {
+            recipientName: name,
             shippingAddress: data.address || '',
             shippingCity: data.city || '',
             shippingState: data.state || '',
             shippingCountry: data.country || 'India',
             shippingZipCode: data.zipCode || '',
             shippingPhone: data.phoneNumber || ''
-          }));
+          };
+          setShippingInfo(prev => ({ ...prev, ...info }));
+          // If all required fields are filled, mark profile as complete
+          const allFilled = info.recipientName.trim() && info.shippingAddress.trim() &&
+            info.shippingCity.trim() && info.shippingState.trim() &&
+            info.shippingZipCode.trim() && info.shippingPhone.trim() &&
+            /^[1-9][0-9]{5}$/.test(info.shippingZipCode) &&
+            /^[6-9]\d{9}$/.test(info.shippingPhone.replace(/\D/g, '').slice(-10));
+          setProfileComplete(!!allFilled);
+          setEditingAddress(!allFilled);
         } else {
           console.log('Could not load profile for pre-fill:', profileResult.reason);
+          setEditingAddress(true);
         }
       } finally {
         if (isMounted) {
@@ -516,7 +530,7 @@ export default function Checkout() {
    * Creates order on backend and initializes Razorpay order
    */
   const handleShippingSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
 
     // Validate form
     if (!validateForm()) {
@@ -631,23 +645,92 @@ export default function Checkout() {
                     <div>
                       <CardTitle className="text-lg sm:text-xl">Shipping Information</CardTitle>
                       <CardDescription className="text-xs sm:text-sm">
-                        We'll deliver your order to this address
+                        {profileComplete && !editingAddress ? 'Delivering to your saved address' : "We'll deliver your order to this address"}
                       </CardDescription>
                     </div>
                   </div>
-                  <Alert className="mt-4 border-blue-200 bg-blue-50">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div className="text-xs sm:text-sm text-blue-900">
-                        <p className="font-semibold">💡 Tip: Save your default address</p>
-                        <p className="text-blue-800 mt-1">
-                          Go to your <Link to="/profile" className="font-semibold hover:underline">Profile</Link> to save your address and phone number. Next time, they'll auto-fill here!
-                        </p>
+                  {!profileComplete && (
+                    <Alert className="mt-4 border-blue-200 bg-blue-50">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs sm:text-sm text-blue-900">
+                          <p className="font-semibold">💡 Tip: Save your default address</p>
+                          <p className="text-blue-800 mt-1">
+                            Go to your <Link to="/profile" className="font-semibold hover:underline">Profile</Link> to save your address and phone number. Next time, they'll auto-fill here!
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Alert>
+                    </Alert>
+                  )}
                 </CardHeader>
                 <CardContent>
+                  {/* Saved Address Summary */}
+                  {profileComplete && !editingAddress && (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <p className="font-semibold text-foreground">{shippingInfo.recipientName}</p>
+                            <p className="text-sm text-muted-foreground">{shippingInfo.shippingAddress}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {shippingInfo.shippingCity}, {shippingInfo.shippingState} - {shippingInfo.shippingZipCode}
+                            </p>
+                            <p className="text-sm text-muted-foreground">{shippingInfo.shippingCountry}</p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> {shippingInfo.shippingPhone}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingAddress(true)}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Change
+                          </Button>
+                        </div>
+                        {shippingRate && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-green-600 flex items-center gap-1">
+                              <Truck className="h-3 w-3" />
+                              Delivery available — Est. {shippingRate.estimatedDeliveryDays} days via {shippingRate.courierName}
+                            </p>
+                          </div>
+                        )}
+                        {shippingLoading && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" /> Checking delivery availability...
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleShippingSubmit}
+                        disabled={loading || shippingLoading}
+                        className="w-full h-11 sm:h-12 text-base font-semibold"
+                        size="lg"
+                      >
+                        {loading ? (
+                          <>
+                            <div className="h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Validating...
+                          </>
+                        ) : (
+                          <>
+                            Continue to Payment
+                            <Lock className="h-4 w-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Full Form (shown when editing or profile incomplete) */}
+                  {(!profileComplete || editingAddress) && (
                   <form onSubmit={handleShippingSubmit} className="space-y-5">
                     {/* Recipient Name Field */}
                     <div className="space-y-2">
@@ -911,6 +994,7 @@ export default function Checkout() {
                       </Button>
                     </div>
                   </form>
+                  )}
                 </CardContent>
               </Card>
             ) : (
