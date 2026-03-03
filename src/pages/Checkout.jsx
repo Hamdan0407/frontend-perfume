@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone } from 'lucide-react';
+import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone, Truck, Loader2 } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/button';
@@ -296,6 +296,11 @@ export default function Checkout() {
   const [breakdown, setBreakdown] = useState(null);
   const [breakdownLoading, setBreakdownLoading] = useState(false);
 
+  // Dynamic shipping rate state
+  const [shippingRate, setShippingRate] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingError, setShippingError] = useState('');
+
   // Fetch cart on mount to ensure we have the latest data
   useEffect(() => {
     let isMounted = true;
@@ -374,6 +379,41 @@ export default function Checkout() {
       fetchBreakdown();
     }
   }, [cart, appliedCoupon]);
+
+  // Fetch dynamic shipping rate when pincode changes
+  useEffect(() => {
+    const pincode = shippingInfo.shippingZipCode;
+    if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
+      setShippingRate(null);
+      setShippingError('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setShippingLoading(true);
+      setShippingError('');
+      try {
+        const params = { pincode };
+        if (breakdown?.subtotal) params.subtotal = breakdown.subtotal;
+        const { data } = await api.get('shipping/calculate', { params });
+        if (data.serviceable) {
+          setShippingRate(data);
+          setShippingError('');
+        } else {
+          setShippingRate(null);
+          setShippingError(data.error || 'Delivery not available to this pincode');
+        }
+      } catch (err) {
+        console.error('Shipping rate fetch error:', err);
+        setShippingRate(null);
+        setShippingError('Unable to calculate shipping. Please try again.');
+      } finally {
+        setShippingLoading(false);
+      }
+    }, 600); // 600ms debounce
+
+    return () => clearTimeout(timer);
+  }, [shippingInfo.shippingZipCode, breakdown?.subtotal]);
 
   // Validate form fields
   const validateForm = () => {
@@ -801,6 +841,24 @@ export default function Checkout() {
                             {errors.shippingZipCode}
                           </p>
                         )}
+                        {shippingLoading && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Checking delivery availability...
+                          </p>
+                        )}
+                        {shippingError && !errors.shippingZipCode && (
+                          <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {shippingError}
+                          </p>
+                        )}
+                        {shippingRate && !shippingLoading && (
+                          <p className="text-xs text-green-600 flex items-center gap-1">
+                            <Truck className="h-3 w-3" />
+                            Delivery available — Est. {shippingRate.estimatedDeliveryDays} days via {shippingRate.courierName}
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -954,12 +1012,25 @@ export default function Checkout() {
                   <div className="flex justify-between text-sm">
                     <div>
                       <span className="text-muted-foreground">Shipping</span>
+                      {shippingRate?.courierName && (
+                        <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-tight">
+                          via {shippingRate.courierName} • Est. {shippingRate.estimatedDeliveryDays} days
+                        </p>
+                      )}
                       <p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight max-w-[200px]">
                         (Please Note: For orders outside India, in some regions, additional import duties at destination may be applicable)
                       </p>
                     </div>
-                    <span className={cn("font-medium", breakdown?.isFreeShipping ? "text-green-600" : "")}>
-                      {breakdown ? (breakdown.isFreeShipping ? 'FREE' : `₹${breakdown.shippingCost.toFixed(2)}`) : 'Calculating...'}
+                    <span className={cn("font-medium", (shippingRate && shippingRate.shippingCost === 0) ? "text-green-600" : breakdown?.isFreeShipping ? "text-green-600" : "")}>
+                      {shippingLoading ? (
+                        <span className="flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />Calculating...</span>
+                      ) : shippingRate ? (
+                        shippingRate.shippingCost === 0 ? 'FREE' : `₹${shippingRate.shippingCost.toFixed(2)}`
+                      ) : shippingError ? (
+                        <span className="text-destructive text-xs">N/A</span>
+                      ) : breakdown ? (
+                        breakdown.isFreeShipping ? 'FREE' : `₹${breakdown.shippingCost.toFixed(2)}`
+                      ) : 'Enter pincode'}
                     </span>
                   </div>
 
@@ -974,7 +1045,11 @@ export default function Checkout() {
                   <div className="flex justify-between text-base font-bold pt-2 border-t">
                     <span>Total</span>
                     <span className="text-lg">
-                      {breakdownLoading ? 'Calculating...' : `₹${razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : (breakdown?.total || 0).toFixed(2)}`}
+                      {breakdownLoading ? 'Calculating...' : `₹${razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : (
+                        shippingRate
+                          ? ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) + shippingRate.shippingCost).toFixed(2)
+                          : (breakdown?.total || 0).toFixed(2)
+                      )}`}
                     </span>
                   </div>
                 </div>
