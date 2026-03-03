@@ -203,7 +203,7 @@ export default function PurchaseNotification() {
                                 purchased <span className="font-medium text-foreground">{notification.product}</span>
                             </p>
                             <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
-                                Just now
+                                A few moments ago
                             </p>
                         </div>
 
