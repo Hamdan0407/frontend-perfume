@@ -401,7 +401,7 @@ export default function Checkout() {
     }
   }, [cart, appliedCoupon]);
 
-  // Fetch dynamic shipping rate + auto-fill city/state when pincode changes
+  // Fetch dynamic shipping rate + auto-fill city/state when pincode or cart changes
   useEffect(() => {
     const pincode = shippingInfo.shippingZipCode;
     if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
@@ -415,14 +415,18 @@ export default function Checkout() {
       setShippingLoading(true);
       setShippingError('');
       try {
+        // Build params — weight is sent as fallback; server computes from cart if user is logged in
         const params = { pincode };
         if (breakdown?.subtotal) params.subtotal = breakdown.subtotal;
-        // Send actual cart weight (in kg) for accurate shipping calculation
+        // Send cart weight as fallback (server prefers its own cart-based calculation)
         if (cart?.totalWeightInGrams) {
           params.weight = (cart.totalWeightInGrams / 1000).toFixed(3);
         }
         // Log what we're sending
-        console.log('[SHIPPING] Fetching rate with params:', params);
+        const cartItemCount = cart?.itemCount || cart?.items?.length || 0;
+        console.log('[SHIPPING] Fetching rate — pincode:', pincode,
+          'cartWeight:', cart?.totalWeightInGrams, 'g =', params.weight, 'kg',
+          'items:', cartItemCount);
 
         const { data } = await api.get('shipping/calculate', { params });
 
@@ -465,7 +469,7 @@ export default function Checkout() {
     }, 600); // 600ms debounce
 
     return () => clearTimeout(timer);
-  }, [shippingInfo.shippingZipCode, breakdown?.subtotal, cart?.totalWeightInGrams]);
+  }, [shippingInfo.shippingZipCode, breakdown?.subtotal, cart?.totalWeightInGrams, cart?.itemCount]);
 
   // Validate form fields
   const validateForm = () => {
