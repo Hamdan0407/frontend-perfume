@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { User, Lock, MapPin, Phone, Mail, Eye, EyeOff, Save, AlertCircle } from 'lucide-react';
+import { User, Lock, MapPin, Phone, Mail, Eye, EyeOff, Save, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '../api/axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -23,9 +23,16 @@ export default function Profile() {
     phoneNumber: '',
     address: '',
     city: '',
+    state: '',
     country: '',
     zipCode: ''
   });
+
+  // Pincode auto-fill state
+  const [pincodeValidated, setPincodeValidated] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeError, setPincodeError] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -53,9 +60,14 @@ export default function Profile() {
           phoneNumber: data.phoneNumber || '',
           address: data.address || '',
           city: data.city || '',
-          country: data.country || '',
+          state: data.state || '',
+          country: data.country || 'India',
           zipCode: data.zipCode || ''
         });
+        // If pincode already saved, mark as validated
+        if (data.zipCode && /^[1-9][0-9]{5}$/.test(data.zipCode) && data.city && data.state) {
+          setPincodeValidated(true);
+        }
       } catch (error) {
         console.error('Failed to fetch profile:', error);
         toast.error('Failed to load profile');
@@ -67,6 +79,54 @@ export default function Profile() {
 
     fetchProfile();
   }, [navigate]);
+
+  // Auto-fill city/state when pincode changes (6 digits)
+  useEffect(() => {
+    const pincode = profileData.zipCode;
+    if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
+      if (pincode && pincode.length >= 6) {
+        setPincodeError('Enter a valid 6-digit pincode');
+      }
+      setPincodeValidated(false);
+      setDeliveryInfo(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setPincodeLoading(true);
+      setPincodeError('');
+      try {
+        const { data } = await api.get(`shipping/calculate?pincode=${pincode}`);
+        if (data.serviceable) {
+          if (data.city || data.state) {
+            setProfileData(prev => ({
+              ...prev,
+              city: data.city || prev.city,
+              state: data.state || prev.state,
+              country: 'India'
+            }));
+          }
+          setPincodeValidated(true);
+          setDeliveryInfo({
+            days: data.estimatedDeliveryDays,
+            courier: data.courierName
+          });
+        } else {
+          setPincodeError('Delivery not available for this pincode');
+          setPincodeValidated(false);
+          setDeliveryInfo(null);
+        }
+      } catch {
+        setPincodeError('Could not verify pincode');
+        setPincodeValidated(false);
+        setDeliveryInfo(null);
+      } finally {
+        setPincodeLoading(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [profileData.zipCode]);
 
   // Validate profile form
   const validateProfileForm = () => {
@@ -101,8 +161,10 @@ export default function Profile() {
 
     if (!profileData.zipCode.trim()) {
       newErrors.zipCode = 'Zip code is required';
-    } else if (!/^\d{5,6}$/.test(profileData.zipCode)) {
-      newErrors.zipCode = 'Zip code must be 5-6 digits';
+    } else if (!/^[1-9][0-9]{5}$/.test(profileData.zipCode)) {
+      newErrors.zipCode = 'Enter a valid 6-digit pincode';
+    } else if (!pincodeValidated) {
+      newErrors.zipCode = 'Please wait for pincode verification';
     }
 
     setErrors(newErrors);
@@ -154,7 +216,8 @@ export default function Profile() {
         phoneNumber: data.phoneNumber || '',
         address: data.address || '',
         city: data.city || '',
-        country: data.country || '',
+        state: data.state || '',
+        country: data.country || 'India',
         zipCode: data.zipCode || ''
       });
       // Synchronize with global auth store so Navbar updates immediately
@@ -317,28 +380,77 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber" className="font-medium">
-                    Phone Number
-                  </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="phoneNumber"
-                      type="tel"
-                      value={profileData.phoneNumber}
-                      onChange={(e) => {
-                        setProfileData({ ...profileData, phoneNumber: e.target.value });
-                        if (errors.phoneNumber) setErrors({ ...errors, phoneNumber: '' });
-                      }}
-                      placeholder="e.g., 8247327106"
-                      className="pl-10"
-                    />
+                {/* Pincode + Phone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode" className="font-medium">
+                      Pincode <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="zipCode"
+                        value={profileData.zipCode}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setProfileData({ ...profileData, zipCode: val });
+                          if (errors.zipCode) setErrors({ ...errors, zipCode: '' });
+                          if (val.length < 6) {
+                            setPincodeValidated(false);
+                            setDeliveryInfo(null);
+                            setPincodeError('');
+                          }
+                        }}
+                        placeholder="e.g., 635802"
+                        maxLength={6}
+                        className={`pr-10 ${pincodeValidated ? 'border-green-500 focus-visible:ring-green-500' : ''} ${pincodeError ? 'border-destructive' : ''}`}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {pincodeLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                        {pincodeValidated && !pincodeLoading && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                      </div>
+                    </div>
+                    {pincodeError && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {pincodeError}
+                      </p>
+                    )}
+                    {errors.zipCode && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.zipCode}
+                      </p>
+                    )}
+                    {deliveryInfo && (
+                      <p className="text-xs text-green-600 flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Delivery available — Est. {deliveryInfo.days} days via {deliveryInfo.courier}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber" className="font-medium">
+                      Phone Number
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={profileData.phoneNumber}
+                        onChange={(e) => {
+                          setProfileData({ ...profileData, phoneNumber: e.target.value });
+                          if (errors.phoneNumber) setErrors({ ...errors, phoneNumber: '' });
+                        }}
+                        placeholder="e.g., 8247327106"
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
                 </div>
 
-
-                {/* Address */}
+                {/* Street Address */}
                 <div className="space-y-2">
                   <Label htmlFor="address" className="font-medium">
                     Street Address <span className="text-destructive">*</span>
@@ -361,21 +473,23 @@ export default function Profile() {
                   )}
                 </div>
 
-                {/* City, Country, Zip */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* City + State (auto-filled, read-only when validated) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city" className="font-medium">
-                      City <span className="text-destructive">*</span>
+                      City {pincodeValidated && <span className="text-xs text-muted-foreground ml-1">(auto-filled)</span>}
                     </Label>
                     <Input
                       id="city"
                       value={profileData.city}
                       onChange={(e) => {
-                        setProfileData({ ...profileData, city: e.target.value });
-                        if (errors.city) setErrors({ ...errors, city: '' });
+                        if (!pincodeValidated) {
+                          setProfileData({ ...profileData, city: e.target.value });
+                        }
                       }}
-                      placeholder="e.g., Mumbai"
-                      className={errors.city ? 'border-destructive' : ''}
+                      readOnly={pincodeValidated}
+                      placeholder="Enter pincode to auto-fill"
+                      className={`${pincodeValidated ? 'bg-muted cursor-not-allowed' : ''} ${errors.city ? 'border-destructive' : ''}`}
                     />
                     {errors.city && (
                       <p className="text-xs text-destructive">
@@ -386,48 +500,30 @@ export default function Profile() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="country" className="font-medium">
-                      Country <span className="text-destructive">*</span>
+                    <Label htmlFor="state" className="font-medium">
+                      State {pincodeValidated && <span className="text-xs text-muted-foreground ml-1">(auto-filled)</span>}
                     </Label>
                     <Input
-                      id="country"
-                      value={profileData.country}
-                      onChange={(e) => {
-                        setProfileData({ ...profileData, country: e.target.value });
-                        if (errors.country) setErrors({ ...errors, country: '' });
-                      }}
-                      placeholder="e.g., India"
-                      className={errors.country ? 'border-destructive' : ''}
+                      id="state"
+                      value={profileData.state}
+                      readOnly
+                      placeholder="Enter pincode to auto-fill"
+                      className="bg-muted cursor-not-allowed"
                     />
-                    {errors.country && (
-                      <p className="text-xs text-destructive">
-                        <AlertCircle className="h-3 w-3 inline mr-1" />
-                        {errors.country}
-                      </p>
-                    )}
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="zipCode" className="font-medium">
-                      Zip Code <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="zipCode"
-                      value={profileData.zipCode}
-                      onChange={(e) => {
-                        setProfileData({ ...profileData, zipCode: e.target.value });
-                        if (errors.zipCode) setErrors({ ...errors, zipCode: '' });
-                      }}
-                      placeholder="e.g., 400001"
-                      className={errors.zipCode ? 'border-destructive' : ''}
-                    />
-                    {errors.zipCode && (
-                      <p className="text-xs text-destructive">
-                        <AlertCircle className="h-3 w-3 inline mr-1" />
-                        {errors.zipCode}
-                      </p>
-                    )}
-                  </div>
+                {/* Country (read-only) */}
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="font-medium">
+                    Country
+                  </Label>
+                  <Input
+                    id="country"
+                    value={profileData.country || 'India'}
+                    readOnly
+                    className="bg-muted cursor-not-allowed"
+                  />
                 </div>
 
                 {/* Save Button */}
