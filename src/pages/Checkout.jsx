@@ -397,7 +397,7 @@ export default function Checkout() {
     }
   }, [cart, appliedCoupon]);
 
-  // Fetch dynamic shipping rate + validate pincode when pincode changes
+  // Fetch dynamic shipping rate + auto-fill city/state when pincode changes
   useEffect(() => {
     const pincode = shippingInfo.shippingZipCode;
     if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
@@ -411,45 +411,34 @@ export default function Checkout() {
       setShippingLoading(true);
       setShippingError('');
       try {
-        // Call both APIs in parallel: validate pincode + calculate shipping
-        const [validateRes, shippingRes] = await Promise.allSettled([
-          api.get('shipping/validate-pincode', { params: { pincode } }),
-          api.get('shipping/calculate', { params: { pincode, ...(breakdown?.subtotal ? { subtotal: breakdown.subtotal } : {}) } })
-        ]);
+        const params = { pincode };
+        if (breakdown?.subtotal) params.subtotal = breakdown.subtotal;
+        const { data } = await api.get('shipping/calculate', { params });
 
-        // Handle pincode validation (auto-fill city/state)
-        if (validateRes.status === 'fulfilled' && validateRes.value.data.valid) {
-          const { city, state } = validateRes.value.data;
-          setShippingInfo(prev => ({ ...prev, shippingCity: city || prev.shippingCity, shippingState: state || prev.shippingState }));
-          setPincodeValidated(true);
-          setErrors(prev => ({ ...prev, shippingCity: '', shippingState: '' }));
-        } else {
-          setPincodeValidated(false);
-          const errMsg = validateRes.status === 'fulfilled' ? validateRes.value.data.error : 'Unable to validate pincode';
-          setShippingError(errMsg);
-          setShippingRate(null);
-          setShippingLoading(false);
-          return;
-        }
-
-        // Handle shipping rate
-        if (shippingRes.status === 'fulfilled') {
-          const data = shippingRes.value.data;
-          if (data.serviceable) {
-            setShippingRate(data);
-            setShippingError('');
+        if (data.serviceable) {
+          setShippingRate(data);
+          setShippingError('');
+          // Auto-fill city and state from Shiprocket response
+          if (data.city || data.state) {
+            setShippingInfo(prev => ({
+              ...prev,
+              shippingCity: data.city || prev.shippingCity,
+              shippingState: data.state || prev.shippingState
+            }));
+            setPincodeValidated(true);
+            setErrors(prev => ({ ...prev, shippingCity: '', shippingState: '' }));
           } else {
-            setShippingRate(null);
-            setShippingError(data.error || 'Delivery not available to this pincode');
+            setPincodeValidated(false);
           }
         } else {
           setShippingRate(null);
-          setShippingError('Unable to calculate shipping.');
+          setPincodeValidated(false);
+          setShippingError(data.error || 'Delivery not available to this pincode');
         }
       } catch (err) {
-        console.error('Pincode validation/shipping error:', err);
+        console.error('Shipping rate fetch error:', err);
         setShippingRate(null);
-        setShippingError('Unable to validate pincode. Please try again.');
+        setShippingError('Unable to calculate shipping. Please try again.');
         setPincodeValidated(false);
       } finally {
         setShippingLoading(false);
