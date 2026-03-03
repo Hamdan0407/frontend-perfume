@@ -104,8 +104,12 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
         amount: razorpayOrderResponse.amount, // Amount in paise
         currency: razorpayOrderResponse.currency,
         order_id: razorpayOrderResponse.razorpayOrderId, // Razorpay Order ID
-        name: 'Perfume Shop',
+        name: 'MUWAS',
         description: `Order #${razorpayOrderResponse.orderNumber}`,
+        image: '/muwas-logo-nobg.png',
+        theme: {
+          color: '#1a1a2e',
+        },
 
         // Customer details
         prefill: {
@@ -989,7 +993,7 @@ export default function Checkout() {
                     <div>
                       <CardTitle className="text-2xl sm:text-3xl">⚡ Payment Details</CardTitle>
                       <CardDescription className="text-sm sm:text-base">
-                        Complete your purchase securely - Demo Mode Active
+                        Complete your purchase securely
                       </CardDescription>
                     </div>
                   </div>
@@ -1082,9 +1086,7 @@ export default function Checkout() {
                           via {shippingRate.courierName} • Est. {shippingRate.estimatedDeliveryDays} days
                         </p>
                       )}
-                      <p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight max-w-[200px]">
-                        (Please Note: For orders outside India, in some regions, additional import duties at destination may be applicable)
-                      </p>
+
                     </div>
                     <span className={cn("font-medium", (shippingRate && shippingRate.shippingCost === 0) ? "text-green-600" : breakdown?.isFreeShipping ? "text-green-600" : "")}>
                       {shippingLoading ? (
