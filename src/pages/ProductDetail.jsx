@@ -178,13 +178,19 @@ export default function ProductDetail() {
     }
 
     try {
+      // For virtual variants (created from related products), use the product ID from the variant
+      const isVirtualVariant = selectedVariant && String(selectedVariant.id).startsWith('v_');
+      const targetProductId = isVirtualVariant && selectedVariant.productId
+        ? selectedVariant.productId
+        : product.id;
+
       const requestData = {
-        productId: product.id,
+        productId: targetProductId,
         quantity
       };
 
-      // Include variantId if a variant is selected
-      if (selectedVariant) {
+      // Include variantId only for real database variants (not virtual ones)
+      if (selectedVariant && !isVirtualVariant) {
         requestData.variantId = selectedVariant.id;
       }
 

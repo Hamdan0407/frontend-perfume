@@ -104,8 +104,12 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
         amount: razorpayOrderResponse.amount, // Amount in paise
         currency: razorpayOrderResponse.currency,
         order_id: razorpayOrderResponse.razorpayOrderId, // Razorpay Order ID
-        name: 'Perfume Shop',
+        name: 'MUWAS',
         description: `Order #${razorpayOrderResponse.orderNumber}`,
+        image: '/muwas-logo-nobg.png',
+        theme: {
+          color: '#1a1a2e',
+        },
 
         // Customer details
         prefill: {
@@ -413,6 +417,10 @@ export default function Checkout() {
       try {
         const params = { pincode };
         if (breakdown?.subtotal) params.subtotal = breakdown.subtotal;
+        // Send actual cart weight (in kg) for accurate shipping calculation
+        if (cart?.totalWeightInGrams) {
+          params.weight = (cart.totalWeightInGrams / 1000).toFixed(3);
+        }
         const { data } = await api.get('shipping/calculate', { params });
 
         if (data.serviceable) {
@@ -446,7 +454,7 @@ export default function Checkout() {
     }, 600); // 600ms debounce
 
     return () => clearTimeout(timer);
-  }, [shippingInfo.shippingZipCode, breakdown?.subtotal]);
+  }, [shippingInfo.shippingZipCode, breakdown?.subtotal, cart?.totalWeightInGrams]);
 
   // Validate form fields
   const validateForm = () => {
@@ -989,7 +997,7 @@ export default function Checkout() {
                     <div>
                       <CardTitle className="text-2xl sm:text-3xl">⚡ Payment Details</CardTitle>
                       <CardDescription className="text-sm sm:text-base">
-                        Complete your purchase securely - Demo Mode Active
+                        Complete your purchase securely
                       </CardDescription>
                     </div>
                   </div>
@@ -1046,17 +1054,17 @@ export default function Checkout() {
                   {Array.isArray(cart?.items) && cart.items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="h-16 w-16 rounded-md bg-muted overflow-hidden flex-shrink-0">
-                        {item.product?.imageUrl && (
+                        {(item.productImage || item.product?.imageUrl) && (
                           <img
-                            src={item.product.imageUrl}
-                            alt={item.product?.name}
+                            src={item.productImage || item.product?.imageUrl}
+                            alt={item.productName || item.product?.name}
                             className="h-full w-full object-cover"
                           />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
-                          {item.product?.name} {item.variantSize ? `(${item.variantSize})` : ''}
+                          {item.productName || item.product?.name} {item.variantSize ? `(${item.variantSize})` : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Qty: {item.quantity}
@@ -1082,9 +1090,7 @@ export default function Checkout() {
                           via {shippingRate.courierName} • Est. {shippingRate.estimatedDeliveryDays} days
                         </p>
                       )}
-                      <p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight max-w-[200px]">
-                        (Please Note: For orders outside India, in some regions, additional import duties at destination may be applicable)
-                      </p>
+
                     </div>
                     <span className={cn("font-medium", (shippingRate && shippingRate.shippingCost === 0) ? "text-green-600" : breakdown?.isFreeShipping ? "text-green-600" : "")}>
                       {shippingLoading ? (
