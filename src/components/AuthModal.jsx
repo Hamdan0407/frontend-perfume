@@ -33,14 +33,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="relative w-full max-w-md mx-4">
+      <div style={{ position: 'relative', width: '100%', maxWidth: '28rem', margin: '0 1rem', maxHeight: '90vh', overflowY: 'auto' }}>
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 z-10 p-1.5 rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+          style={{ position: 'absolute', top: '-12px', right: '-12px', zIndex: 10, padding: '6px', borderRadius: '9999px', backgroundColor: 'white', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', cursor: 'pointer' }}
         >
           <X className="h-4 w-4 text-gray-500" />
         </button>
