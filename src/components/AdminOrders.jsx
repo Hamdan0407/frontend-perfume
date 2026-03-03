@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, CheckCircle, X, Save, Eye, Edit } from 'lucide-react';
+import { Clock, CheckCircle, X, Save, Eye, Edit, Truck, RefreshCw, Package } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../api/axios';
 
@@ -9,6 +9,7 @@ export default function AdminOrders() {
   const [filter, setFilter] = useState('All');
   const [editingOrder, setEditingOrder] = useState(null);
   const [editForm, setEditForm] = useState({ status: '', notes: '' });
+  const [shiprocketLoading, setShiprocketLoading] = useState({}); // { orderId: 'creating' | 'refreshing' }
 
   useEffect(() => {
     fetchOrders();
@@ -99,6 +100,51 @@ export default function AdminOrders() {
     }
   };
 
+  const handleCreateShipment = async (orderId) => {
+    setShiprocketLoading(prev => ({ ...prev, [orderId]: 'creating' }));
+    try {
+      const response = await api.post(`admin/shiprocket/orders/${orderId}/create-shipment`);
+      if (response.data?.status === 'success') {
+        const awb = response.data?.data?.awbCode;
+        toast.success(`Shipment created! AWB: ${awb || 'Generated'}`);
+        // Update order in local state with tracking number
+        setOrders(orders.map(o =>
+          o.id === orderId ? { ...o, trackingNumber: awb, shipmentStatus: 'CREATED' } : o
+        ));
+      } else {
+        toast.error(response.data?.message || 'Failed to create shipment');
+      }
+    } catch (error) {
+      const errMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to create shipment';
+      toast.error(errMsg);
+      console.error('Create shipment error:', error);
+    } finally {
+      setShiprocketLoading(prev => ({ ...prev, [orderId]: null }));
+    }
+  };
+
+  const handleRefreshTracking = async (orderId) => {
+    setShiprocketLoading(prev => ({ ...prev, [orderId]: 'refreshing' }));
+    try {
+      const response = await api.post(`admin/shiprocket/orders/${orderId}/refresh-tracking`);
+      if (response.data?.status === 'success') {
+        const shipmentStatus = response.data?.shipmentStatus || 'N/A';
+        toast.success(`Tracking refreshed! Status: ${shipmentStatus}`);
+        setOrders(orders.map(o =>
+          o.id === orderId ? { ...o, shipmentStatus } : o
+        ));
+      } else {
+        toast.error(response.data?.message || 'Failed to refresh tracking');
+      }
+    } catch (error) {
+      const errMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to refresh tracking';
+      toast.error(errMsg);
+      console.error('Refresh tracking error:', error);
+    } finally {
+      setShiprocketLoading(prev => ({ ...prev, [orderId]: null }));
+    }
+  };
+
   return (
     <div className="orders-container">
       <div className="orders-header">
@@ -127,13 +173,14 @@ export default function AdminOrders() {
               <th>Status</th>
               <th>Date</th>
               <th>Action</th>
+              <th>Shipping</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="7" className="loading">Loading...</td></tr>
+              <tr><td colSpan="8" className="loading">Loading...</td></tr>
             ) : filteredOrders.length === 0 ? (
-              <tr><td colSpan="7" className="empty">No orders found</td></tr>
+              <tr><td colSpan="8" className="empty">No orders found</td></tr>
             ) : (
               filteredOrders.map(order => (
                 <tr key={order.id}>
@@ -206,6 +253,43 @@ export default function AdminOrders() {
                           <Edit size={16} />
                         </button>
                       </div>
+                    )}
+                  </td>
+                  <td>
+                    {/* Shiprocket Controls */}
+                    {order.trackingNumber ? (
+                      <div className="shiprocket-info">
+                        <div className="awb-display" title="AWB Number">
+                          <Package size={14} />
+                          <span className="awb-code">{order.trackingNumber}</span>
+                        </div>
+                        {order.shipmentStatus && (
+                          <div className="shipment-status-display">
+                            <span className="shipment-status-text">{order.shipmentStatus}</span>
+                          </div>
+                        )}
+                        <button
+                          className="btn-refresh-tracking"
+                          onClick={() => handleRefreshTracking(order.id)}
+                          disabled={shiprocketLoading[order.id] === 'refreshing'}
+                          title="Refresh Tracking"
+                        >
+                          <RefreshCw size={14} className={shiprocketLoading[order.id] === 'refreshing' ? 'spin' : ''} />
+                          {shiprocketLoading[order.id] === 'refreshing' ? 'Refreshing...' : 'Refresh'}
+                        </button>
+                      </div>
+                    ) : ['PACKED', 'HANDOVER', 'SHIPPED'].includes(order.status?.toUpperCase()) ? (
+                      <button
+                        className="btn-create-shipment"
+                        onClick={() => handleCreateShipment(order.id)}
+                        disabled={shiprocketLoading[order.id] === 'creating'}
+                        title="Create Shiprocket Shipment"
+                      >
+                        <Truck size={14} />
+                        {shiprocketLoading[order.id] === 'creating' ? 'Creating...' : 'Create Shipment'}
+                      </button>
+                    ) : (
+                      <span className="no-shipment">—</span>
                     )}
                   </td>
                 </tr>
