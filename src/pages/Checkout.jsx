@@ -1046,17 +1046,17 @@ export default function Checkout() {
                   {Array.isArray(cart?.items) && cart.items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="h-16 w-16 rounded-md bg-muted overflow-hidden flex-shrink-0">
-                        {item.product?.imageUrl && (
+                        {(item.productImage || item.product?.imageUrl) && (
                           <img
-                            src={item.product.imageUrl}
-                            alt={item.product?.name}
+                            src={item.productImage || item.product?.imageUrl}
+                            alt={item.productName || item.product?.name}
                             className="h-full w-full object-cover"
                           />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
-                          {item.product?.name} {item.variantSize ? `(${item.variantSize})` : ''}
+                          {item.productName || item.product?.name} {item.variantSize ? `(${item.variantSize})` : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Qty: {item.quantity}
