@@ -347,8 +347,8 @@ export default function Home() {
                   const baseDate = new Date('2026-03-04');
                   const baseCount = 246;
                   const daysSince = Math.floor((Date.now() - baseDate.getTime()) / 86400000);
-                  // Average 3.5 per day, seeded by day so it's consistent within a day
-                  return baseCount + Math.floor(daysSince * 3.5);
+                  // Average 3 per day
+                  return baseCount + (daysSince * 3);
                 })(),
                 suffix: '+',
                 label: 'Happy Customers',
