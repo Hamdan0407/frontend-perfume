@@ -9,7 +9,6 @@ import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
 import { CATEGORY_LIST } from '../constants/productCategories';
 import BulkInquiryModal from './BulkInquiryModal';
-import AuthModal from './AuthModal';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -23,8 +22,6 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState('login');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -152,12 +149,12 @@ export default function Navbar() {
                       </div>
                     ) : (
                       <div className="space-y-2 pt-4 border-t">
-                        <button onClick={() => { setMobileMenuOpen(false); setAuthModalTab('login'); setAuthModalOpen(true); }} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium w-full text-left">
+                        <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium">
                           <User className="h-4 w-4" /> Login
-                        </button>
-                        <button onClick={() => { setMobileMenuOpen(false); setAuthModalTab('register'); setAuthModalOpen(true); }} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium w-full text-left">
+                        </Link>
+                        <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-2 text-base hover:text-accent font-medium">
                           <TrendingUp className="h-4 w-4" /> Create Account
-                        </button>
+                        </Link>
                       </div>
                     )}
                   </div>
@@ -376,11 +373,11 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setAuthModalTab('login'); setAuthModalOpen(true); }}>
-                  Login
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">Login</Link>
                 </Button>
-                <Button size="sm" onClick={() => { setAuthModalTab('register'); setAuthModalOpen(true); }}>
-                  Sign Up
+                <Button size="sm" asChild>
+                  <Link to="/register">Sign Up</Link>
                 </Button>
               </div>
             )}
@@ -457,7 +454,6 @@ export default function Navbar() {
         )}
       </div>
       <BulkInquiryModal isOpen={bulkInquiryOpen} onOpenChange={setBulkInquiryOpen} />
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} initialTab={authModalTab} />
     </nav>
   );
 }
