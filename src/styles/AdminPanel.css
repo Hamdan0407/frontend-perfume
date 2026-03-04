@@ -1541,12 +1541,13 @@
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .action-btn {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -1554,6 +1555,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .action-btn.view {
@@ -1583,6 +1585,16 @@
 
 .action-btn.delete:hover {
   background: #ef4444;
+  color: #fff;
+}
+
+.action-btn.invoice {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.action-btn.invoice:hover {
+  background: #0ea5e9;
   color: #fff;
 }
 
