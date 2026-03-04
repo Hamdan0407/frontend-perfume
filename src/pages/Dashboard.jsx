@@ -12,7 +12,7 @@ import { Badge } from '../components/ui/badge';
 import { Skeleton } from '../components/ui/skeleton';
 import api from '../api/axios';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);

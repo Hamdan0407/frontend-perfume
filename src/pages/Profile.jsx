@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { User, Lock, MapPin, Phone, Mail, Eye, EyeOff, Save, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '../api/axios';
 import { Button } from '../components/ui/button';
@@ -419,12 +419,6 @@ export default function Profile() {
                       <p className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
                         {errors.zipCode}
-                      </p>
-                    )}
-                    {deliveryInfo && (
-                      <p className="text-xs text-green-600 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Delivery available — Est. {deliveryInfo.days} days via {deliveryInfo.courier}
                       </p>
                     )}
                   </div>

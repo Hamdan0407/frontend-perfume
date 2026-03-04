@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle, Sparkles, UserPlus, X } from 'lucide-react';
 import authAPI from '../api/authAPI';
 import { useAuthStore } from '../store/authStore';
-import { useToast } from '../context/ToastContext';
+import toast from 'react-hot-toast';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -13,7 +13,6 @@ import { Alert, AlertDescription } from './ui/alert';
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const navigate = useNavigate();
-  const toast = useToast();
   const { login } = useAuthStore();
 
   useEffect(() => {

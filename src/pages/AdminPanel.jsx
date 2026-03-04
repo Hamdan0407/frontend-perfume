@@ -8,14 +8,13 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useAuthStore } from '../store/authStore';
-import { useToast } from '../context/ToastContext';
+import toast from 'react-hot-toast';
 import { formatCategory } from '../lib/utils';
 import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
 
 export default function AdminPanel() {
   const navigate = useNavigate();
-  const toast = useToast();
   const { user, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -604,7 +603,7 @@ export default function AdminPanel() {
 
         if (attarProducts.length === 0) return;
 
-        toast.info(`Migrating ${attarProducts.length} product(s) from "attar" to "premium attars"...`);
+        toast(`Migrating ${attarProducts.length} product(s) from "attar" to "premium attars"...`, { icon: 'ℹ️' });
 
         let successCount = 0;
         for (const p of attarProducts) {
@@ -704,7 +703,7 @@ export default function AdminPanel() {
       try {
         console.log('[Admin] Falling back to soft delete for ID:', selectedItem.id);
         await api.delete(`admin/products/${selectedItem.id}`);
-        toast.info(`Product "${selectedItem.name}" deactivated (could not delete permanently due to order history).`);
+        toast(`Product "${selectedItem.name}" deactivated (could not delete permanently due to order history).`, { icon: 'ℹ️' });
         setShowDeleteConfirm(false);
         await fetchProducts();
       } catch (softErr) {
@@ -767,7 +766,7 @@ export default function AdminPanel() {
 
   const handleCreateShipment = async (orderId) => {
     try {
-      toast.info('Creating shipment...');
+      toast.loading('Creating shipment...');
       const res = await api.post(`admin/shiprocket/orders/${orderId}/create-shipment`);
       const awb = res.data?.awbCode || res.data?.trackingNumber;
       toast.success(awb ? `Shipment created! AWB: ${awb}` : 'Shipment created!');
@@ -780,7 +779,7 @@ export default function AdminPanel() {
 
   const handleRefreshTracking = async (orderId) => {
     try {
-      toast.info('Refreshing tracking...');
+      toast.loading('Refreshing tracking...');
       const res = await api.post(`admin/shiprocket/orders/${orderId}/refresh-tracking`);
       toast.success('Tracking refreshed!');
       fetchOrders();

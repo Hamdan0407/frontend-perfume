@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Mail, Shield } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
 
 export default function AdminUsers() {

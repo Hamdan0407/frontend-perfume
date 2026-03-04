@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
 
 export default function BulkInquiryModal({ isOpen, onOpenChange }) {

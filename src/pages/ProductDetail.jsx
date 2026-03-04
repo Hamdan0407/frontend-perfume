@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown, MapPin, Truck } from 'lucide-react';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
@@ -179,7 +179,7 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
-      toast.info('Please login to add items to cart');
+      toast('Please login to add items to cart', { icon: 'ℹ️' });
       navigate('/login');
       return;
     }
@@ -213,7 +213,7 @@ export default function ProductDetail() {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      toast.info('Please login to submit a review');
+      toast('Please login to submit a review', { icon: 'ℹ️' });
       navigate('/login');
       return;
     }
