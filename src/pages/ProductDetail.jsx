@@ -41,10 +41,7 @@ export default function ProductDetail() {
   const [checkingPincode, setCheckingPincode] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState(null); // { estimatedDays, city, state }
   const [deliveryError, setDeliveryError] = useState('');
-  const [deliveryPercent, setDeliveryPercent] = useState(() => {
-    const stored = parseInt(sessionStorage.getItem('delivery_pct_default'));
-    return (stored >= 72 && stored <= 89) ? stored : 84;
-  });
+  const [deliveryPercent] = useState(84);
 
   // Scroll to top on mount/route change
   useEffect(() => {
@@ -258,18 +255,6 @@ export default function ProductDetail() {
       const { data } = await api.get(`shipping/validate-pincode?pincode=${pin}`);
       if (data.valid && data.serviceable) {
         const etd = data.estimatedDeliveryDays || 5;
-        const state = data.state || 'default';
-        // Generate a stable percentage per state, stored in sessionStorage
-        const storageKey = `delivery_pct_${state.toLowerCase().replace(/\s+/g, '_')}`;
-        let pct = parseInt(sessionStorage.getItem(storageKey));
-        if (!pct || pct < 72 || pct > 89) {
-          // Hash the state name to get a deterministic-looking number
-          let hash = 0;
-          for (let i = 0; i < state.length; i++) hash = ((hash << 5) - hash) + state.charCodeAt(i);
-          pct = 72 + (Math.abs(hash) % 18); // 72–89
-          sessionStorage.setItem(storageKey, pct);
-        }
-        setDeliveryPercent(pct);
         setDeliveryInfo({
           estimatedDays: etd,
           city: data.city,
