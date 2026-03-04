@@ -624,6 +624,18 @@ export default function ProductDetail() {
                   <p className="text-sm text-red-600 font-medium">{deliveryError}</p>
                 </div>
               )}
+
+              {/* Divider */}
+              <div className="border-t border-border" />
+
+              {/* Free Shipping Banner */}
+              <div className="flex items-center gap-3">
+                <Truck className="h-5 w-5 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-700">FREE Shipping in India</p>
+                  <p className="text-xs text-muted-foreground">on orders above ₹999</p>
+                </div>
+              </div>
             </div>
           </div>
 
