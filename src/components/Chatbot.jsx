@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import axios from '../api/axios';
 
 /**
- * MUWAS Recommendation Chatbot – "Ambur"
+ * MUWAS Recommendation Chatbot – "Sophie"
  * Real product recommendation engine based on actual inventory.
  * Supports: product lookup, category browsing, budget filtering,
  * preference-based recommendations, stock checks, and more.
@@ -23,7 +23,7 @@ export default function Chatbot() {
     {
       id: 1,
       type: 'bot',
-      text: '👋 **Assalamu Alaikum! Welcome to MUWAS!**\n\nI\'m Ambur, your personal fragrance advisor. 🌹\n\nI can help you discover:\n🕌 **Premium Attars** – Luxury traditional attars\n🪵 **Oud Reserve** – Rare oud oils\n💰 **Budget picks** – "Products under 500"\n🔍 **Product details** – Just say a product name\n\nWhat are you looking for today?',
+      text: '👋 **Assalamu Alaikum! Welcome to MUWAS!**\n\nI\'m Sophie, your personal fragrance advisor. 🌹\n\nI can help you discover:\n🕌 **Premium Attars** – Luxury traditional attars\n🪵 **Oud Reserve** – Rare oud oils\n💰 **Budget picks** – "Products under 500"\n🔍 **Product details** – Just say a product name\n\nWhat are you looking for today?',
       timestamp: new Date()
     }
   ]);
@@ -125,7 +125,7 @@ export default function Chatbot() {
           onMouseEnter={(e) => { e.target.style.transform = 'scale(1.1)'; }}
           onMouseLeave={(e) => { e.target.style.transform = 'scale(1)'; }}
           aria-label="Open chatbot"
-          title="Ambur – Fragrance Advisor"
+          title="Sophie – Fragrance Advisor"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -141,8 +141,8 @@ export default function Chatbot() {
           <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-t-xl flex justify-between items-center border-b border-amber-600">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg">Ambur 🌹</h3>
-                <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">LIVE</span>
+                <h3 className="font-bold text-lg">Sophie 🌹</h3>
+                <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">BETA</span>
               </div>
               <p className="text-sm text-amber-200 mt-1">Your MUWAS Fragrance Advisor</p>
             </div>
