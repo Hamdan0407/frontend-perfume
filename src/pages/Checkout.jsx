@@ -741,7 +741,7 @@ export default function Checkout() {
                           <div className="pt-2 border-t">
                             <p className="text-xs text-green-600 flex items-center gap-1">
                               <Truck className="h-3 w-3" />
-                              Delivery available — Est. {shippingRate.estimatedDeliveryDays} days via {shippingRate.courierName}
+                              Delivery available — Est. {shippingRate.estimatedDeliveryDays}–{shippingRate.estimatedDeliveryDays + 2} days
                             </p>
                           </div>
                         )}
@@ -870,7 +870,7 @@ export default function Checkout() {
                         {shippingRate && !shippingLoading && (
                           <p className="text-xs text-green-600 flex items-center gap-1">
                             <Truck className="h-3 w-3" />
-                            Delivery available — Est. {shippingRate.estimatedDeliveryDays} days via {shippingRate.courierName}
+                            Delivery available — Est. {shippingRate.estimatedDeliveryDays}–{shippingRate.estimatedDeliveryDays + 2} days
                           </p>
                         )}
                       </div>
@@ -1100,9 +1100,9 @@ export default function Checkout() {
                   <div className="flex justify-between text-sm">
                     <div>
                       <span className="text-muted-foreground">Shipping</span>
-                      {shippingRate?.courierName && (
+                      {shippingRate?.estimatedDeliveryDays > 0 && (
                         <p className="text-[11px] text-muted-foreground/70 mt-0.5 leading-tight">
-                          via {shippingRate.courierName} • Est. {shippingRate.estimatedDeliveryDays} days
+                          Est. {shippingRate.estimatedDeliveryDays}–{shippingRate.estimatedDeliveryDays + 2} days
                         </p>
                       )}
                       {shippingRate?.chargeWeightKg > 0 && (
