@@ -43,7 +43,7 @@ export default function ProductDetail() {
   const [deliveryError, setDeliveryError] = useState('');
   const [deliveryPercent, setDeliveryPercent] = useState(() => {
     const stored = parseInt(sessionStorage.getItem('delivery_pct_default'));
-    return (stored >= 72 && stored <= 89) ? stored : 80;
+    return (stored >= 72 && stored <= 89) ? stored : 84;
   });
 
   // Scroll to top on mount/route change
@@ -564,7 +564,7 @@ export default function ProductDetail() {
               {/* Dynamic delivery headline */}
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  <span className="text-green-600">{deliveryPercent}%</span> orders get delivered in <span className="text-green-600">3 days</span>
+                  <span className="text-green-600">{deliveryPercent}%</span> orders get delivered <span className="text-green-600">on time</span>
                 </h3>
                 <p className="text-sm text-muted-foreground mt-0.5">Get estimated delivery date</p>
               </div>
