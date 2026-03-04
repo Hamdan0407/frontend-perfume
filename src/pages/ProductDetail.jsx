@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown, MapPin, Truck, RotateCcw, IndianRupee } from 'lucide-react';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
@@ -35,6 +35,12 @@ export default function ProductDetail() {
   const [reviewPage, setReviewPage] = useState(0);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
+
+  // Delivery estimation states
+  const [deliveryPincode, setDeliveryPincode] = useState('');
+  const [checkingPincode, setCheckingPincode] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState(null); // { estimatedDays, city, state }
+  const [deliveryError, setDeliveryError] = useState('');
 
   // Scroll to top on mount/route change
   useEffect(() => {
@@ -231,6 +237,35 @@ export default function ProductDetail() {
       toast.error(error.response?.data?.message || 'Failed to submit review');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleCheckDelivery = async () => {
+    const pin = deliveryPincode.trim();
+    if (!pin || !/^[1-9][0-9]{5}$/.test(pin)) {
+      setDeliveryError('Please enter a valid 6-digit pincode');
+      setDeliveryInfo(null);
+      return;
+    }
+    setCheckingPincode(true);
+    setDeliveryError('');
+    setDeliveryInfo(null);
+    try {
+      const { data } = await api.get(`shipping/validate-pincode?pincode=${pin}`);
+      if (data.valid && data.serviceable) {
+        const etd = data.estimatedDeliveryDays || 5;
+        setDeliveryInfo({
+          estimatedDays: etd,
+          city: data.city,
+          state: data.state,
+        });
+      } else {
+        setDeliveryError(data.error || 'Delivery not available to this pincode');
+      }
+    } catch (err) {
+      setDeliveryError('Unable to check delivery. Please try again.');
+    } finally {
+      setCheckingPincode(false);
     }
   };
 
@@ -507,6 +542,92 @@ export default function ProductDetail() {
                 </p>
               </div>
             )}
+
+            {/* ==================== DELIVERY ESTIMATION SECTION ==================== */}
+            <div className="mt-2 rounded-2xl border border-border bg-[#faf7f2] p-5 sm:p-6 space-y-4">
+              {/* Headline */}
+              <div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                  <span className="text-green-600">80%</span> orders get delivered in <span className="text-green-600">3 days</span><sup className="text-xs text-muted-foreground">*</sup>
+                </h3>
+                <p className="text-sm text-muted-foreground mt-0.5">Get estimated delivery date</p>
+              </div>
+
+              {/* Pincode Input */}
+              <div className="flex items-center gap-0 rounded-lg border border-border bg-white overflow-hidden">
+                <div className="flex items-center pl-3 text-muted-foreground">
+                  <MapPin className="h-4 w-4 text-red-500" />
+                </div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter pincode"
+                  value={deliveryPincode}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setDeliveryPincode(val);
+                    if (deliveryError) setDeliveryError('');
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCheckDelivery()}
+                  className="flex-1 px-3 py-2.5 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground"
+                />
+                <button
+                  onClick={handleCheckDelivery}
+                  disabled={checkingPincode}
+                  className="px-5 py-2.5 text-sm font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 transition-colors disabled:opacity-50 border-l border-border"
+                >
+                  {checkingPincode ? '...' : 'Check'}
+                </button>
+              </div>
+
+              {/* Delivery Result */}
+              {deliveryInfo && (
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <p className="text-sm font-semibold text-green-700">
+                    Expected Delivery in {deliveryInfo.estimatedDays}-{deliveryInfo.estimatedDays + 2} Days
+                    {deliveryInfo.city && <span className="font-normal text-muted-foreground ml-1">({deliveryInfo.city}{deliveryInfo.state ? `, ${deliveryInfo.state}` : ''})</span>}
+                  </p>
+                </div>
+              )}
+
+              {/* Error */}
+              {deliveryError && (
+                <p className="text-sm text-red-600 font-medium">{deliveryError}</p>
+              )}
+
+              {/* Divider */}
+              <div className="border-t border-border" />
+
+              {/* Bottom Row: Return & Free Shipping */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-0">
+                {/* Return Policy */}
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <RotateCcw className="h-5 w-5 text-amber-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">3 Days<sup className="text-[10px]">*</sup></p>
+                    <p className="text-xs text-muted-foreground">Return And Refund</p>
+                  </div>
+                </div>
+
+                {/* Separator */}
+                <div className="hidden sm:block w-px h-10 bg-border mx-4" />
+
+                {/* Free Shipping */}
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <Truck className="h-5 w-5 text-green-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-green-700">FREE Shipping in India</p>
+                    <p className="text-xs text-muted-foreground">on orders above ₹999</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
         {/* ==================== REVIEWS SECTION ==================== */}
