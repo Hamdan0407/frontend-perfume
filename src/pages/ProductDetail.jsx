@@ -49,6 +49,12 @@ export default function ProductDetail() {
   }, [id]);
 
   useEffect(() => {
+    // Reset review state when navigating to a different product
+    setReviews([]);
+    setTotalReviews(0);
+    setAverageRating(0);
+    setReviewPage(0);
+    setHasMoreReviews(false);
     fetchProduct();
     fetchReviews();
     if (isAuthenticated) {
