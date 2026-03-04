@@ -10,7 +10,7 @@ const Invoice = forwardRef(({ order, company }, ref) => {
     pinCode: '635802',
     country: 'India',
     email: 'muwas2021@gmail.com',
-    phone: '+91 9629004158',
+    phone: '+91 8247327106',
     website: 'www.muwas.in',
     gstin: '',
     ...company,
