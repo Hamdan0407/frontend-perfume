@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import api from '../api/axios';
 import {
     Dialog,

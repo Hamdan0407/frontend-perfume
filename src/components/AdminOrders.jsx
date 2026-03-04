@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Clock, CheckCircle, X, Save, Eye, Edit, Truck, RefreshCw, Package } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import api from '../api/axios';
 
 export default function AdminOrders() {

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import wishlistAPI from '../api/wishlist';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 
 export const useWishlistStore = create(
   persist(

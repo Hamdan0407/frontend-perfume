@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Shield, LogOut, Lock, Unlock } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import '../styles/AdminUsers.css';
 
 const POSITION_LABELS = {

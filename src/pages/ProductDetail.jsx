@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown, MapPin, Truck } from 'lucide-react';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';

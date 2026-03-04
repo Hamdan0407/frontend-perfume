@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, Sparkles, UserPlus } from 'lucide-react';
 import authAPI from '../api/authAPI';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';

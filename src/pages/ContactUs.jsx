@@ -1,7 +1,7 @@
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import api from '../api/axios';
 
 export default function ContactUs() {

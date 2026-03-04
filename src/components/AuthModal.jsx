@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle, Sparkles, UserPlus, X } from 'lucide-react';
 import authAPI from '../api/authAPI';
 import { useAuthStore } from '../store/authStore';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';

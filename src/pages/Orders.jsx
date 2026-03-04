@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Package, ShoppingBag, Calendar, Eye } from 'lucide-react';
 import api from '../api/axios';
 import { Button } from '../components/ui/button';

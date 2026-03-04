@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useAuthStore } from '../store/authStore';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { formatCategory } from '../lib/utils';
 import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
