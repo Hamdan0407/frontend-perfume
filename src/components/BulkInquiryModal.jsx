@@ -9,6 +9,7 @@ export default function BulkInquiryModal({ isOpen, onOpenChange }) {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        phone: '',
         quantity: '',
         message: ''
     });
@@ -21,20 +22,26 @@ export default function BulkInquiryModal({ isOpen, onOpenChange }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        const payload = {
+            name: formData.name,
+            email: formData.email,
+            subject: `Bulk Pricing Inquiry - ${formData.quantity} units`,
+            message: `Phone: ${formData.phone}\nQuantity: ${formData.quantity}\n\nMessage: ${formData.message}`
+        };
+        console.log('[BulkInquiry] Sending payload:', payload);
+
         try {
-            await api.post('contact', {
-                name: formData.name,
-                email: formData.email,
-                subject: `Bulk Pricing Inquiry - ${formData.quantity} units`,
-                message: `Quantity: ${formData.quantity}\n\nMessage: ${formData.message}`
-            });
+            const response = await api.post('contact', payload);
+            console.log('[BulkInquiry] Response:', response.data);
             toast.success('Inquiry sent successfully! We will contact you soon.');
             onOpenChange(false);
-            setFormData({ name: '', email: '', quantity: '', message: '' });
+            setFormData({ name: '', email: '', phone: '', quantity: '', message: '' });
             setShowForm(false);
         } catch (error) {
-            toast.error('Failed to send inquiry. Please try again.');
-            console.error('Bulk inquiry error:', error);
+            console.error('[BulkInquiry] Error:', error?.response?.status, error?.response?.data || error.message);
+            const errMsg = error?.response?.data?.message || error?.response?.data?.error || 'Failed to send inquiry. Please try again.';
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
@@ -95,7 +102,19 @@ export default function BulkInquiryModal({ isOpen, onOpenChange }) {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Phone</label>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                                        placeholder="Your phone number"
+                                    />
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Approx. Quantity</label>
                                     <input
