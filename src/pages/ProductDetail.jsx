@@ -41,7 +41,10 @@ export default function ProductDetail() {
   const [checkingPincode, setCheckingPincode] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState(null); // { estimatedDays, city, state }
   const [deliveryError, setDeliveryError] = useState('');
-  const [deliveryPercent, setDeliveryPercent] = useState(null);
+  const [deliveryPercent, setDeliveryPercent] = useState(() => {
+    const stored = parseInt(sessionStorage.getItem('delivery_pct_default'));
+    return (stored >= 72 && stored <= 89) ? stored : 80;
+  });
 
   // Scroll to top on mount/route change
   useEffect(() => {
@@ -558,17 +561,13 @@ export default function ProductDetail() {
 
             {/* ==================== PINCODE DELIVERY CHECKER ==================== */}
             <div className="mt-2 rounded-xl border border-border bg-background p-5 space-y-4">
-              {/* Dynamic delivery headline — appears after pincode check */}
-              {deliveryPercent ? (
-                <div>
-                  <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                    <span className="text-green-600">{deliveryPercent}%</span> orders get delivered in <span className="text-green-600">3 days</span>
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">Get estimated delivery date</p>
-                </div>
-              ) : (
-                <h3 className="text-sm font-semibold text-foreground">Check Delivery Availability</h3>
-              )}
+              {/* Dynamic delivery headline */}
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">
+                  <span className="text-green-600">{deliveryPercent}%</span> orders get delivered in <span className="text-green-600">3 days</span>
+                </h3>
+                <p className="text-sm text-muted-foreground mt-0.5">Get estimated delivery date</p>
+              </div>
 
               {/* Pincode Input */}
               <div className="flex items-center rounded-lg border border-border bg-white overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all">
