@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { CreditCard, Lock, MapPin, ShoppingBag, AlertCircle, CheckCircle2, Package, Tag, X, Phone, Truck, Loader2, Pencil } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
@@ -124,7 +124,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
           // Payment successful, now verify signature on backend
           try {
             setLoading(true);
-            toast.info('Verifying payment...');
+            toast.loading('Verifying payment...');
 
             const verificationResult = await api.post('orders/verify-payment', {
               razorpayOrderId: options.order_id,
@@ -145,7 +145,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
 
             // Check if it's a network error or server error
             if (error.code === 'NETWORK_ERROR' || !error.response) {
-              toast.warning('Payment completed but verification is pending. Please check your order status.');
+              toast('Payment completed but verification is pending. Please check your order status.', { icon: '⚠️' });
 
               // Still navigate to order page - webhook might process it
               setTimeout(() => {
@@ -552,7 +552,7 @@ export default function Checkout() {
     setAppliedCoupon(null);
     setDiscount(0);
     setCouponCode('');
-    toast.info('Coupon removed');
+    toast('Coupon removed', { icon: 'ℹ️' });
   };
 
   // Show loading while cart is being fetched

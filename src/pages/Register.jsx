@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, Sparkles, UserPlus } from 'lucide-react';
 import authAPI from '../api/authAPI';
-import { useToast } from '../context/ToastContext';
+import toast from 'react-hot-toast';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 
 export default function Register() {
   const navigate = useNavigate();
-  const toast = useToast();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -161,7 +160,7 @@ export default function Register() {
   };
 
   const handleFacebookSignUp = () => {
-    toast.info('Facebook sign up is not yet configured. Please use email or Google OAuth.');
+    toast('Facebook sign up is not yet configured. Please use email or Google OAuth.', { icon: 'ℹ️' });
   };
 
   return (

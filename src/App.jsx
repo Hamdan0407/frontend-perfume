@@ -1,12 +1,10 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
-import { ToastProvider } from './context/ToastContext';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -57,7 +55,8 @@ function App() {
   }, [isAuthenticated, initWishlist]);
 
   return (
-    <ToastProvider>
+    <>
+      <Toaster position="top-right" reverseOrder={false} toastOptions={{ duration: 3000, style: { borderRadius: '8px', background: '#333', color: '#fff' } }} />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <ScrollToTop />
         <AnnouncementBar />
@@ -92,9 +91,8 @@ function App() {
 
         {/* Chatbot Widget */}
         <Chatbot />
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
       </div>
-    </ToastProvider>
+    </>
   );
 }
 

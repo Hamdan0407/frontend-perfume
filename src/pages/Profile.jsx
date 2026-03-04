@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { User, Lock, MapPin, Phone, Mail, Eye, EyeOff, Save, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '../api/axios';
 import { Button } from '../components/ui/button';

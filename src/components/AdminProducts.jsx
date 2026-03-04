@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Search, Filter } from 'lucide-react';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { formatCategory, toCategoryEnum } from '../lib/utils';
 import api from '../api/axios';
 import { PRODUCT_CATEGORIES, CATEGORY_LIST } from '../constants/productCategories';

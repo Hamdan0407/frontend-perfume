@@ -12,7 +12,7 @@ import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
 import CountUp from '../components/ui/CountUp';
-import { useToast } from '../context/ToastContext';
+import toast from 'react-hot-toast';
 import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin } from 'lucide-react';
 import { CATEGORY_LIST } from '../constants/productCategories';
 
@@ -28,7 +28,6 @@ export default function Home() {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
-  const toast = useToast();
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {

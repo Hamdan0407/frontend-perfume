@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useToast } from '../context/ToastContext';
-// import { toast } from 'react-toastify';
-// const toast = { success: () => { }, error: () => { }, info: () => { }, warn: () => { }, warning: () => { } };
+import toast from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, AlertCircle, Sparkles } from 'lucide-react';
 import authAPI from '../api/authAPI';
@@ -15,7 +13,6 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 
 export default function Login() {
   const navigate = useNavigate();
-  const toast = useToast();
   const [searchParams] = useSearchParams();
   const { login } = useAuthStore();
 
@@ -159,12 +156,12 @@ export default function Login() {
 
   // Handle Facebook login (placeholder)
   const handleFacebookLogin = () => {
-    toast.info('Facebook login is not yet configured. Please use email login or Google OAuth.');
+    toast('Facebook login is not yet configured. Please use email login or Google OAuth.', { icon: 'ℹ️' });
   };
 
   // Handle Microsoft login (placeholder)
   const handleMicrosoftLogin = () => {
-    toast.info('Microsoft login is not yet configured. Please use email login or Google OAuth.');
+    toast('Microsoft login is not yet configured. Please use email login or Google OAuth.', { icon: 'ℹ️' });
   };
 
   return (

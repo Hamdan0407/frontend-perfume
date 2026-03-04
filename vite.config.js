@@ -52,7 +52,7 @@ export default defineConfig({
           // Vendor chunks
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-axios': ['axios'],
-          'vendor-ui': ['react-toastify'],
+          'vendor-ui': ['react-hot-toast'],
           'vendor-state': ['zustand']
         },
 
