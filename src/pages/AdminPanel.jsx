@@ -1978,16 +1978,16 @@ export default function AdminPanel() {
                 </div>
               ) : filteredOrders.length > 0 ? (
                 <div className="table-container">
-                  <table className="data-table">
+                  <table className="data-table" style={{ minWidth: '900px' }}>
                     <thead>
                       <tr>
-                        <th>Order ID</th>
+                        <th style={{ width: '70px' }}>Order ID</th>
                         <th>Customer</th>
-                        <th>Date</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Shipping</th>
-                        <th>Actions</th>
+                        <th style={{ width: '100px' }}>Date</th>
+                        <th style={{ width: '90px' }}>Total</th>
+                        <th style={{ width: '140px' }}>Status</th>
+                        <th style={{ width: '160px' }}>Shipping</th>
+                        <th style={{ width: '110px', textAlign: 'center' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2051,16 +2051,16 @@ export default function AdminPanel() {
                               )}
                             </div>
                           </td>
-                          <td>
-                            <div className="action-buttons">
+                          <td style={{ textAlign: 'center' }}>
+                            <div className="action-buttons" style={{ justifyContent: 'center' }}>
                               <button className="action-btn view" title="View Details" onClick={() => openOrderModal(order)}>
-                                <Eye size={16} />
+                                <Eye size={14} />
                               </button>
                               <button className="action-btn invoice" title="Download Invoice" onClick={() => generateInvoicePDF(order)}>
-                                <FileText size={16} />
+                                <FileText size={14} />
                               </button>
                               <button className="action-btn delete" title="Delete Order" onClick={() => confirmDeleteOrder(order)}>
-                                <Trash2 size={16} />
+                                <Trash2 size={14} />
                               </button>
                             </div>
                           </td>
