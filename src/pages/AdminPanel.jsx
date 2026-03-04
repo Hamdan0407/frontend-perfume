@@ -1980,12 +1980,12 @@ export default function AdminPanel() {
                 <div className="table-container">
                   <table className="data-table orders-table" style={{ tableLayout: 'fixed', width: '100%' }}>
                     <colgroup>
-                      <col style={{ width: '60px' }} />
-                      <col style={{ width: '130px' }} />
-                      <col style={{ width: '95px' }} />
-                      <col style={{ width: '80px' }} />
-                      <col style={{ width: '130px' }} />
-                      <col style={{ width: '140px' }} />
+                      <col style={{ width: '55px' }} />
+                      <col style={{ width: '120px' }} />
+                      <col style={{ width: '90px' }} />
+                      <col style={{ width: '70px' }} />
+                      <col style={{ width: '115px' }} />
+                      <col style={{ width: '120px' }} />
                       <col style={{ width: '105px' }} />
                     </colgroup>
                     <thead>
@@ -2049,7 +2049,7 @@ export default function AdminPanel() {
                                 <button
                                   onClick={() => handleCreateShipment(order.id)}
                                   style={{
-                                    fontSize: '12px', padding: '6px 12px', background: '#7c3aed', color: 'white',
+                                    fontSize: '11px', padding: '5px 10px', background: '#7c3aed', color: 'white',
                                     border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap'
                                   }}
                                 >

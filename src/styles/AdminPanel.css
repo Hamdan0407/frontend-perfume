@@ -1629,9 +1629,13 @@
 }
 
 .orders-table .status-select {
-  font-size: 12px;
-  padding: 6px 8px;
+  font-size: 11px;
+  padding: 5px 6px;
   max-width: 100%;
+  min-width: unset;
+  width: 100%;
+  border-radius: 6px;
+  border-width: 1.5px;
 }
 
 /* ==========================================
