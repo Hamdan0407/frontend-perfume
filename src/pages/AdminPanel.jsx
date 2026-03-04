@@ -1024,7 +1024,7 @@ export default function AdminPanel() {
     doc.setTextColor(...grayColor);
     doc.setFontSize(8);
     doc.text('📍 No 3, Modi Ibrahim Street, Ambur, Tamil Nadu 635802', 18, 68);
-    doc.text('📞 +91 9629004158', 18, 73);
+    doc.text('📞 +91 8247327106', 18, 73);
     doc.text('✉ muwas2021@gmail.com', 18, 78);
     doc.text('🌐 www.muwas.in', pageWidth - 18, 68, { align: 'right' });
 
@@ -1216,7 +1216,7 @@ export default function AdminPanel() {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text('We appreciate your business and look forward to serving you again', pageWidth / 2, footerY + 14, { align: 'center' });
-    doc.text('Need help? Contact us at muwas2021@gmail.com or call +91 9629004158', pageWidth / 2, footerY + 19, { align: 'center' });
+    doc.text('Need help? Contact us at muwas2021@gmail.com or call +91 8247327106', pageWidth / 2, footerY + 19, { align: 'center' });
 
     // Save the PDF
     doc.save(`Invoice-${order.orderNumber || order.id}.pdf`);
