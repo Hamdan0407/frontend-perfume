@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import productAPI from '../api/productAPI';
 import ProductCard from '../components/ProductCard';
@@ -12,7 +12,7 @@ import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
 import CountUp from '../components/ui/CountUp';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin } from 'lucide-react';
 import { CATEGORY_LIST } from '../constants/productCategories';
 
@@ -437,7 +437,7 @@ export default function Home() {
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. 💡
+              Curiosity didn't kill the cat - it just brought you here! You got questions. We've got answers. ??
             </p>
           </div>
 
@@ -461,7 +461,7 @@ export default function Home() {
               },
               {
                 question: "Do you offer samples or trial sizes?",
-                answer: "Yes! We have a trial pack collection starting at just ₹299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
+                answer: "Yes! We have a trial pack collection starting at just ?299. It's perfect for exploring different fragrances before committing to a full-size bottle. Each trial pack includes 3-5 premium samples."
               },
               {
                 question: "How do I choose the right fragrance for me?",
@@ -579,7 +579,7 @@ function FAQItem({ question, answer, index }) {
       >
         <span className="font-semibold text-white text-base sm:text-lg pr-4">{question}</span>
         <span className={`flex-shrink-0 text-accent text-xl transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-          ▼
+          ?
         </span>
       </button>
 

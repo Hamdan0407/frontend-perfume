@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Package, MapPin, CreditCard, FileText, ArrowLeft, Download, ShoppingCart, Eye, Star } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';

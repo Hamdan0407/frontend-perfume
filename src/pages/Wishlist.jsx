@@ -4,7 +4,7 @@ import { useWishlistStore } from '../store/wishlistStore';
 import { useCartStore } from '../store/cartStore';
 import { useNavigate } from 'react-router-dom';
 import wishlistAPI from '../api/wishlist';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';

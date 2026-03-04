@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, AlertCircle, Sparkles } from 'lucide-react';
 import authAPI from '../api/authAPI';

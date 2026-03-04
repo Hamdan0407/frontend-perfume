@@ -56,7 +56,23 @@ function App() {
 
   return (
     <>
-      <Toaster position="top-right" reverseOrder={false} toastOptions={{ duration: 3000, style: { borderRadius: '8px', background: '#333', color: '#fff' } }} />
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            borderRadius: '10px',
+            padding: '12px 16px',
+            fontSize: '14px',
+            background: '#fff',
+            color: '#1a1a1a',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          success: { icon: '✅' },
+          error: { icon: '❌' },
+        }}
+      />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <ScrollToTop />
         <AnnouncementBar />
