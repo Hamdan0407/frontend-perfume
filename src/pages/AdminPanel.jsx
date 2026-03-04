@@ -94,9 +94,9 @@ export default function AdminPanel() {
 
   // Settings form
   const [settingsForm, setSettingsForm] = useState({
-    storeName: 'Luxury Fragrances',
-    storeEmail: 'admin@perfumeshop.com',
-    supportPhone: '+91 98765 43210',
+    storeName: 'MUWAS',
+    storeEmail: 'muwas2021@gmail.com',
+    supportPhone: '8247327106',
     currency: 'INR',
     freeShippingThreshold: '899',
     defaultShippingCost: '99'
@@ -1018,7 +1018,7 @@ export default function AdminPanel() {
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text('Luxury Fragrances & Premium Scents', 20, 35);
+    doc.text('Premium Perfumes & Fragrances', 20, 35);
 
     // INVOICE Badge (right side)
     doc.setFillColor(255, 255, 255);
@@ -2354,9 +2354,8 @@ export default function AdminPanel() {
                       value={settingsForm.currency}
                       onChange={(e) => setSettingsForm({ ...settingsForm, currency: e.target.value })}
                     >
+                      <option value="INR">INR - Indian Rupee</option>
                       <option value="USD">USD - US Dollar</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="GBP">GBP - British Pound</option>
                     </select>
                   </div>
                 </div>
@@ -2364,7 +2363,7 @@ export default function AdminPanel() {
                 <div className="settings-card">
                   <h3>📦 Shipping Settings</h3>
                   <div className="form-group">
-                    <label>Free Shipping Threshold ($)</label>
+                    <label>Free Shipping Threshold (₹)</label>
                     <input
                       type="number"
                       className="form-input"
@@ -2373,7 +2372,7 @@ export default function AdminPanel() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Default Shipping Cost ($)</label>
+                    <label>Default Shipping Cost (₹)</label>
                     <input
                       type="number"
                       step="0.01"
