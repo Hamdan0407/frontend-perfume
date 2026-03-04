@@ -342,7 +342,14 @@ export default function Home() {
               },
               {
                 icon: Users,
-                to: 243,
+                to: (() => {
+                  // Base count on a fixed start date, increasing ~3-4 per day
+                  const baseDate = new Date('2026-03-04');
+                  const baseCount = 246;
+                  const daysSince = Math.floor((Date.now() - baseDate.getTime()) / 86400000);
+                  // Average 3 per day
+                  return baseCount + (daysSince * 3);
+                })(),
                 suffix: '+',
                 label: 'Happy Customers',
                 color: '#38bdf8',

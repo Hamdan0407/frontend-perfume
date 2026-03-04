@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown, MapPin, Truck } from 'lucide-react';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
@@ -35,6 +35,12 @@ export default function ProductDetail() {
   const [reviewPage, setReviewPage] = useState(0);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [loadingMoreReviews, setLoadingMoreReviews] = useState(false);
+
+  // Delivery estimation states
+  const [deliveryPincode, setDeliveryPincode] = useState('');
+  const [checkingPincode, setCheckingPincode] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState(null); // { estimatedDays, city, state }
+  const [deliveryError, setDeliveryError] = useState('');
 
   // Scroll to top on mount/route change
   useEffect(() => {
@@ -178,13 +184,19 @@ export default function ProductDetail() {
     }
 
     try {
+      // For virtual variants (created from related products), use the product ID from the variant
+      const isVirtualVariant = selectedVariant && String(selectedVariant.id).startsWith('v_');
+      const targetProductId = isVirtualVariant && selectedVariant.productId
+        ? selectedVariant.productId
+        : product.id;
+
       const requestData = {
-        productId: product.id,
+        productId: targetProductId,
         quantity
       };
 
-      // Include variantId if a variant is selected
-      if (selectedVariant) {
+      // Include variantId only for real database variants (not virtual ones)
+      if (selectedVariant && !isVirtualVariant) {
         requestData.variantId = selectedVariant.id;
       }
 
@@ -225,6 +237,35 @@ export default function ProductDetail() {
       toast.error(error.response?.data?.message || 'Failed to submit review');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleCheckDelivery = async () => {
+    const pin = deliveryPincode.trim();
+    if (!pin || !/^[1-9][0-9]{5}$/.test(pin)) {
+      setDeliveryError('Please enter a valid 6-digit pincode');
+      setDeliveryInfo(null);
+      return;
+    }
+    setCheckingPincode(true);
+    setDeliveryError('');
+    setDeliveryInfo(null);
+    try {
+      const { data } = await api.get(`shipping/validate-pincode?pincode=${pin}`);
+      if (data.valid && data.serviceable) {
+        const etd = data.estimatedDeliveryDays || 5;
+        setDeliveryInfo({
+          estimatedDays: etd,
+          city: data.city,
+          state: data.state,
+        });
+      } else {
+        setDeliveryError(data.error || 'Delivery not available to this pincode');
+      }
+    } catch (err) {
+      setDeliveryError('Unable to check delivery. Please try again.');
+    } finally {
+      setCheckingPincode(false);
     }
   };
 
@@ -501,6 +542,67 @@ export default function ProductDetail() {
                 </p>
               </div>
             )}
+
+            {/* ==================== PINCODE DELIVERY CHECKER ==================== */}
+            <div className="mt-2 rounded-xl border border-border bg-background p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Check Delivery Availability</h3>
+
+              {/* Pincode Input */}
+              <div className="flex items-center rounded-lg border border-border bg-white overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all">
+                <div className="flex items-center pl-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter delivery pincode"
+                  value={deliveryPincode}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setDeliveryPincode(val);
+                    if (deliveryError) setDeliveryError('');
+                    if (deliveryInfo) setDeliveryInfo(null);
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCheckDelivery()}
+                  className="flex-1 px-3 py-2.5 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground"
+                />
+                <button
+                  onClick={handleCheckDelivery}
+                  disabled={checkingPincode}
+                  className="px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 border-l border-border"
+                >
+                  {checkingPincode ? (
+                    <span className="inline-block h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  ) : 'Check'}
+                </button>
+              </div>
+
+              {/* Delivery Result — serviceable */}
+              {deliveryInfo && (
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                  <Truck className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-700">
+                      Expected Delivery in {deliveryInfo.estimatedDays}–{deliveryInfo.estimatedDays + 2} Days
+                    </p>
+                    {deliveryInfo.city && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {deliveryInfo.city}{deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Error — not deliverable or invalid */}
+              {deliveryError && (
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
+                  <MapPin className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-600 font-medium">{deliveryError}</p>
+                </div>
+              )}
+            </div>
           </div>
 
         {/* ==================== REVIEWS SECTION ==================== */}
