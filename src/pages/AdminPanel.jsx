@@ -1978,16 +1978,25 @@ export default function AdminPanel() {
                 </div>
               ) : filteredOrders.length > 0 ? (
                 <div className="table-container">
-                  <table className="data-table" style={{ minWidth: '900px' }}>
+                  <table className="data-table orders-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+                    <colgroup>
+                      <col style={{ width: '60px' }} />
+                      <col style={{ width: '130px' }} />
+                      <col style={{ width: '95px' }} />
+                      <col style={{ width: '80px' }} />
+                      <col style={{ width: '130px' }} />
+                      <col style={{ width: '140px' }} />
+                      <col style={{ width: '105px' }} />
+                    </colgroup>
                     <thead>
                       <tr>
-                        <th style={{ width: '70px' }}>Order ID</th>
+                        <th>Order ID</th>
                         <th>Customer</th>
-                        <th style={{ width: '100px' }}>Date</th>
-                        <th style={{ width: '90px' }}>Total</th>
-                        <th style={{ width: '140px' }}>Status</th>
-                        <th style={{ width: '160px' }}>Shipping</th>
-                        <th style={{ width: '110px', textAlign: 'center' }}>Actions</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Shipping</th>
+                        <th style={{ textAlign: 'center' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>

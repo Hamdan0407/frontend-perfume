@@ -1599,6 +1599,41 @@
   color: #fff;
 }
 
+/* Orders Table Compact */
+.orders-table th,
+.orders-table td {
+  padding: 12px 10px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orders-table .customer-cell {
+  gap: 8px;
+}
+
+.orders-table .customer-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  font-size: 12px;
+}
+
+.orders-table .customer-cell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orders-table .shipping-cell {
+  overflow: hidden;
+}
+
+.orders-table .status-select {
+  font-size: 12px;
+  padding: 6px 8px;
+  max-width: 100%;
+}
+
 /* ==========================================
    SETTINGS
    ========================================== */
