@@ -37,6 +37,7 @@ export default function AdminPanel() {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteType, setDeleteType] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
 
@@ -681,6 +682,7 @@ export default function AdminPanel() {
 
   const confirmDeleteProduct = (product) => {
     setSelectedItem(product);
+    setDeleteType('product');
     setShowDeleteConfirm(true);
   };
 
@@ -718,6 +720,32 @@ export default function AdminPanel() {
         const errorMsg = softErr.response?.data?.message || 'Failed to delete product. Please check if it is linked to active orders.';
         toast.error(errorMsg);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteOrder = (order) => {
+    setSelectedItem(order);
+    setDeleteType('order');
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!selectedItem || !selectedItem.id) {
+      toast.error('No order selected for deletion');
+      return;
+    }
+    setLoading(true);
+    try {
+      await api.delete(`admin/orders/${selectedItem.id}`);
+      toast.success(`Order #${selectedItem.id} has been permanently deleted.`);
+      setShowDeleteConfirm(false);
+      await fetchOrders();
+    } catch (err) {
+      console.error('[Admin] Delete Order Error:', err);
+      const errorMsg = err.response?.data?.error || 'Failed to delete order.';
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -882,6 +910,7 @@ export default function AdminPanel() {
 
   const confirmDeleteCoupon = (coupon) => {
     setSelectedItem(coupon);
+    setDeleteType('coupon');
     setShowDeleteConfirm(true);
   };
 
@@ -2030,6 +2059,9 @@ export default function AdminPanel() {
                               <button className="action-btn invoice" title="Download Invoice" onClick={() => generateInvoicePDF(order)}>
                                 <FileText size={16} />
                               </button>
+                              <button className="action-btn delete" title="Delete Order" onClick={() => confirmDeleteOrder(order)}>
+                                <Trash2 size={16} />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -3096,9 +3128,9 @@ export default function AdminPanel() {
               <div className="icon-danger">
                 <AlertCircle size={32} />
               </div>
-              <h3>Delete {selectedItem?.code ? 'Coupon' : 'Product'}?</h3>
+              <h3>Delete {deleteType === 'order' ? 'Order' : deleteType === 'coupon' ? 'Coupon' : 'Product'}?</h3>
               <p>
-                Are you sure you want to delete <strong>"{selectedItem?.name || selectedItem?.code}"</strong>?
+                Are you sure you want to delete <strong>"{deleteType === 'order' ? `Order #${selectedItem?.id}` : (selectedItem?.name || selectedItem?.code)}"</strong>?
                 This action cannot be undone.
               </p>
               <div className="confirm-actions">
@@ -3107,7 +3139,7 @@ export default function AdminPanel() {
                 </button>
                 <button
                   className="btn-danger"
-                  onClick={selectedItem?.code ? handleDeleteCoupon : handleDeleteProduct}
+                  onClick={deleteType === 'order' ? handleDeleteOrder : deleteType === 'coupon' ? handleDeleteCoupon : handleDeleteProduct}
                   disabled={loading}
                 >
                   {loading ? 'Deleting...' : 'Delete'}
