@@ -28,6 +28,7 @@ export default function AdminPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isLive, setIsLive] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
@@ -128,66 +129,49 @@ export default function AdminPanel() {
     return colors[status] || 'default';
   };
 
-  // Calculate real-time analytics (memoized)
+  // Fetch dashboard stats from backend (accurate DB-level calculations)
+  const fetchDashboardStats = React.useCallback(async (silent = false) => {
+    try {
+      const { data } = await api.get('admin/stats');
+      setDashboardStats(data);
+    } catch (err) {
+      if (!silent) console.error('Error loading dashboard stats:', err);
+    }
+  }, []);
+
+  // Calculate analytics: use server stats for numbers, client arrays for product lists
   const analytics = React.useMemo(() => {
-    // Total Revenue (from completed/delivered orders)
-    const completedOrders = orders.filter(o =>
-      ['DELIVERED', 'COMPLETED', 'SHIPPED'].includes(o.status)
-    );
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-    const confirmedRevenue = completedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const s = dashboardStats || {};
 
-    // Order stats - using backend enum values
-    const pendingOrders = orders.filter(o => o.status === 'PLACED').length;
-    const processingOrders = orders.filter(o => ['PACKED', 'CONFIRMED'].includes(o.status)).length;
-    const shippedOrders = orders.filter(o => o.status === 'SHIPPED').length;
-    const deliveredOrders = orders.filter(o => o.status === 'DELIVERED').length;
-    const cancelledOrders = orders.filter(o => o.status === 'CANCELLED').length;
-
-    // Stock stats
-    const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+    // Product arrays still from client data (needed for names/details in lists)
     const lowStockProducts = products.filter(p => (p.stock || 0) <= 10 && (p.stock || 0) > 0);
     const outOfStockProducts = products.filter(p => (p.stock || 0) === 0);
     const activeProducts = products.filter(p => p.active !== false);
 
-    // Customer stats
-    const totalCustomers = users.filter(u => u.role === 'CUSTOMER' || !u.role).length;
-    const activeCustomers = users.filter(u => u.active !== false).length;
-
-    // Today's stats
-    const today = new Date().toDateString();
-    const todayOrders = orders.filter(o => {
-      if (!o.createdAt) return false;
-      return new Date(o.createdAt).toDateString() === today;
-    });
-    const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-
-    // Average order value
-    const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
-
-    // Inventory value
-    const inventoryValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
-
     return {
-      totalRevenue,
-      confirmedRevenue,
-      pendingOrders,
-      processingOrders,
-      shippedOrders,
-      deliveredOrders,
-      cancelledOrders,
-      totalStock,
+      totalRevenue: Number(s.totalRevenue) || 0,
+      confirmedRevenue: Number(s.totalRevenue) || 0,
+      pendingOrders: Number(s.pendingOrders) || 0,
+      processingOrders: Number(s.processingOrders) || 0,
+      shippedOrders: Number(s.shippedOrders) || 0,
+      deliveredOrders: Number(s.deliveredOrders) || 0,
+      cancelledOrders: Number(s.cancelledOrders) || 0,
+      totalOrders: Number(s.totalOrders) || 0,
+      totalStock: Number(s.totalStock) || 0,
       lowStockProducts,
       outOfStockProducts,
       activeProducts,
-      totalCustomers,
-      activeCustomers,
-      todayOrders: todayOrders.length,
-      todayRevenue,
-      avgOrderValue,
-      inventoryValue
+      lowStockCount: Number(s.lowStockCount) || 0,
+      totalCustomers: Number(s.totalCustomers) || 0,
+      activeCustomers: Number(s.activeCustomers) || 0,
+      todayOrders: Number(s.todayOrders) || 0,
+      todayRevenue: Number(s.todayRevenue) || 0,
+      avgOrderValue: Number(s.avgOrderValue) || 0,
+      inventoryValue: Number(s.inventoryValue) || 0,
+      totalProducts: Number(s.totalProducts) || 0,
+      activeProductsCount: Number(s.activeProducts) || 0,
     };
-  }, [orders, products, users]);
+  }, [dashboardStats, products]);
 
   // Categories for dropdown
   const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
@@ -294,20 +278,23 @@ export default function AdminPanel() {
       setProducts([]);
       setOrders([]);
       setUsers([]);
+      setDashboardStats(null);
 
       // Add cache-busting parameter
-      const cacheBuster = `?_t=${Date.now()}&size=100`;
+      const cacheBuster = `?_t=${Date.now()}&size=200`;
 
-      // Fetch all data without individual loading states
-      const [productsRes, ordersRes, usersRes] = await Promise.all([
+      // Fetch all data including server-calculated stats
+      const [productsRes, ordersRes, usersRes, statsRes] = await Promise.all([
         api.get(`admin/products${cacheBuster}`),
-        api.get(`admin/orders${cacheBuster}`),
-        api.get(`admin/users${cacheBuster}`)
+        api.get(`admin/orders${cacheBuster.replace('size=200', 'size=100')}`),
+        api.get(`admin/users${cacheBuster.replace('size=200', 'size=100')}`),
+        api.get(`admin/stats?_t=${Date.now()}`)
       ]);
 
       setProducts(productsRes.data.content || productsRes.data || []);
       setOrders(ordersRes.data.content || ordersRes.data || []);
       setUsers(usersRes.data.content || usersRes.data || []);
+      setDashboardStats(statsRes.data);
       setLastUpdated(new Date());
 
       toast.success('✓ Dashboard statistics refreshed successfully!');
@@ -353,6 +340,7 @@ export default function AdminPanel() {
     fetchOrders();
     fetchUsers();
     fetchCoupons();
+    fetchDashboardStats();
   }, []);
 
   // Real-time auto-refresh every 10 seconds for dashboard
@@ -361,10 +349,11 @@ export default function AdminPanel() {
       const interval = setInterval(async () => {
         // Silent refresh without loading spinner
         try {
-          const [productsRes, ordersRes, usersRes] = await Promise.allSettled([
-            api.get('admin/products?size=100'),
+          const [productsRes, ordersRes, usersRes, statsRes] = await Promise.allSettled([
+            api.get('admin/products?size=200'),
             api.get('admin/orders?size=100'),
-            api.get('admin/users?size=100')
+            api.get('admin/users?size=100'),
+            api.get('admin/stats')
           ]);
 
           if (productsRes.status === 'fulfilled') {
@@ -375,6 +364,9 @@ export default function AdminPanel() {
           }
           if (usersRes.status === 'fulfilled') {
             setUsers(usersRes.value.data.content || usersRes.value.data || []);
+          }
+          if (statsRes.status === 'fulfilled') {
+            setDashboardStats(statsRes.value.data);
           }
 
           setLastUpdated(new Date());
@@ -1421,7 +1413,7 @@ export default function AdminPanel() {
             >
               <Package size={20} />
               {sidebarOpen && <span>Products</span>}
-              {sidebarOpen && <span className="nav-badge">{analytics.activeProducts.length}</span>}
+              {sidebarOpen && <span className="nav-badge">{analytics.activeProductsCount}</span>}
             </button>
 
             <button
@@ -1653,14 +1645,14 @@ export default function AdminPanel() {
                   <div className="stat-content">
                     <span className="stat-label">Total Revenue</span>
                     <span className="stat-value">{formatINR(analytics.totalRevenue)}</span>
-                    <span className="stat-change positive"><ArrowUpRight size={16} /> {orders.length} orders</span>
+                    <span className="stat-change positive"><ArrowUpRight size={16} /> {analytics.totalOrders} orders</span>
                   </div>
                 </div>
                 <div className="stat-card gradient-blue">
                   <div className="stat-icon"><ShoppingCart size={28} /></div>
                   <div className="stat-content">
                     <span className="stat-label">Total Orders</span>
-                    <span className="stat-value">{orders.length}</span>
+                    <span className="stat-value">{analytics.totalOrders}</span>
                     <span className="stat-change warning">{analytics.pendingOrders} pending</span>
                   </div>
                 </div>
@@ -1669,7 +1661,7 @@ export default function AdminPanel() {
                   <div className="stat-content">
                     <span className="stat-label">Total Stock</span>
                     <span className="stat-value">{analytics.totalStock.toLocaleString()} units</span>
-                    <span className="stat-change neutral">{analytics.activeProducts.length} products</span>
+                    <span className="stat-change neutral">{analytics.activeProductsCount} products</span>
                   </div>
                 </div>
                 <div className="stat-card gradient-orange">
@@ -1708,7 +1700,7 @@ export default function AdminPanel() {
                 <div className="stat-card-mini">
                   <div className="mini-icon danger">⚠️</div>
                   <div className="mini-content">
-                    <span className="mini-value">{analytics.lowStockProducts.length}</span>
+                    <span className="mini-value">{analytics.lowStockCount}</span>
                     <span className="mini-label">Low Stock</span>
                   </div>
                 </div>
