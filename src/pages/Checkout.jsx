@@ -505,6 +505,8 @@ export default function Checkout() {
       newErrors.shippingZipCode = 'Please wait for pincode validation';
     } else if (shippingError) {
       newErrors.shippingZipCode = shippingError;
+    } else if (!shippingRate) {
+      newErrors.shippingZipCode = 'Shipping cost not yet calculated';
     }
 
     if (!shippingInfo.shippingPhone.trim()) {
@@ -593,7 +595,8 @@ export default function Checkout() {
       console.log('Calling /orders/checkout API...');
       const checkoutPayload = {
         ...shippingInfo,
-        couponCode: appliedCoupon?.coupon?.code || null
+        couponCode: appliedCoupon?.coupon?.code || null,
+        shippingCost: shippingRate?.shippingCost ?? null
       };
       const { data } = await api.post('orders/checkout', checkoutPayload);
       console.log('Checkout response:', data);
@@ -1111,16 +1114,16 @@ export default function Checkout() {
                         </p>
                       )}
                     </div>
-                    <span className={cn("font-medium", (shippingRate && shippingRate.shippingCost === 0) ? "text-green-600" : breakdown?.isFreeShipping ? "text-green-600" : "")}>
+                    <span className={cn("font-medium", (shippingRate && shippingRate.shippingCost === 0) ? "text-green-600" : "")}>
                       {shippingLoading ? (
                         <span className="flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />Calculating...</span>
                       ) : shippingRate ? (
                         shippingRate.shippingCost === 0 ? 'FREE' : `₹${shippingRate.shippingCost.toFixed(2)}`
                       ) : shippingError ? (
                         <span className="text-destructive text-xs">N/A</span>
-                      ) : breakdown ? (
-                        breakdown.isFreeShipping ? 'FREE' : `₹${breakdown.shippingCost.toFixed(2)}`
-                      ) : 'Enter pincode'}
+                      ) : (
+                        <span className="text-muted-foreground text-xs">Enter pincode</span>
+                      )}
                     </span>
                   </div>
 
@@ -1138,10 +1141,15 @@ export default function Checkout() {
                       {breakdownLoading ? 'Calculating...' : `₹${razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : (
                         shippingRate
                           ? ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) + shippingRate.shippingCost).toFixed(2)
-                          : (breakdown?.total || 0).toFixed(2)
+                          : ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0)).toFixed(2)
                       )}`}
                     </span>
                   </div>
+                  {!shippingRate && !shippingLoading && !razorpayOrderResponse && (
+                    <p className="text-xs text-amber-600 text-center mt-1">
+                      Enter your pincode to calculate delivery cost
+                    </p>
+                  )}
                 </div>
 
                 {/* Coupon Code Section */}
