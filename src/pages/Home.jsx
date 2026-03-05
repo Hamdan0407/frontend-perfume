@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import productAPI from '../api/productAPI';
+import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
 import RecentlyViewed from '../components/RecentlyViewed';
@@ -28,11 +29,29 @@ export default function Home() {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
+  const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     fetchFeaturedProducts();
+    fetchSiteStats();
   }, []);
+
+  // Fetch site stats from backend & record visit
+  const fetchSiteStats = async () => {
+    try {
+      // Record visit (fire-and-forget)
+      api.post('stats/visit').catch(() => {});
+
+      // Fetch current stats
+      const res = await api.get('stats');
+      if (res.data) {
+        setSiteStats(res.data);
+      }
+    } catch (err) {
+      console.warn('[Home] Failed to fetch site stats:', err);
+    }
+  };
 
   // Removed handleIntroComplete as intro is removed
 
@@ -341,14 +360,7 @@ export default function Home() {
               },
               {
                 icon: Users,
-                to: (() => {
-                  // Base count on a fixed start date, increasing ~3-4 per day
-                  const baseDate = new Date('2026-03-04');
-                  const baseCount = 246;
-                  const daysSince = Math.floor((Date.now() - baseDate.getTime()) / 86400000);
-                  // Average 3 per day
-                  return baseCount + (daysSince * 3);
-                })(),
+                to: siteStats.happyCustomers || 249,
                 suffix: '+',
                 label: 'Happy Customers',
                 color: '#38bdf8',
@@ -362,17 +374,7 @@ export default function Home() {
               },
               {
                 icon: Eye,
-                to: (() => {
-                  const today = new Date().toISOString().slice(0, 10);
-                  const key = 'muwas_daily_visitors';
-                  try {
-                    const stored = JSON.parse(localStorage.getItem(key));
-                    if (stored && stored.date === today) return stored.count;
-                  } catch {}
-                  const count = Math.floor(Math.random() * 31) + 50;
-                  localStorage.setItem(key, JSON.stringify({ date: today, count }));
-                  return count;
-                })(),
+                to: siteStats.visitors || 70,
                 suffix: '',
                 label: "Today's Visitors",
                 color: '#22d3ee',
