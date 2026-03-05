@@ -11,6 +11,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
+import DailyVisitorCounter from '../components/DailyVisitorCounter';
 import CountUp from '../components/ui/CountUp';
 import toast from '../utils/toast';
 import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin } from 'lucide-react';
@@ -124,6 +125,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Daily Visitor Counter */}
+      <DailyVisitorCounter />
 
       {/* Collections */}
       <section className="py-16 sm:py-20 lg:py-24">
