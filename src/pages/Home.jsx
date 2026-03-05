@@ -11,10 +11,9 @@ import { Skeleton } from '../components/ui/skeleton';
 import { LoadingSpinner } from '../components/ui/spinner';
 import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
-import DailyVisitorCounter from '../components/DailyVisitorCounter';
 import CountUp from '../components/ui/CountUp';
 import toast from '../utils/toast';
-import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin, Eye } from 'lucide-react';
 import { CATEGORY_LIST } from '../constants/productCategories';
 
 import '../styles/HomeTheme.css';
@@ -125,9 +124,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Daily Visitor Counter */}
-      <DailyVisitorCounter />
 
       {/* Collections */}
       <section className="py-16 sm:py-20 lg:py-24">
@@ -327,7 +323,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8">
             {[
               {
                 icon: Package,
@@ -363,6 +359,23 @@ export default function Home() {
                 suffix: '+',
                 label: 'States Delivered',
                 color: '#f59e0b',
+              },
+              {
+                icon: Eye,
+                to: (() => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  const key = 'muwas_daily_visitors';
+                  try {
+                    const stored = JSON.parse(localStorage.getItem(key));
+                    if (stored && stored.date === today) return stored.count;
+                  } catch {}
+                  const count = Math.floor(Math.random() * 31) + 50;
+                  localStorage.setItem(key, JSON.stringify({ date: today, count }));
+                  return count;
+                })(),
+                suffix: '',
+                label: "Today's Visitors",
+                color: '#22d3ee',
               },
             ].map((stat, idx) => (
               <div
