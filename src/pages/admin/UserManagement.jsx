@@ -188,11 +188,24 @@ export default function UserManagement() {
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-sm">
-                  <button
-                    onClick={() => handleViewDetails(user.id)}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Manage
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleViewDetails(user.id)}
+                      className="text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Manage
+                    </button>
+                    {user.role !== 'ADMIN' && (
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        disabled={deleting}
+                        className="text-red-500 hover:text-red-700 font-medium ml-2"
+                        title="Delete user"
+                      >
+                        {deleting ? '...' : '🗑️'}
+                      </button>
+                    )}
+                  </div>
                   </button>
                 </td>
               </tr>

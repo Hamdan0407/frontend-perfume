@@ -819,6 +819,21 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This will delete all their orders, reviews, and data. This cannot be undone.')) {
+      return;
+    }
+    try {
+      await api.delete(`admin/users/${userId}`);
+      toast.success('User deleted successfully');
+      fetchUsers();
+      setShowUserModal(false);
+    } catch (err) {
+      console.error('Delete user error:', err);
+      toast.error(err.response?.data?.error || 'Failed to delete user');
+    }
+  };
+
   // ==================== COUPON OPERATIONS ====================
 
   const openAddCouponModal = () => {
@@ -2934,6 +2949,13 @@ export default function AdminPanel() {
                 </div>
               </div>
               <div className="modal-footer">
+                <button
+                  className="btn btn-danger"
+                  style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', marginRight: 'auto' }}
+                  onClick={() => handleDeleteUser(selectedItem.id)}
+                >
+                  🗑️ Delete User
+                </button>
                 <button className="btn btn-secondary" onClick={() => setShowUserModal(false)}>
                   Close
                 </button>
