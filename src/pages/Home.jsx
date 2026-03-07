@@ -40,8 +40,10 @@ export default function Home() {
   // Fetch site stats from backend & record visit
   const fetchSiteStats = async () => {
     try {
-      // Record visit (fire-and-forget)
-      api.post('stats/visit').catch(() => {});
+      // Record visit using fetch with no content-type to avoid CORS preflight
+      fetch('/api/stats/visit', { method: 'POST' }).catch((err) => {
+        console.warn('[Home] Failed to record visit:', err?.message);
+      });
 
       // Fetch current stats
       const res = await api.get('stats');
