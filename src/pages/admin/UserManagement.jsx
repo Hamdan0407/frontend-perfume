@@ -11,6 +11,7 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
   const [updating, setUpdating] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -102,6 +103,32 @@ export default function UserManagement() {
       console.error('Error updating user status:', err);
       setError('Failed to update user status');
       setUpdating(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      setError('Only ADMIN can delete users');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this user? This will also delete all their orders, reviews, and other data. This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      await api.delete(`admin/users/${userId}`);
+      setShowDetail(false);
+      setSelectedUser(null);
+      fetchUsers();
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err.response?.data?.error || 'Failed to delete user');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -332,7 +359,19 @@ export default function UserManagement() {
             </div>
 
             {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-gray-50 border-t p-6 flex justify-end gap-2">
+            <div className="sticky bottom-0 bg-gray-50 border-t p-6 flex justify-between">
+              <button
+                onClick={() => handleDeleteUser(selectedUser.id)}
+                disabled={deleting || selectedUser.role === 'ADMIN'}
+                className={`px-4 py-2 rounded-lg font-medium transition ${
+                  selectedUser.role === 'ADMIN'
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
+                title={selectedUser.role === 'ADMIN' ? 'Cannot delete admin users' : 'Delete this user permanently'}
+              >
+                {deleting ? 'Deleting...' : '🗑️ Delete User'}
+              </button>
               <button
                 onClick={() => setShowDetail(false)}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
