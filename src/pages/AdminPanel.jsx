@@ -2860,90 +2860,156 @@ export default function AdminPanel() {
       {
         showOrderModal && selectedItem && (
           <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 640 }}>
               <div className="modal-header">
-                <h2>📦 Order #{selectedItem.id}</h2>
+                <h2>Order #{selectedItem.orderNumber || selectedItem.id}</h2>
                 <button className="modal-close" onClick={() => setShowOrderModal(false)}>
                   <X size={20} />
                 </button>
               </div>
               <div className="modal-body">
                 <div className="order-details">
-                  <div className="detail-row">
-                    <span className="label">Customer:</span>
-                    <span className="value">
-                      {selectedItem.customerName ||
-                        (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Email:</span>
-                    <span className="value">
-                      {selectedItem.customerEmail || selectedItem.user?.email || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Ship To:</span>
-                    <span className="value">
-                      {selectedItem.shippingRecipientName ||
-                        selectedItem.customerName ||
-                        (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Date:</span>
-                    <span className="value">{selectedItem.createdAt ? new Date(selectedItem.createdAt).toLocaleString() : 'N/A'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Total:</span>
-                    <span className="value price">{formatINR(selectedItem.totalAmount)}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Status:</span>
-                    <select
-                      className={`status-select ${getStatusColor(selectedItem.status)}`}
-                      value={selectedItem.status || 'PENDING'}
-                      onChange={(e) => handleUpdateOrderStatus(selectedItem.id, e.target.value)}
-                    >
-                      {orderStatuses.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {selectedItem.shippingAddress && (
-                    <div className="detail-row" style={{ alignItems: 'flex-start' }}>
-                      <span className="label">Shipping:</span>
-                      <span className="value">
-                        {selectedItem.shippingAddress}<br />
-                        {selectedItem.shippingCity}, {selectedItem.shippingCountry} - {selectedItem.shippingZipCode}<br />
+
+                  {/* --- Order Information --- */}
+                  <div className="detail-section">
+                    <h4>Order Information</h4>
+                    <div className="detail-row">
+                      <span className="label">Order ID</span>
+                      <span className="value">#{selectedItem.id}</span>
+                    </div>
+                    {selectedItem.orderNumber && (
+                      <div className="detail-row">
+                        <span className="label">Order Number</span>
+                        <span className="value">{selectedItem.orderNumber}</span>
+                      </div>
+                    )}
+                    <div className="detail-row">
+                      <span className="label">Date</span>
+                      <span className="value">{selectedItem.createdAt ? new Date(selectedItem.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="label">Status</span>
+                      <select
+                        className={`status-select ${getStatusColor(selectedItem.status)}`}
+                        value={selectedItem.status || 'PENDING'}
+                        onChange={(e) => handleUpdateOrderStatus(selectedItem.id, e.target.value)}
+                      >
+                        {orderStatuses.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="detail-row">
+                      <span className="label">Payment</span>
+                      <span className="value" style={{ color: selectedItem.paymentStatus === 'PAID' ? '#16a34a' : '#dc2626' }}>
+                        {selectedItem.paymentStatus || 'PENDING'}
                       </span>
                     </div>
-                  )}
-                </div>
-
-                {selectedItem.items && selectedItem.items.length > 0 && (
-                  <div className="order-items">
-                    <h4>Order Items</h4>
-                    <table className="mini-table">
-                      <thead>
-                        <tr>
-                          <th>Product</th>
-                          <th>Qty</th>
-                          <th>Price</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedItem.items.map((item, idx) => (
-                          <tr key={idx}>
-                            <td>{item.productName || item.product?.name || 'Product'}</td>
-                            <td>{item.quantity}</td>
-                            <td>{formatINR(item.price)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
-                )}
+
+                  {/* --- Customer Information --- */}
+                  <div className="detail-section">
+                    <h4>Customer Information</h4>
+                    <div className="detail-row">
+                      <span className="label">Name</span>
+                      <span className="value">
+                        {selectedItem.customerName ||
+                          (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
+                      </span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="label">Email</span>
+                      <span className="value">{selectedItem.customerEmail || selectedItem.user?.email || 'N/A'}</span>
+                    </div>
+                    {(selectedItem.shippingPhone || selectedItem.user?.phoneNumber) && (
+                      <div className="detail-row">
+                        <span className="label">Phone</span>
+                        <span className="value">{selectedItem.shippingPhone || selectedItem.user?.phoneNumber}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* --- Shipping Address --- */}
+                  {selectedItem.shippingAddress && (
+                    <div className="detail-section">
+                      <h4>Shipping Address</h4>
+                      <div style={{ fontSize: 14, lineHeight: 1.7, color: '#334155' }}>
+                        {selectedItem.shippingRecipientName && (
+                          <div style={{ fontWeight: 600, marginBottom: 2 }}>{selectedItem.shippingRecipientName}</div>
+                        )}
+                        <div>{selectedItem.shippingAddress}</div>
+                        <div>
+                          {[selectedItem.shippingCity, selectedItem.shippingState].filter(Boolean).join(', ')}
+                          {selectedItem.shippingZipCode ? ` - ${selectedItem.shippingZipCode}` : ''}
+                        </div>
+                        {selectedItem.shippingCountry && <div>{selectedItem.shippingCountry}</div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- Order Items Table --- */}
+                  <div className="detail-section">
+                    <h4>Order Items</h4>
+                    {selectedItem.items && selectedItem.items.length > 0 ? (
+                      <>
+                        <table className="order-items-table">
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: 'left' }}>Product</th>
+                              <th style={{ textAlign: 'center' }}>Qty</th>
+                              <th style={{ textAlign: 'right' }}>Price</th>
+                              <th style={{ textAlign: 'right' }}>Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedItem.items.map((item, idx) => (
+                              <tr key={idx}>
+                                <td style={{ textAlign: 'left', fontWeight: 500 }}>
+                                  {item.productName || item.product?.name || 'Product'}
+                                  {item.variantSize ? ` (${item.variantSize}ml)` : ''}
+                                </td>
+                                <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                                <td style={{ textAlign: 'right' }}>{formatINR(item.price)}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatINR(item.price * item.quantity)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        {/* --- Price Breakdown --- */}
+                        <div style={{ borderTop: '2px solid #e2e8f0', marginTop: 16, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                            <span className="label">Subtotal</span>
+                            <span className="value">{formatINR(selectedItem.subtotal)}</span>
+                          </div>
+                          {selectedItem.tax > 0 && (
+                            <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                              <span className="label">Tax (GST)</span>
+                              <span className="value">{formatINR(selectedItem.tax)}</span>
+                            </div>
+                          )}
+                          <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                            <span className="label">Shipping</span>
+                            <span className="value">{selectedItem.shippingCost > 0 ? formatINR(selectedItem.shippingCost) : 'Free'}</span>
+                          </div>
+                          {selectedItem.discount > 0 && (
+                            <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                              <span className="label">Discount {selectedItem.couponCode ? `(${selectedItem.couponCode})` : ''}</span>
+                              <span className="value" style={{ color: '#16a34a' }}>-{formatINR(selectedItem.discount)}</span>
+                            </div>
+                          )}
+                          <div className="detail-row" style={{ padding: '8px 0 0', borderBottom: 'none', borderTop: '1px solid #e2e8f0', marginTop: 4 }}>
+                            <span className="label" style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>Total Amount</span>
+                            <span className="value" style={{ fontSize: 17, fontWeight: 700, color: '#7c3aed' }}>{formatINR(selectedItem.totalAmount)}</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: 0 }}>No items found for this order.</p>
+                    )}
+                  </div>
+
+                </div>
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowOrderModal(false)}>
