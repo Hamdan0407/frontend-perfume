@@ -11,7 +11,7 @@ export default function AnnouncementBar() {
                 </span>
                 <span className="flex items-center gap-2">
                     <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                    We offer pan-India delivery
+                    Pan-India Delivery
                 </span>
                 <span className="flex items-center gap-2">
                     <Globe className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
@@ -25,7 +25,7 @@ export default function AnnouncementBar() {
                 </span>
                 <span className="flex items-center gap-2">
                     <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                    We offer pan-India delivery
+                    Pan-India Delivery
                 </span>
                 <span className="flex items-center gap-2">
                     <Globe className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
@@ -39,7 +39,7 @@ export default function AnnouncementBar() {
                 </span>
                 <span className="flex items-center gap-2">
                     <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                    We offer pan-India delivery
+                    Pan-India Delivery
                 </span>
                 <span className="flex items-center gap-2">
                     <Globe className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
