@@ -124,7 +124,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
           // Payment successful, now verify signature on backend
           try {
             setLoading(true);
-            toast.loading('Verifying payment...');
+            const loadingToast = toast.loading('Verifying payment...');
 
             const verificationResult = await api.post('orders/verify-payment', {
               razorpayOrderId: options.order_id,
@@ -133,7 +133,9 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
             });
 
             console.log('✅ PAYMENT VERIFIED:', verificationResult.data);
+            toast.dismiss(loadingToast);
             toast.success('Payment successful! Your order is confirmed.');
+            clearCart();
 
             // Navigate to order details page
             setTimeout(() => {
@@ -142,10 +144,12 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
 
           } catch (error) {
             console.error('❌ Payment verification failed:', error);
+            toast.dismiss();
 
             // Check if it's a network error or server error
             if (error.code === 'NETWORK_ERROR' || !error.response) {
               toast('Payment completed but verification is pending. Please check your order status.', { icon: '⚠️' });
+              clearCart();
 
               // Still navigate to order page - webhook might process it
               setTimeout(() => {
