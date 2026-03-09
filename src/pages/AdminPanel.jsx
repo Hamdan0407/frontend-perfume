@@ -101,6 +101,10 @@ export default function AdminPanel() {
     defaultShippingCost: '99'
   });
 
+  // Global discount state
+  const [globalDiscount, setGlobalDiscount] = useState({ enabled: false, percentage: 0 });
+  const [globalDiscountLoading, setGlobalDiscountLoading] = useState(false);
+
   // Format price in INR
   const formatINR = (amount) => {
     if (!amount && amount !== 0) return '₹0';
@@ -965,6 +969,33 @@ export default function AdminPanel() {
       }
     }
   }, []);
+
+  // Fetch global discount on mount
+  useEffect(() => {
+    const fetchGlobalDiscount = async () => {
+      try {
+        const { data } = await api.get('/admin/global-discount');
+        setGlobalDiscount({ enabled: data.enabled, percentage: data.percentage });
+      } catch (err) {
+        console.error('Failed to fetch global discount:', err);
+      }
+    };
+    fetchGlobalDiscount();
+  }, []);
+
+  const handleSaveGlobalDiscount = React.useCallback(async () => {
+    setGlobalDiscountLoading(true);
+    try {
+      await api.put('/admin/global-discount', globalDiscount);
+      toast.success(globalDiscount.enabled
+        ? `Global discount of ${globalDiscount.percentage}% is now active!`
+        : 'Global discount disabled');
+    } catch (err) {
+      toast.error('Failed to save global discount');
+    } finally {
+      setGlobalDiscountLoading(false);
+    }
+  }, [globalDiscount]);
 
   // ==================== IMAGE UPLOAD HANDLER ====================
   const handleImageUpload = React.useCallback((e) => {
@@ -2502,6 +2533,56 @@ export default function AdminPanel() {
                       value={settingsForm.defaultShippingCost}
                       onChange={(e) => setSettingsForm({ ...settingsForm, defaultShippingCost: e.target.value })}
                     />
+                  </div>
+                </div>
+
+                <div className="settings-card">
+                  <h3>🏷️ Global Discount</h3>
+                  <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
+                    Apply a percentage discount to all products at checkout. This discount is applied on the subtotal for every customer.
+                  </p>
+                  <div className="form-group">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={globalDiscount.enabled}
+                        onChange={(e) => setGlobalDiscount({ ...globalDiscount, enabled: e.target.checked })}
+                        style={{ width: '18px', height: '18px', accentColor: '#f59e0b' }}
+                      />
+                      <span style={{ fontWeight: 600 }}>Enable Global Discount</span>
+                    </label>
+                  </div>
+                  {globalDiscount.enabled && (
+                    <div className="form-group">
+                      <label>Discount Percentage</label>
+                      <select
+                        className="form-input"
+                        value={globalDiscount.percentage}
+                        onChange={(e) => setGlobalDiscount({ ...globalDiscount, percentage: parseInt(e.target.value) })}
+                      >
+                        <option value={0}>Select percentage</option>
+                        <option value={5}>5%</option>
+                        <option value={10}>10%</option>
+                        <option value={15}>15%</option>
+                        <option value={20}>20%</option>
+                        <option value={25}>25%</option>
+                        <option value={30}>30%</option>
+                      </select>
+                    </div>
+                  )}
+                  {globalDiscount.enabled && globalDiscount.percentage > 0 && (
+                    <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', padding: '12px', fontSize: '13px', color: '#92400e' }}>
+                      ⚡ All customers will get <strong>{globalDiscount.percentage}% off</strong> on their order subtotal at checkout.
+                    </div>
+                  )}
+                  <div style={{ marginTop: '12px' }}>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSaveGlobalDiscount}
+                      disabled={globalDiscountLoading}
+                    >
+                      {globalDiscountLoading ? 'Saving...' : 'Save Global Discount'}
+                    </button>
                   </div>
                 </div>
               </div>

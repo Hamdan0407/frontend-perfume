@@ -1140,10 +1140,19 @@ export default function Checkout() {
                   </div>
 
                   {/* Discount Row */}
+                  {/* Coupon Discount Row */}
                   {(breakdown?.discount > 0 || discount > 0) && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span className="font-medium">Discount</span>
+                      <span className="font-medium">Coupon Discount</span>
                       <span className="font-medium">-₹{(breakdown?.discount || discount).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* Global Discount Row */}
+                  {breakdown?.globalDiscountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span className="font-medium">🏷️ Offer ({breakdown.globalDiscountPercentage}% off)</span>
+                      <span className="font-medium">-₹{breakdown.globalDiscountAmount.toFixed(2)}</span>
                     </div>
                   )}
 
@@ -1152,8 +1161,8 @@ export default function Checkout() {
                     <span className="text-lg">
                       {breakdownLoading ? 'Calculating...' : `₹${razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : (
                         shippingRate
-                          ? ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) + shippingRate.shippingCost).toFixed(2)
-                          : ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0)).toFixed(2)
+                          ? ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) - (breakdown?.globalDiscountAmount || 0) + shippingRate.shippingCost).toFixed(2)
+                          : ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) - (breakdown?.globalDiscountAmount || 0)).toFixed(2)
                       )}`}
                     </span>
                   </div>
