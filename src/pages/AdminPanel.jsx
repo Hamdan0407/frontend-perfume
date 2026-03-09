@@ -1007,7 +1007,7 @@ export default function AdminPanel() {
   }, []);
 
   // ==================== INVOICE PDF GENERATOR ====================
-  const generateInvoicePDF = (order) => {
+  const generateInvoicePDF = async (order) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -1021,15 +1021,30 @@ export default function AdminPanel() {
     const borderColor = [229, 231, 235];     // Border
     const greenColor = [22, 163, 74];        // Green for free shipping
 
+    // Load logo image
+    let logoImg = null;
+    try {
+      logoImg = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = '/muwas-logo-nobg.png';
+      });
+    } catch { logoImg = null; }
+
     // ====== GOLD TOP BAR ======
     doc.setFillColor(...accentColor);
     doc.rect(0, 0, pageWidth, 6, 'F');
 
     // ====== HEADER: Company + Invoice Title ======
-    doc.setTextColor(...primaryColor);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MUWAS PERFUMES', 20, 22);
+    if (logoImg) {
+      doc.addImage(logoImg, 'PNG', 15, 8, 35, 20);
+    } else {
+      doc.setTextColor(...primaryColor);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MUWAS PERFUMES', 20, 22);
+    }
 
     doc.setTextColor(...accentColor);
     doc.setFontSize(9);
@@ -1120,7 +1135,7 @@ export default function AdminPanel() {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...grayColor);
     if (order.shippingAddress) doc.text(order.shippingAddress.substring(0, 40), shipToX + 5, yPos + 22);
-    if (order.shippingCity) doc.text(`${order.shippingCity}, ${order.shippingCountry || 'India'}`, shipToX + 5, yPos + 28);
+    if (order.shippingCity) doc.text([order.shippingCity, order.shippingState, order.shippingCountry || 'India'].filter(Boolean).join(', '), shipToX + 5, yPos + 28);
     if (order.shippingPhone) doc.text('Ph: ' + order.shippingPhone, shipToX + 5, yPos + 33);
 
     // ====== FROM (company address) ======
