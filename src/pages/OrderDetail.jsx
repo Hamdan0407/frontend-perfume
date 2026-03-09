@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from '../utils/toast';
-import { Package, MapPin, CreditCard, FileText, ArrowLeft, Download, ShoppingCart, Eye, Star } from 'lucide-react';
+import { Package, MapPin, CreditCard, FileText, ArrowLeft, ShoppingCart, Star } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import OrderTimeline from '../components/OrderTimeline';
@@ -19,7 +19,7 @@ export default function OrderDetail() {
   const { addToCart } = useCartStore();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [downloading, setDownloading] = useState(false);
+
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -38,34 +38,8 @@ export default function OrderDetail() {
     }
   };
 
-  const handleDownloadInvoice = async () => {
-    setDownloading(true);
-    try {
-      const response = await api.get(`orders/${id}/invoice`, {
-        responseType: 'blob'
-      });
-
-      const contentType = response.headers['content-type'];
-      if (!contentType || !contentType.includes('pdf')) {
-        toast.error('Invoice not available');
-        return;
-      }
-
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Invoice_${order.orderNumber}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success('Invoice downloaded successfully');
-    } catch (error) {
-      console.error('Download invoice error:', error);
-      toast.error('Could not download invoice');
-    } finally {
-      setDownloading(false);
-    }
+  const handleDownloadInvoice = () => {
+    navigate(`/invoice/${order.id}`);
   };
 
   const handleReorder = async (product, quantity) => {
@@ -270,17 +244,8 @@ export default function OrderDetail() {
                     className="w-full"
                     onClick={() => navigate(`/invoice/${order.id}`)}
                   >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Invoice
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleDownloadInvoice}
-                    disabled={downloading}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {downloading ? 'Downloading...' : 'Download PDF'}
+                    <FileText className="h-4 w-4 mr-2" />
+                    View & Download Invoice
                   </Button>
                 </div>
               )}
