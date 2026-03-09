@@ -1145,13 +1145,29 @@ export default function AdminPanel() {
 
     // ====== FROM (company address) ======
     yPos = 97;
-    doc.setTextColor(...grayColor);
-    doc.setFontSize(7);
+    doc.setFillColor(...lightGray);
+    doc.setDrawColor(...borderColor);
+    doc.setLineWidth(0.5);
+    doc.rect(15, yPos, pageWidth - 30, 30, 'FD');
+
+    doc.setTextColor(...accentColor);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FROM', 20, yPos + 6);
+
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Muwas \u2013 Premium Perfumes & Fragrances', 20, yPos + 13);
+
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('From: No 3, Modi Ibrahim Street, Ambur, Tamil Nadu - 635802, India  |  muwas2021@gmail.com  |  +91 8247327106', 15, yPos);
+    doc.setTextColor(...grayColor);
+    doc.text('No 3, Modi Ibrahim Street, Ambur, Tamil Nadu \u2013 635802, India', 20, yPos + 19);
+    doc.text('Email: muwas2021@gmail.com  |  Phone: +91 8247327106  |  Website: www.muwas.in', 20, yPos + 25);
 
     // ====== ITEMS TABLE ======
-    yPos = 108;
+    yPos = 134;
 
     // Table Header
     doc.setFillColor(...primaryColor);
