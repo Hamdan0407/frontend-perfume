@@ -101,6 +101,10 @@ export default function AdminPanel() {
     defaultShippingCost: '99'
   });
 
+  // Global discount state
+  const [globalDiscount, setGlobalDiscount] = useState({ enabled: false, percentage: 0 });
+  const [globalDiscountLoading, setGlobalDiscountLoading] = useState(false);
+
   // Format price in INR
   const formatINR = (amount) => {
     if (!amount && amount !== 0) return '₹0';
@@ -819,6 +823,21 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This will delete all their orders, reviews, and data. This cannot be undone.')) {
+      return;
+    }
+    try {
+      await api.delete(`admin/users/${userId}`);
+      toast.success('User deleted successfully');
+      fetchUsers();
+      setShowUserModal(false);
+    } catch (err) {
+      console.error('Delete user error:', err);
+      toast.error(err.response?.data?.error || 'Failed to delete user');
+    }
+  };
+
   // ==================== COUPON OPERATIONS ====================
 
   const openAddCouponModal = () => {
@@ -951,6 +970,33 @@ export default function AdminPanel() {
     }
   }, []);
 
+  // Fetch global discount on mount
+  useEffect(() => {
+    const fetchGlobalDiscount = async () => {
+      try {
+        const { data } = await api.get('/admin/global-discount');
+        setGlobalDiscount({ enabled: data.enabled, percentage: data.percentage });
+      } catch (err) {
+        console.error('Failed to fetch global discount:', err);
+      }
+    };
+    fetchGlobalDiscount();
+  }, []);
+
+  const handleSaveGlobalDiscount = React.useCallback(async () => {
+    setGlobalDiscountLoading(true);
+    try {
+      await api.put('/admin/global-discount', globalDiscount);
+      toast.success(globalDiscount.enabled
+        ? `Global discount of ${globalDiscount.percentage}% is now active!`
+        : 'Global discount disabled');
+    } catch (err) {
+      toast.error('Failed to save global discount');
+    } finally {
+      setGlobalDiscountLoading(false);
+    }
+  }, [globalDiscount]);
+
   // ==================== IMAGE UPLOAD HANDLER ====================
   const handleImageUpload = React.useCallback((e) => {
     const file = e.target.files?.[0];
@@ -992,122 +1038,169 @@ export default function AdminPanel() {
   }, []);
 
   // ==================== INVOICE PDF GENERATOR ====================
-  const generateInvoicePDF = (order) => {
+  const generateInvoicePDF = async (order) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
     // Application Theme Color Palette
-    const primaryColor = [26, 32, 44];      // Deep Slate - hsl(222 47% 11%)
-    const accentColor = [245, 158, 11];     // Warm Gold - hsl(38 92% 50%)
-    const darkColor = [17, 24, 39];         // Text dark
-    const grayColor = [107, 114, 128];      // Muted text
-    const lightGray = [243, 244, 246];      // Light background
-    const secondaryBg = [248, 250, 252];    // Secondary background
+    const primaryColor = [26, 26, 46];       // Dark navy #1a1a2e
+    const accentColor = [181, 140, 79];      // Gold #b58c4f
+    const darkColor = [17, 24, 39];          // Text dark
+    const grayColor = [107, 114, 128];       // Muted text
+    const lightGray = [248, 249, 250];       // Light background
+    const borderColor = [229, 231, 235];     // Border
+    const greenColor = [22, 163, 74];        // Green for free shipping
 
-    // Header with Primary Background
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, pageWidth, 55, 'F');
+    // Load logo image
+    let logoImg = null;
+    try {
+      logoImg = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = '/muwas-logo-nobg.png';
+      });
+    } catch { logoImg = null; }
 
-    // Company Branding
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(32);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MUWAS', 20, 25);
+    // ====== GOLD TOP BAR ======
+    doc.setFillColor(...accentColor);
+    doc.rect(0, 0, pageWidth, 6, 'F');
 
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Premium Perfumes & Fragrances', 20, 35);
-
-    // INVOICE Badge (right side)
-    doc.setFillColor(255, 255, 255);
-    const badgeWidth = 55;
-    const badgeX = pageWidth - badgeWidth - 15; // 15 = margin
-    doc.roundedRect(badgeX, 15, badgeWidth, 18, 3, 3, 'F');
-    doc.setTextColor(...primaryColor);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('INVOICE', badgeX + (badgeWidth / 2), 27, { align: 'center' });
-
-    // Invoice Details (right side, below badge)
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`#${order.orderNumber || order.id}`, pageWidth - 15, 42, { align: 'right' });
-    doc.text(new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    }), pageWidth - 15, 48, { align: 'right' });
-
-    // Company Contact Bar
-    doc.setFillColor(...lightGray);
-    doc.rect(15, 62, pageWidth - 30, 18, 'F');
-    doc.setTextColor(...grayColor);
-    doc.setFontSize(8);
-    doc.text('📍 No 3, Modi Ibrahim Street, Ambur, Tamil Nadu 635802', 18, 68);
-    doc.text('📞 +91 8247327106', 18, 73);
-    doc.text('✉ muwas2021@gmail.com', 18, 78);
-    doc.text('🌐 www.muwas.in', pageWidth - 18, 68, { align: 'right' });
-
-    // Bill To & Ship To Section
-    let yPos = 95;
-
-    // Bill To Box (left)
-    doc.setFillColor(...secondaryBg);
-    doc.roundedRect(15, yPos, (pageWidth - 35) / 2, 35, 3, 3, 'F');
-    doc.setDrawColor(226, 232, 240); // Border
-    doc.setLineWidth(0.8);
-    doc.roundedRect(15, yPos, (pageWidth - 35) / 2, 35, 3, 3, 'S');
-
-    doc.setTextColor(...primaryColor);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('👤 BILL TO', 20, yPos + 7);
-
-    doc.setTextColor(...darkColor);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text(order.customerName || order.user?.firstName || 'Customer', 20, yPos + 15);
-
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...grayColor);
-    doc.text(order.user?.email || '', 20, yPos + 21);
-    if (order.user?.phone) {
-      doc.text(order.user.phone, 20, yPos + 27);
+    // ====== HEADER: Company + Invoice Title ======
+    if (logoImg) {
+      doc.addImage(logoImg, 'PNG', 15, 8, 35, 20);
+    } else {
+      doc.setTextColor(...primaryColor);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MUWAS PERFUMES', 20, 22);
     }
-
-    // Ship To Box (right)
-    const shipToX = pageWidth / 2 + 2.5;
-    doc.setFillColor(...secondaryBg);
-    doc.roundedRect(shipToX, yPos, (pageWidth - 35) / 2, 35, 3, 3, 'F');
-    doc.setDrawColor(226, 232, 240); // Border
-    doc.roundedRect(shipToX, yPos, (pageWidth - 35) / 2, 35, 3, 3, 'S');
 
     doc.setTextColor(...accentColor);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('📦 SHIP TO', shipToX + 5, yPos + 7);
+    doc.text('Premium Scents & Luxury Attars', 20, 29);
+
+    // INVOICE title (right side)
+    doc.setTextColor(...primaryColor);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INVOICE', pageWidth - 20, 22, { align: 'right' });
+
+    doc.setTextColor(...grayColor);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Original for Recipient', pageWidth - 20, 29, { align: 'right' });
+
+    // ====== INVOICE META ROW ======
+    const metaY = 38;
+    doc.setFontSize(8);
+    const metaItems = [
+      { label: 'INVOICE NO', value: order.orderNumber || `#${order.id}` },
+      { label: 'ORDER DATE', value: new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) },
+      { label: 'ORDER ID', value: `#${order.id}` },
+      { label: 'PAYMENT', value: (order.paymentStatus || order.status || 'N/A').toString().toUpperCase() }
+    ];
+    const metaSpacing = 35;
+    const metaStartX = pageWidth - 20 - (metaItems.length - 1) * metaSpacing;
+    metaItems.forEach((item, i) => {
+      const x = metaStartX + i * metaSpacing;
+      doc.setTextColor(...grayColor);
+      doc.setFont('helvetica', 'normal');
+      doc.text(item.label, x, metaY, { align: 'right' });
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(item.value.toString().substring(0, 15), x, metaY + 5, { align: 'right' });
+      doc.setFontSize(8);
+    });
+
+    // ====== DIVIDER ======
+    doc.setDrawColor(...primaryColor);
+    doc.setLineWidth(1.5);
+    doc.line(15, 48, pageWidth - 15, 48);
+
+    // ====== BILL TO / SHIP TO ======
+    let yPos = 56;
+    const halfWidth = (pageWidth - 35) / 2;
+
+    // Bill To Box
+    doc.setFillColor(...lightGray);
+    doc.setDrawColor(...borderColor);
+    doc.setLineWidth(0.5);
+    doc.rect(15, yPos, halfWidth, 35, 'FD');
+
+    doc.setTextColor(...accentColor);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('BILL TO', 20, yPos + 7);
 
     doc.setTextColor(...darkColor);
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    const shippingName = order.shippingName || order.customerName || 'Customer';
-    doc.text(shippingName, shipToX + 5, yPos + 15);
+    doc.text((order.customerName || order.user?.firstName || 'Customer').substring(0, 25), 20, yPos + 15);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...grayColor);
+    if (order.user?.email) doc.text(order.user.email, 20, yPos + 22);
+    if (order.user?.phone || order.shippingPhone) doc.text('Ph: ' + (order.shippingPhone || order.user?.phone || ''), 20, yPos + 28);
+
+    // Ship To Box
+    const shipToX = pageWidth / 2 + 2.5;
+    doc.setFillColor(...lightGray);
+    doc.rect(shipToX, yPos, halfWidth, 35, 'FD');
+
+    doc.setTextColor(...accentColor);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SHIP TO', shipToX + 5, yPos + 7);
+
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text((order.shippingName || order.customerName || 'Customer').substring(0, 25), shipToX + 5, yPos + 15);
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...grayColor);
-    if (order.shippingAddress) {
-      doc.text(order.shippingAddress.substring(0, 35), shipToX + 5, yPos + 21);
-    }
+    if (order.shippingAddress) doc.text(order.shippingAddress.substring(0, 40), shipToX + 5, yPos + 22);
     if (order.shippingCity) {
-      doc.text(`${order.shippingCity}, ${order.shippingCountry || 'India'}`, shipToX + 5, yPos + 27);
+      const cityState = [order.shippingCity, order.shippingState].filter(Boolean).join(', ');
+      const zipPart = order.shippingZipCode ? ` - ${order.shippingZipCode}` : '';
+      const country = order.shippingCountry || 'India';
+      doc.text(`${cityState}${zipPart}, ${country}`, shipToX + 5, yPos + 28);
     }
+    if (order.shippingPhone) doc.text('Ph: ' + order.shippingPhone, shipToX + 5, yPos + 33);
 
-    // Items Table
-    yPos = 145;
+    // ====== FROM (company address) ======
+    yPos = 97;
+    doc.setFillColor(...lightGray);
+    doc.setDrawColor(...borderColor);
+    doc.setLineWidth(0.5);
+    doc.rect(15, yPos, pageWidth - 30, 28, 'FD');
 
-    // Table Header with Primary Color
+    doc.setTextColor(...accentColor);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FROM', 20, yPos + 6);
+
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Muwas \u2013 Premium Perfumes & Fragrances', 20, yPos + 13);
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...grayColor);
+    doc.text('Ambur, Tamil Nadu, India', 20, yPos + 19);
+    doc.text('Email: muwas2021@gmail.com  |  Phone: +91 8247327106  |  Website: www.muwas.in', 20, yPos + 25);
+
+    // ====== ITEMS TABLE ======
+    yPos = 132;
+
+    // Table Header
     doc.setFillColor(...primaryColor);
     doc.rect(15, yPos, pageWidth - 30, 12, 'F');
 
@@ -1115,16 +1208,13 @@ export default function AdminPanel() {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.text('#', 20, yPos + 8);
-    doc.text('PRODUCT DETAILS', 30, yPos + 8);
+    doc.text('PRODUCT', 30, yPos + 8);
     doc.text('QTY', 115, yPos + 8, { align: 'center' });
-    doc.text('UNIT PRICE', 145, yPos + 8, { align: 'right' });
+    doc.text('UNIT PRICE', 150, yPos + 8, { align: 'right' });
     doc.text('AMOUNT', pageWidth - 20, yPos + 8, { align: 'right' });
 
     // Table Items
-    yPos += 18;
-    doc.setTextColor(...darkColor);
-    doc.setFont('helvetica', 'normal');
-
+    yPos += 16;
     const items = order.items || order.orderItems || [];
     let itemSubtotal = 0;
 
@@ -1142,101 +1232,165 @@ export default function AdminPanel() {
           doc.rect(15, yPos - 5, pageWidth - 30, 10, 'F');
         }
 
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
         doc.setTextColor(...grayColor);
+        doc.setFont('helvetica', 'normal');
         doc.text(`${index + 1}`, 20, yPos + 2);
 
         doc.setTextColor(...darkColor);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
         doc.text(itemName.substring(0, 45), 30, yPos + 2);
 
-        // Quantity Badge
-        doc.setFillColor(229, 231, 235);
-        doc.roundedRect(108, yPos - 3, 14, 6, 2, 2, 'F');
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text(qty.toString(), 115, yPos + 2, { align: 'center' });
-
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.text(`₹${price.toLocaleString('en-IN')}`, 145, yPos + 2, { align: 'right' });
+        doc.setFontSize(9);
+        doc.text(qty.toString(), 115, yPos + 2, { align: 'center' });
+        doc.text(`Rs.${price.toLocaleString('en-IN')}`, 150, yPos + 2, { align: 'right' });
 
         doc.setFont('helvetica', 'bold');
-        doc.text(`₹${total.toLocaleString('en-IN')}`, pageWidth - 20, yPos + 2, { align: 'right' });
+        doc.text(`Rs.${total.toLocaleString('en-IN')}`, pageWidth - 20, yPos + 2, { align: 'right' });
 
         yPos += 10;
       });
     } else {
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'normal');
       doc.text('1', 20, yPos + 2);
       doc.text('Order items', 30, yPos + 2);
       doc.text('1', 115, yPos + 2, { align: 'center' });
       const amount = order.totalAmount || 0;
-      doc.text(`₹${amount.toLocaleString('en-IN')}`, 145, yPos + 2, { align: 'right' });
-      doc.text(`₹${amount.toLocaleString('en-IN')}`, pageWidth - 20, yPos + 2, { align: 'right' });
+      doc.text(`Rs.${amount.toLocaleString('en-IN')}`, 150, yPos + 2, { align: 'right' });
+      doc.text(`Rs.${amount.toLocaleString('en-IN')}`, pageWidth - 20, yPos + 2, { align: 'right' });
       itemSubtotal = amount;
       yPos += 10;
     }
 
-    // Summary Section
-    yPos += 10;
-    const summaryX = pageWidth - 95; // Adjusted for better alignment
-    const summaryWidth = 90;
-
-    // Summary Box
-    doc.setFillColor(...lightGray);
-    doc.roundedRect(summaryX - 5, yPos, summaryWidth, 45, 3, 3, 'F');
-    doc.setDrawColor(209, 213, 219);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(summaryX - 5, yPos, summaryWidth, 45, 3, 3, 'S');
-
+    // ====== TOTALS SUMMARY ======
     yPos += 8;
+    const summaryX = pageWidth - 90;
+    const summaryWidth = 85;
 
     const subtotal = itemSubtotal;
     const shipping = order.shippingCost || 0;
-    const grandTotal = order.totalAmount || (subtotal + shipping);
+    const discount = order.discount || 0;
+    const grandTotal = order.totalAmount || (subtotal + shipping - discount);
 
     doc.setFontSize(9);
-    doc.setTextColor(...grayColor);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...grayColor);
     doc.text('Subtotal:', summaryX, yPos);
     doc.setTextColor(...darkColor);
-    doc.text(`₹${subtotal.toLocaleString('en-IN')}`, summaryX + summaryWidth - 5, yPos, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Rs.${subtotal.toLocaleString('en-IN')}`, summaryX + summaryWidth, yPos, { align: 'right' });
 
     yPos += 7;
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(...grayColor);
     doc.text('Shipping:', summaryX, yPos);
-    doc.setTextColor(...darkColor);
-    doc.text(shipping > 0 ? `₹${shipping.toLocaleString('en-IN')}` : 'FREE', summaryX + summaryWidth - 5, yPos, { align: 'right' });
+    if (shipping > 0) {
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Rs.${shipping.toLocaleString('en-IN')}`, summaryX + summaryWidth, yPos, { align: 'right' });
+    } else {
+      doc.setTextColor(...greenColor);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FREE', summaryX + summaryWidth, yPos, { align: 'right' });
+    }
 
-    // Total Amount with Primary Color
-    yPos += 12;
-    doc.setFillColor(...primaryColor);
-    doc.roundedRect(summaryX - 5, yPos - 5, summaryWidth, 12, 2, 2, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL:', summaryX, yPos + 3);
-    doc.setFontSize(13);
-    doc.text(`₹${grandTotal.toLocaleString('en-IN')}`, summaryX + summaryWidth - 5, yPos + 3, { align: 'right' });
+    if (discount > 0) {
+      yPos += 7;
+      doc.setTextColor(...greenColor);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Discount:', summaryX, yPos);
+      doc.text(`- Rs.${discount.toLocaleString('en-IN')}`, summaryX + summaryWidth, yPos, { align: 'right' });
+    }
 
-    // Footer Section
-    const footerY = pageHeight - 35;
+    // Divider
+    yPos += 5;
+    doc.setDrawColor(...primaryColor);
+    doc.setLineWidth(1.5);
+    doc.line(summaryX, yPos, summaryX + summaryWidth, yPos);
 
-    // Thank You Message
-    doc.setFillColor(...lightGray);
-    doc.roundedRect(15, footerY, pageWidth - 30, 25, 3, 3, 'F');
-
+    // Grand Total
+    yPos += 8;
     doc.setTextColor(...primaryColor);
-    doc.setFontSize(12);
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('🎉 Thank you for shopping with us!', pageWidth / 2, footerY + 8, { align: 'center' });
+    doc.text('Grand Total', summaryX, yPos);
+    doc.setFontSize(15);
+    doc.text(`Rs.${grandTotal.toLocaleString('en-IN')}`, summaryX + summaryWidth, yPos, { align: 'right' });
+
+    // ====== PAYMENT INFO BAR ======
+    yPos += 14;
+    doc.setFillColor(...lightGray);
+    doc.setDrawColor(...borderColor);
+    doc.setLineWidth(0.5);
+
+    const payBarWidth = (pageWidth - 40) / 3;
+    const payItems = [
+      { label: 'PAYMENT METHOD', value: (order.paymentMethod || 'N/A').toString().replace(/_/g, ' ').toUpperCase() },
+      { label: 'ORDER STATUS', value: (order.status || 'N/A').toString().replace(/_/g, ' ').toUpperCase() },
+      { label: 'WEBSITE', value: 'www.muwas.in' }
+    ];
+    payItems.forEach((pi, i) => {
+      const px = 15 + i * (payBarWidth + 5);
+      doc.rect(px, yPos, payBarWidth, 16, 'FD');
+      doc.setTextColor(...accentColor);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.text(pi.label, px + 5, yPos + 6);
+      doc.setTextColor(...darkColor);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(pi.value.substring(0, 20), px + 5, yPos + 13);
+    });
+
+    // ====== TERMS + SIGNATURE ======
+    yPos += 24;
+    doc.setTextColor(...accentColor);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TERMS & CONDITIONS', 15, yPos);
 
     doc.setTextColor(...grayColor);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    const terms = [
+      '- Goods once sold cannot be taken back or exchanged.',
+      '- All disputes are subject to Ambur, Tamil Nadu jurisdiction.',
+      '- Inspect the product upon delivery before acceptance.',
+      '- E&OE - Errors and Omissions Excepted.'
+    ];
+    terms.forEach((t, i) => {
+      doc.text(t, 15, yPos + 5 + i * 4);
+    });
+
+    // Signature (right side)
+    doc.setTextColor(...grayColor);
+    doc.setFontSize(8);
+    doc.text('________________________', pageWidth - 55, yPos + 8, { align: 'center' });
+    doc.text('Authorized Signatory', pageWidth - 55, yPos + 13, { align: 'center' });
+    doc.setFontSize(7);
+    doc.text('MUWAS PERFUMES', pageWidth - 55, yPos + 17, { align: 'center' });
+
+    // ====== DARK FOOTER ======
+    const footerY = pageHeight - 30;
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, footerY, pageWidth, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Thank you for shopping with MUWAS!', pageWidth / 2, footerY + 10, { align: 'center' });
+
+    doc.setTextColor(170, 170, 170);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('We appreciate your business and look forward to serving you again', pageWidth / 2, footerY + 14, { align: 'center' });
-    doc.text('Need help? Contact us at muwas2021@gmail.com or call +91 8247327106', pageWidth / 2, footerY + 19, { align: 'center' });
+    doc.text('muwas2021@gmail.com  |  +91 8247327106  |  www.muwas.in', pageWidth / 2, footerY + 17, { align: 'center' });
+
+    doc.setTextColor(119, 119, 119);
+    doc.setFontSize(7);
+    doc.text('This is a computer-generated invoice and does not require a physical signature.', pageWidth / 2, footerY + 23, { align: 'center' });
 
     // Save the PDF
     doc.save(`Invoice-${order.orderNumber || order.id}.pdf`);
@@ -2381,6 +2535,56 @@ export default function AdminPanel() {
                     />
                   </div>
                 </div>
+
+                <div className="settings-card">
+                  <h3>🏷️ Global Discount</h3>
+                  <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
+                    Apply a percentage discount to all products at checkout. This discount is applied on the subtotal for every customer.
+                  </p>
+                  <div className="form-group">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={globalDiscount.enabled}
+                        onChange={(e) => setGlobalDiscount({ ...globalDiscount, enabled: e.target.checked })}
+                        style={{ width: '18px', height: '18px', accentColor: '#f59e0b' }}
+                      />
+                      <span style={{ fontWeight: 600 }}>Enable Global Discount</span>
+                    </label>
+                  </div>
+                  {globalDiscount.enabled && (
+                    <div className="form-group">
+                      <label>Discount Percentage</label>
+                      <select
+                        className="form-input"
+                        value={globalDiscount.percentage}
+                        onChange={(e) => setGlobalDiscount({ ...globalDiscount, percentage: parseInt(e.target.value) })}
+                      >
+                        <option value={0}>Select percentage</option>
+                        <option value={5}>5%</option>
+                        <option value={10}>10%</option>
+                        <option value={15}>15%</option>
+                        <option value={20}>20%</option>
+                        <option value={25}>25%</option>
+                        <option value={30}>30%</option>
+                      </select>
+                    </div>
+                  )}
+                  {globalDiscount.enabled && globalDiscount.percentage > 0 && (
+                    <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', padding: '12px', fontSize: '13px', color: '#92400e' }}>
+                      ⚡ All customers will get <strong>{globalDiscount.percentage}% off</strong> on their order subtotal at checkout.
+                    </div>
+                  )}
+                  <div style={{ marginTop: '12px' }}>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSaveGlobalDiscount}
+                      disabled={globalDiscountLoading}
+                    >
+                      {globalDiscountLoading ? 'Saving...' : 'Save Global Discount'}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className="settings-actions">
@@ -2773,90 +2977,156 @@ export default function AdminPanel() {
       {
         showOrderModal && selectedItem && (
           <div className="modal-overlay" onClick={() => setShowOrderModal(false)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 640 }}>
               <div className="modal-header">
-                <h2>📦 Order #{selectedItem.id}</h2>
+                <h2>Order #{selectedItem.orderNumber || selectedItem.id}</h2>
                 <button className="modal-close" onClick={() => setShowOrderModal(false)}>
                   <X size={20} />
                 </button>
               </div>
               <div className="modal-body">
                 <div className="order-details">
-                  <div className="detail-row">
-                    <span className="label">Customer:</span>
-                    <span className="value">
-                      {selectedItem.customerName ||
-                        (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Email:</span>
-                    <span className="value">
-                      {selectedItem.customerEmail || selectedItem.user?.email || 'N/A'}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Ship To:</span>
-                    <span className="value">
-                      {selectedItem.shippingRecipientName ||
-                        selectedItem.customerName ||
-                        (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Date:</span>
-                    <span className="value">{selectedItem.createdAt ? new Date(selectedItem.createdAt).toLocaleString() : 'N/A'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Total:</span>
-                    <span className="value price">{formatINR(selectedItem.totalAmount)}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Status:</span>
-                    <select
-                      className={`status-select ${getStatusColor(selectedItem.status)}`}
-                      value={selectedItem.status || 'PENDING'}
-                      onChange={(e) => handleUpdateOrderStatus(selectedItem.id, e.target.value)}
-                    >
-                      {orderStatuses.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {selectedItem.shippingAddress && (
-                    <div className="detail-row" style={{ alignItems: 'flex-start' }}>
-                      <span className="label">Shipping:</span>
-                      <span className="value">
-                        {selectedItem.shippingAddress}<br />
-                        {selectedItem.shippingCity}, {selectedItem.shippingCountry} - {selectedItem.shippingZipCode}<br />
+
+                  {/* --- Order Information --- */}
+                  <div className="detail-section">
+                    <h4>Order Information</h4>
+                    <div className="detail-row">
+                      <span className="label">Order ID</span>
+                      <span className="value">#{selectedItem.id}</span>
+                    </div>
+                    {selectedItem.orderNumber && (
+                      <div className="detail-row">
+                        <span className="label">Order Number</span>
+                        <span className="value">{selectedItem.orderNumber}</span>
+                      </div>
+                    )}
+                    <div className="detail-row">
+                      <span className="label">Date</span>
+                      <span className="value">{selectedItem.createdAt ? new Date(selectedItem.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="label">Status</span>
+                      <select
+                        className={`status-select ${getStatusColor(selectedItem.status)}`}
+                        value={selectedItem.status || 'PENDING'}
+                        onChange={(e) => handleUpdateOrderStatus(selectedItem.id, e.target.value)}
+                      >
+                        {orderStatuses.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="detail-row">
+                      <span className="label">Payment</span>
+                      <span className="value" style={{ color: selectedItem.paymentStatus === 'PAID' ? '#16a34a' : '#dc2626' }}>
+                        {selectedItem.paymentStatus || 'PENDING'}
                       </span>
                     </div>
-                  )}
-                </div>
-
-                {selectedItem.items && selectedItem.items.length > 0 && (
-                  <div className="order-items">
-                    <h4>Order Items</h4>
-                    <table className="mini-table">
-                      <thead>
-                        <tr>
-                          <th>Product</th>
-                          <th>Qty</th>
-                          <th>Price</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedItem.items.map((item, idx) => (
-                          <tr key={idx}>
-                            <td>{item.productName || item.product?.name || 'Product'}</td>
-                            <td>{item.quantity}</td>
-                            <td>{formatINR(item.price)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
-                )}
+
+                  {/* --- Customer Information --- */}
+                  <div className="detail-section">
+                    <h4>Customer Information</h4>
+                    <div className="detail-row">
+                      <span className="label">Name</span>
+                      <span className="value">
+                        {selectedItem.customerName ||
+                          (selectedItem.user ? `${selectedItem.user.firstName} ${selectedItem.user.lastName || ''}` : 'N/A')}
+                      </span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="label">Email</span>
+                      <span className="value">{selectedItem.customerEmail || selectedItem.user?.email || 'N/A'}</span>
+                    </div>
+                    {(selectedItem.shippingPhone || selectedItem.user?.phoneNumber) && (
+                      <div className="detail-row">
+                        <span className="label">Phone</span>
+                        <span className="value">{selectedItem.shippingPhone || selectedItem.user?.phoneNumber}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* --- Shipping Address --- */}
+                  {selectedItem.shippingAddress && (
+                    <div className="detail-section">
+                      <h4>Shipping Address</h4>
+                      <div style={{ fontSize: 14, lineHeight: 1.7, color: '#334155' }}>
+                        {selectedItem.shippingRecipientName && (
+                          <div style={{ fontWeight: 600, marginBottom: 2 }}>{selectedItem.shippingRecipientName}</div>
+                        )}
+                        <div>{selectedItem.shippingAddress}</div>
+                        <div>
+                          {[selectedItem.shippingCity, selectedItem.shippingState].filter(Boolean).join(', ')}
+                          {selectedItem.shippingZipCode ? ` - ${selectedItem.shippingZipCode}` : ''}
+                        </div>
+                        {selectedItem.shippingCountry && <div>{selectedItem.shippingCountry}</div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- Order Items Table --- */}
+                  <div className="detail-section">
+                    <h4>Order Items</h4>
+                    {selectedItem.items && selectedItem.items.length > 0 ? (
+                      <>
+                        <table className="order-items-table">
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: 'left' }}>Product</th>
+                              <th style={{ textAlign: 'center' }}>Qty</th>
+                              <th style={{ textAlign: 'right' }}>Price</th>
+                              <th style={{ textAlign: 'right' }}>Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedItem.items.map((item, idx) => (
+                              <tr key={idx}>
+                                <td style={{ textAlign: 'left', fontWeight: 500 }}>
+                                  {item.productName || item.product?.name || 'Product'}
+                                  {item.variantSize ? ` (${item.variantSize}ml)` : ''}
+                                </td>
+                                <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                                <td style={{ textAlign: 'right' }}>{formatINR(item.price)}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatINR(item.price * item.quantity)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        {/* --- Price Breakdown --- */}
+                        <div style={{ borderTop: '2px solid #e2e8f0', marginTop: 16, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                            <span className="label">Subtotal</span>
+                            <span className="value">{formatINR(selectedItem.subtotal)}</span>
+                          </div>
+                          {selectedItem.tax > 0 && (
+                            <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                              <span className="label">Tax (GST)</span>
+                              <span className="value">{formatINR(selectedItem.tax)}</span>
+                            </div>
+                          )}
+                          <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                            <span className="label">Shipping</span>
+                            <span className="value">{selectedItem.shippingCost > 0 ? formatINR(selectedItem.shippingCost) : 'Free'}</span>
+                          </div>
+                          {selectedItem.discount > 0 && (
+                            <div className="detail-row" style={{ padding: '4px 0', borderBottom: 'none' }}>
+                              <span className="label">Discount {selectedItem.couponCode ? `(${selectedItem.couponCode})` : ''}</span>
+                              <span className="value" style={{ color: '#16a34a' }}>-{formatINR(selectedItem.discount)}</span>
+                            </div>
+                          )}
+                          <div className="detail-row" style={{ padding: '8px 0 0', borderBottom: 'none', borderTop: '1px solid #e2e8f0', marginTop: 4 }}>
+                            <span className="label" style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>Total Amount</span>
+                            <span className="value" style={{ fontSize: 17, fontWeight: 700, color: '#7c3aed' }}>{formatINR(selectedItem.totalAmount)}</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: 0 }}>No items found for this order.</p>
+                    )}
+                  </div>
+
+                </div>
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowOrderModal(false)}>
@@ -2934,6 +3204,13 @@ export default function AdminPanel() {
                 </div>
               </div>
               <div className="modal-footer">
+                <button
+                  className="btn btn-danger"
+                  style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', marginRight: 'auto' }}
+                  onClick={() => handleDeleteUser(selectedItem.id)}
+                >
+                  🗑️ Delete User
+                </button>
                 <button className="btn btn-secondary" onClick={() => setShowUserModal(false)}>
                   Close
                 </button>

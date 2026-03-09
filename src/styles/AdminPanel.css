@@ -2074,6 +2074,40 @@
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
 }
 
+/* Order Items Table */
+.order-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.order-items-table thead tr {
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.order-items-table th {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.order-items-table td {
+  padding: 10px;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.order-items-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.order-items-table tbody tr:hover {
+  background: #f8fafc;
+}
+
 /* Delete Confirmation Modal */
 .confirm-modal {
   position: fixed;

@@ -124,7 +124,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
           // Payment successful, now verify signature on backend
           try {
             setLoading(true);
-            toast.loading('Verifying payment...');
+            const loadingToast = toast.loading('Verifying payment...');
 
             const verificationResult = await api.post('orders/verify-payment', {
               razorpayOrderId: options.order_id,
@@ -133,7 +133,9 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
             });
 
             console.log('✅ PAYMENT VERIFIED:', verificationResult.data);
+            toast.dismiss(loadingToast);
             toast.success('Payment successful! Your order is confirmed.');
+            clearCart();
 
             // Navigate to order details page
             setTimeout(() => {
@@ -142,12 +144,22 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
 
           } catch (error) {
             console.error('❌ Payment verification failed:', error);
+            toast.dismiss();
 
             // Check if it's a network error or server error
             if (error.code === 'NETWORK_ERROR' || !error.response) {
               toast('Payment completed but verification is pending. Please check your order status.', { icon: '⚠️' });
+              clearCart();
 
               // Still navigate to order page - webhook might process it
+              setTimeout(() => {
+                navigate(`/orders/${razorpayOrderResponse.orderId}`);
+              }, 2000);
+            } else if (error.response?.status === 500) {
+              // Server error during verification — payment was likely captured by Razorpay.
+              // Order may still be updated via webhook. Redirect to order page.
+              toast('Payment received! Verifying your order...', { icon: '⚠️' });
+              clearCart();
               setTimeout(() => {
                 navigate(`/orders/${razorpayOrderResponse.orderId}`);
               }, 2000);
@@ -1128,10 +1140,19 @@ export default function Checkout() {
                   </div>
 
                   {/* Discount Row */}
+                  {/* Coupon Discount Row */}
                   {(breakdown?.discount > 0 || discount > 0) && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span className="font-medium">Discount</span>
+                      <span className="font-medium">Coupon Discount</span>
                       <span className="font-medium">-₹{(breakdown?.discount || discount).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* Global Discount Row */}
+                  {breakdown?.globalDiscountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span className="font-medium">🏷️ Offer ({breakdown.globalDiscountPercentage}% off)</span>
+                      <span className="font-medium">-₹{breakdown.globalDiscountAmount.toFixed(2)}</span>
                     </div>
                   )}
 
@@ -1140,8 +1161,8 @@ export default function Checkout() {
                     <span className="text-lg">
                       {breakdownLoading ? 'Calculating...' : `₹${razorpayOrderResponse ? (razorpayOrderResponse.amount / 100).toFixed(2) : (
                         shippingRate
-                          ? ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) + shippingRate.shippingCost).toFixed(2)
-                          : ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0)).toFixed(2)
+                          ? ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) - (breakdown?.globalDiscountAmount || 0) + shippingRate.shippingCost).toFixed(2)
+                          : ((breakdown?.subtotal || 0) - (breakdown?.discount || discount || 0) - (breakdown?.globalDiscountAmount || 0)).toFixed(2)
                       )}`}
                     </span>
                   </div>

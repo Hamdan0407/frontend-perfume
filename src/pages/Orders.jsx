@@ -154,7 +154,7 @@ export default function Orders() {
                       {order.items?.slice(0, 3).map((item) => (
                         <div key={item.id} className="flex items-center gap-3 bg-muted/30 p-2 rounded-lg border border-border/50">
                           <img
-                            src={item.productImage || item.product?.imageUrl || 'https://via.placeholder.com/40'}
+                            src={item.productImage || item.product?.imageUrl || '/placeholder-product.svg'}
                             alt={item.productName || item.product?.name}
                             className="w-12 h-12 object-cover rounded shadow-sm"
                           />

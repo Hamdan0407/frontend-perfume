@@ -110,7 +110,7 @@ export default function Cart() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link to={`/products/${item.productId}`} className="shrink-0">
                       <img
-                        src={item.productImage || 'https://via.placeholder.com/100'}
+                        src={item.productImage || '/placeholder-product.svg'}
                         alt={item.productName}
                         className="w-24 h-24 object-cover rounded-md border border-border"
                       />

@@ -240,14 +240,54 @@ api.interceptors.response.use(
 
     /**
      * Handle 403 Forbidden
-     * User is authenticated but lacks permissions for this resource
+     * Could be an expired token that wasn't caught as 401 (e.g., anonymous auth).
+     * Try token refresh before giving up.
      */
-    if (response?.status === 403) {
-      const message = response.data?.message || 'You do not have permission to access this resource';
-      console.warn('Access forbidden:', message);
+    if (response?.status === 403 && !originalRequest._retry) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        originalRequest._retry = true;
 
-      // Optionally redirect to unauthorized page
-      // window.location.href = '/unauthorized';
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return api(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
+
+        isRefreshing = true;
+
+        return axios
+          .post(`${API_URL.endsWith('/') ? API_URL : API_URL + '/'}auth/refresh-token/`, null, {
+            params: { refreshToken },
+            headers: { 'Content-Type': 'application/json' },
+          })
+          .then((res) => {
+            const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = res.data;
+
+            localStorage.setItem('accessToken', newAccessToken);
+            localStorage.setItem('token', newAccessToken);
+            if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
+
+            try {
+              const authStore = useAuthStore.getState();
+              if (authStore.updateTokens) authStore.updateTokens(newAccessToken, newRefreshToken, expiresIn);
+            } catch (e) { /* silent */ }
+
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            processQueue(null, newAccessToken);
+            return api(originalRequest);
+          })
+          .catch((refreshErr) => {
+            processQueue(refreshErr, null);
+            console.warn('403 token refresh failed, access denied');
+            return Promise.reject(error);
+          });
+      }
     }
 
     /**
