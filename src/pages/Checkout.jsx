@@ -155,6 +155,14 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
               setTimeout(() => {
                 navigate(`/orders/${razorpayOrderResponse.orderId}`);
               }, 2000);
+            } else if (error.response?.status === 500) {
+              // Server error during verification — payment was likely captured by Razorpay.
+              // Order may still be updated via webhook. Redirect to order page.
+              toast('Payment received! Verifying your order...', { icon: '⚠️' });
+              clearCart();
+              setTimeout(() => {
+                navigate(`/orders/${razorpayOrderResponse.orderId}`);
+              }, 2000);
             } else {
               toast.error('Payment verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
             }
