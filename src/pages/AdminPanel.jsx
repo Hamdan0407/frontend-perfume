@@ -1148,7 +1148,7 @@ export default function AdminPanel() {
     doc.setFillColor(...lightGray);
     doc.setDrawColor(...borderColor);
     doc.setLineWidth(0.5);
-    doc.rect(15, yPos, pageWidth - 30, 30, 'FD');
+    doc.rect(15, yPos, pageWidth - 30, 28, 'FD');
 
     doc.setTextColor(...accentColor);
     doc.setFontSize(8);
@@ -1163,11 +1163,11 @@ export default function AdminPanel() {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...grayColor);
-    doc.text('No 3, Modi Ibrahim Street, Ambur, Tamil Nadu \u2013 635802, India', 20, yPos + 19);
+    doc.text('Ambur, Tamil Nadu, India', 20, yPos + 19);
     doc.text('Email: muwas2021@gmail.com  |  Phone: +91 8247327106  |  Website: www.muwas.in', 20, yPos + 25);
 
     // ====== ITEMS TABLE ======
-    yPos = 134;
+    yPos = 132;
 
     // Table Header
     doc.setFillColor(...primaryColor);
