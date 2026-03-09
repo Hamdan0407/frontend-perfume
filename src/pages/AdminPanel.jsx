@@ -1135,7 +1135,12 @@ export default function AdminPanel() {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...grayColor);
     if (order.shippingAddress) doc.text(order.shippingAddress.substring(0, 40), shipToX + 5, yPos + 22);
-    if (order.shippingCity) doc.text([order.shippingCity, order.shippingState, order.shippingCountry || 'India'].filter(Boolean).join(', '), shipToX + 5, yPos + 28);
+    if (order.shippingCity) {
+      const cityState = [order.shippingCity, order.shippingState].filter(Boolean).join(', ');
+      const zipPart = order.shippingZipCode ? ` - ${order.shippingZipCode}` : '';
+      const country = order.shippingCountry || 'India';
+      doc.text(`${cityState}${zipPart}, ${country}`, shipToX + 5, yPos + 28);
+    }
     if (order.shippingPhone) doc.text('Ph: ' + order.shippingPhone, shipToX + 5, yPos + 33);
 
     // ====== FROM (company address) ======
