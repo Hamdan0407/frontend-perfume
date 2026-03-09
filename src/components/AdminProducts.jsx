@@ -77,7 +77,7 @@ export default function AdminProducts() {
     try {
       setSubmitting(true);
 
-      const imageUrl = formData.image_url?.trim() || 'https://via.placeholder.com/300?text=Product';
+      const imageUrl = formData.image_url?.trim() || '/placeholder-product.svg';
 
       const payload = {
         name: formData.name.trim(),
@@ -247,7 +247,7 @@ export default function AdminProducts() {
                 <tr key={product.id}>
                   <td>
                     <div className="product-info">
-                      <img src={product.image_url} alt={product.name} onError={(e) => e.target.src = 'https://via.placeholder.com/50'} />
+                      <img src={product.image_url} alt={product.name} onError={(e) => e.target.src = '/placeholder-product.svg'} />
                       <span>{product.name}</span>
                     </div>
                   </td>

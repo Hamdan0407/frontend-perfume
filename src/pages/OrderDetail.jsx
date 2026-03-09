@@ -164,7 +164,7 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-4">
                       <Link to={`/products/${item.product.id}`}>
                         <img
-                          src={item.product.imageUrl || 'https://via.placeholder.com/80'}
+                          src={item.product.imageUrl || '/placeholder-product.svg'}
                           alt={item.product.name}
                           className="w-20 h-20 object-cover rounded hover:opacity-75 transition-opacity"
                         />

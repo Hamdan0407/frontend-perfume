@@ -92,7 +92,7 @@ export default function Wishlist() {
             <Card key={product.id} className="overflow-hidden group">
               <div className="relative aspect-[3/4] overflow-hidden bg-muted">
                 <img
-                  src={product.imageUrl || 'https://via.placeholder.com/400x500?text=Perfume'}
+                  src={product.imageUrl || '/placeholder-product.svg'}
                   alt={product.name}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
                   onClick={() => navigate(`/products/${product.id}`)}

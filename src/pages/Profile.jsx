@@ -144,6 +144,11 @@ export default function Profile() {
       newErrors.lastName = 'Last name must be at least 2 characters';
     }
 
+    if (!profileData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!/^[+]?[0-9]{7,20}$/.test(profileData.phoneNumber.trim())) {
+      newErrors.phoneNumber = 'Please enter a valid phone number (7-20 digits)';
+    }
 
     if (!profileData.address.trim()) {
       newErrors.address = 'Address is required';
@@ -208,7 +213,8 @@ export default function Profile() {
 
     setSaving(true);
     try {
-      const { data } = await api.put('users/profile', profileData);
+      const { email, ...payload } = profileData;
+      const { data } = await api.put('users/profile', payload);
       setProfileData({
         firstName: data.firstName || '',
         lastName: data.lastName || '',
@@ -425,7 +431,7 @@ export default function Profile() {
 
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber" className="font-medium">
-                      Phone Number
+                      Phone Number <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -438,9 +444,15 @@ export default function Profile() {
                           if (errors.phoneNumber) setErrors({ ...errors, phoneNumber: '' });
                         }}
                         placeholder="e.g., 8247327106"
-                        className="pl-10"
+                        className={`pl-10 ${errors.phoneNumber ? 'border-destructive' : ''}`}
                       />
                     </div>
+                    {errors.phoneNumber && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.phoneNumber}
+                      </p>
+                    )}
                   </div>
                 </div>
 

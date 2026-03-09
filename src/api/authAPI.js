@@ -106,7 +106,7 @@ const authAPI = {
    */
   updateProfile: async (userData) => {
     const response = await api.put('users/profile', userData);
-    return response.data.data;
+    return response.data;
   },
 
   /**

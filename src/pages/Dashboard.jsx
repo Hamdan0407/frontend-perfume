@@ -419,7 +419,7 @@ export default function Dashboard() {
                     {index + 1}
                   </div>
                   <img
-                    src={product.imageUrl || 'https://via.placeholder.com/80'}
+                    src={product.imageUrl || '/placeholder-product.svg'}
                     alt={product.name}
                     className="w-16 h-16 object-cover rounded-md"
                   />
