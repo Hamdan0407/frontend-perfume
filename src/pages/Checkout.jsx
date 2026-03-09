@@ -1108,10 +1108,29 @@ export default function Checkout() {
                 </div>
 
                 <div className="border-t pt-4 space-y-2">
+                  {/* 1. Subtotal */}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="font-medium">₹{breakdown ? breakdown.subtotal.toFixed(2) : (cart?.subtotal || 0).toFixed(2)}</span>
                   </div>
+
+                  {/* 2. Global Discount (Offer) */}
+                  {breakdown?.globalDiscountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span className="font-medium">🏷️ Offer ({breakdown.globalDiscountPercentage}% off)</span>
+                      <span className="font-medium">-₹{breakdown.globalDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* 3. Coupon Discount */}
+                  {(breakdown?.discount > 0 || discount > 0) && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span className="font-medium">Coupon Discount</span>
+                      <span className="font-medium">-₹{(breakdown?.discount || discount).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* 4. Shipping */}
                   <div className="flex justify-between text-sm">
                     <div>
                       <span className="text-muted-foreground">Shipping</span>
@@ -1138,23 +1157,6 @@ export default function Checkout() {
                       )}
                     </span>
                   </div>
-
-                  {/* Discount Row */}
-                  {/* Coupon Discount Row */}
-                  {(breakdown?.discount > 0 || discount > 0) && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span className="font-medium">Coupon Discount</span>
-                      <span className="font-medium">-₹{(breakdown?.discount || discount).toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  {/* Global Discount Row */}
-                  {breakdown?.globalDiscountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span className="font-medium">🏷️ Offer ({breakdown.globalDiscountPercentage}% off)</span>
-                      <span className="font-medium">-₹{breakdown.globalDiscountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
 
                   <div className="flex justify-between text-base font-bold pt-2 border-t">
                     <span>Total</span>
