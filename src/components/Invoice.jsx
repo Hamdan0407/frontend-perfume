@@ -21,9 +21,9 @@ const Invoice = forwardRef(({ order, company }, ref) => {
 
   const fmtDate = (d) => format(new Date(d), 'dd MMM yyyy');
 
-  const subtotal = order.items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const shipping = order.shippingCharge || 0;
-  const discount = subtotal + shipping - (order.finalAmount ?? order.totalAmount);
+  const subtotal = order.subtotal || order.items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const shipping = order.shippingCost || 0;
+  const discount = order.discount || 0;
   const total = order.totalAmount;
 
   /* ---- number to words (Indian) ---- */
@@ -159,11 +159,11 @@ const Invoice = forwardRef(({ order, company }, ref) => {
             Bill To
           </div>
           <div style={{ fontWeight: 700, fontSize: 15, color: '#111827', marginBottom: 4 }}>
-            {order.user?.firstName} {order.user?.lastName}
+            {order.customerName || `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim() || 'Customer'}
           </div>
           <div style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.7 }}>
-            {order.user?.email && <div>{order.user.email}</div>}
-            {order.user?.phoneNumber && <div>Ph: {order.user.phoneNumber}</div>}
+            {(order.customerEmail || order.user?.email) && <div>{order.customerEmail || order.user?.email}</div>}
+            {(order.shippingPhone || order.user?.phoneNumber) && <div>Ph: {order.shippingPhone || order.user?.phoneNumber}</div>}
           </div>
         </div>
 
@@ -173,15 +173,14 @@ const Invoice = forwardRef(({ order, company }, ref) => {
             Ship To
           </div>
           <div style={{ fontWeight: 700, fontSize: 15, color: '#111827', marginBottom: 4 }}>
-            {order.shippingAddress?.fullName}
+            {order.shippingRecipientName || order.customerName || 'Recipient'}
           </div>
           <div style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.7 }}>
-            <div>{order.shippingAddress?.addressLine1}</div>
-            {order.shippingAddress?.addressLine2 && <div>{order.shippingAddress.addressLine2}</div>}
+            <div>{order.shippingAddress}</div>
             <div>
-              {order.shippingAddress?.city}, {order.shippingAddress?.state} – {order.shippingAddress?.pinCode}
+              {order.shippingCity}{order.shippingState ? `, ${order.shippingState}` : ''}{order.shippingZipCode ? ` – ${order.shippingZipCode}` : ''}
             </div>
-            <div>{order.shippingAddress?.country}</div>
+            {order.shippingCountry && <div>{order.shippingCountry}</div>}
             {order.shippingPhone && <div>Ph: {order.shippingPhone}</div>}
           </div>
         </div>
