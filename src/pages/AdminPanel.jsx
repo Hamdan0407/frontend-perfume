@@ -986,12 +986,18 @@ export default function AdminPanel() {
   const handleSaveGlobalDiscount = React.useCallback(async () => {
     setGlobalDiscountLoading(true);
     try {
-      await api.put('/admin/global-discount', globalDiscount);
-      toast.success(globalDiscount.enabled
-        ? `Global discount of ${globalDiscount.percentage}% is now active!`
-        : 'Global discount disabled');
+      const { data } = await api.put('/admin/global-discount', globalDiscount);
+      if (data.status === 'success') {
+        toast.success(globalDiscount.enabled
+          ? `Global discount of ${globalDiscount.percentage}% is now active!`
+          : 'Global discount disabled');
+      } else {
+        toast.error(data.message || 'Failed to save global discount');
+      }
     } catch (err) {
-      toast.error('Failed to save global discount');
+      const msg = err.response?.data?.message || err.message || 'Failed to save global discount';
+      toast.error(msg);
+      console.error('Global discount save error:', err.response?.data || err);
     } finally {
       setGlobalDiscountLoading(false);
     }
