@@ -32,7 +32,6 @@ export default function Profile() {
   const [pincodeValidated, setPincodeValidated] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeError, setPincodeError] = useState('');
-  const [deliveryInfo, setDeliveryInfo] = useState(null);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -80,7 +79,7 @@ export default function Profile() {
     fetchProfile();
   }, [navigate]);
 
-  // Auto-fill city/state when pincode changes (6 digits)
+  // Auto-fill city/state when pincode changes (6 digits) using postal API
   useEffect(() => {
     const pincode = profileData.zipCode;
     if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode)) {
@@ -88,7 +87,6 @@ export default function Profile() {
         setPincodeError('Enter a valid 6-digit pincode');
       }
       setPincodeValidated(false);
-      setDeliveryInfo(null);
       return;
     }
 
@@ -96,30 +94,24 @@ export default function Profile() {
       setPincodeLoading(true);
       setPincodeError('');
       try {
-        const { data } = await api.get(`shipping/calculate?pincode=${pincode}`);
-        if (data.serviceable) {
-          if (data.city || data.state) {
-            setProfileData(prev => ({
-              ...prev,
-              city: data.city || prev.city,
-              state: data.state || prev.state,
-              country: 'India'
-            }));
-          }
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const json = await res.json();
+        if (json[0]?.Status === 'Success' && json[0]?.PostOffice?.length > 0) {
+          const po = json[0].PostOffice[0];
+          setProfileData(prev => ({
+            ...prev,
+            city: po.District || prev.city,
+            state: po.State || prev.state,
+            country: 'India'
+          }));
           setPincodeValidated(true);
-          setDeliveryInfo({
-            days: data.estimatedDeliveryDays,
-            courier: data.courierName
-          });
         } else {
-          setPincodeError('Delivery not available for this pincode');
+          setPincodeError('Invalid pincode');
           setPincodeValidated(false);
-          setDeliveryInfo(null);
         }
       } catch {
         setPincodeError('Could not verify pincode');
         setPincodeValidated(false);
-        setDeliveryInfo(null);
       } finally {
         setPincodeLoading(false);
       }
@@ -168,8 +160,6 @@ export default function Profile() {
       newErrors.zipCode = 'Zip code is required';
     } else if (!/^[1-9][0-9]{5}$/.test(profileData.zipCode)) {
       newErrors.zipCode = 'Enter a valid 6-digit pincode';
-    } else if (!pincodeValidated) {
-      newErrors.zipCode = 'Please wait for pincode verification';
     }
 
     setErrors(newErrors);
@@ -402,7 +392,6 @@ export default function Profile() {
                           if (errors.zipCode) setErrors({ ...errors, zipCode: '' });
                           if (val.length < 6) {
                             setPincodeValidated(false);
-                            setDeliveryInfo(null);
                             setPincodeError('');
                           }
                         }}
@@ -512,9 +501,14 @@ export default function Profile() {
                     <Input
                       id="state"
                       value={profileData.state}
-                      readOnly
+                      onChange={(e) => {
+                        if (!pincodeValidated) {
+                          setProfileData({ ...profileData, state: e.target.value });
+                        }
+                      }}
+                      readOnly={pincodeValidated}
                       placeholder="Enter pincode to auto-fill"
-                      className="bg-muted cursor-not-allowed"
+                      className={pincodeValidated ? 'bg-muted cursor-not-allowed' : ''}
                     />
                   </div>
                 </div>
