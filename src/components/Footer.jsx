@@ -21,9 +21,11 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-gray-900">Quick Links</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li><Link to="/products" className="hover:text-amber-500 transition-colors">Shop All</Link></li>
-              <li><Link to="/products?category=men" className="hover:text-amber-500 transition-colors">Men's Fragrances</Link></li>
-              <li><Link to="/products?category=women" className="hover:text-amber-500 transition-colors">Women's Fragrances</Link></li>
-              <li><Link to="/products?featured=true" className="hover:text-amber-500 transition-colors">Featured</Link></li>
+              <li><Link to="/products?category=parfum" className="hover:text-amber-500 transition-colors">Parfum</Link></li>
+              <li><Link to="/products?category=premium attars" className="hover:text-amber-500 transition-colors">Premium Attars</Link></li>
+              <li><Link to="/products?category=oud reserve" className="hover:text-amber-500 transition-colors">Oud Reserve</Link></li>
+              <li><Link to="/products?category=bakhoor" className="hover:text-amber-500 transition-colors">Bakhoor</Link></li>
+              <li><Link to="/products?category=aroma chemicals" className="hover:text-amber-500 transition-colors">Aroma Chemicals</Link></li>
             </ul>
           </div>
 
