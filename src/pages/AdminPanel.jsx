@@ -147,8 +147,15 @@ export default function AdminPanel() {
     const s = dashboardStats || {};
 
     // Product arrays still from client data (needed for names/details in lists)
-    const lowStockProducts = products.filter(p => (p.stock || 0) <= 10 && (p.stock || 0) > 0);
-    const outOfStockProducts = products.filter(p => (p.stock || 0) === 0);
+    // Compute real stock from variants (product.stock is stale after variant-level deductions)
+    const getProductStock = (p) => {
+      if (p.variants && p.variants.length > 0) {
+        return p.variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+      }
+      return p.stock || 0;
+    };
+    const lowStockProducts = products.filter(p => { const st = getProductStock(p); return st <= 10 && st > 0; });
+    const outOfStockProducts = products.filter(p => getProductStock(p) === 0);
     const activeProducts = products.filter(p => p.active !== false);
 
     return {
@@ -1926,8 +1933,8 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${product.stock <= 5 ? 'critical' : 'warning'}`}>
-                              {product.stock} left
+                            <span className={`stock-count ${((product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0) <= 5 ? 'critical' : 'warning'}`}>
+                              {(product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0} left
                             </span>
                           </div>
                         ))}
@@ -2074,8 +2081,8 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td>
-                            <span className={`stock-badge ${product.stock < 10 ? 'low' : 'ok'}`}>
-                              {product.stock} units
+                            <span className={`stock-badge ${((product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0) < 10 ? 'low' : 'ok'}`}>
+                              {(product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0} units
                             </span>
                           </td>
                           <td>
