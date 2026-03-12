@@ -176,7 +176,7 @@ function RazorpayPaymentForm({ razorpayOrderResponse, onPaymentSuccess }) {
           ondismiss: function () {
             console.warn('⚠️  PAYMENT CANCELLED by user');
             setLoading(false);
-            toast.error('Payment cancelled. Order remains pending.');
+            toast.error('Payment cancelled. No order was placed.');
           },
           escape: true,
           animation: true,
@@ -616,7 +616,7 @@ export default function Checkout() {
       // Set Razorpay order response for payment form
       setRazorpayOrderResponse(data);
 
-      toast.success('Order created successfully! Proceed to payment.');
+      toast.success('Proceed to payment to confirm your order.');
     } catch (error) {
       console.error('Order creation error:', error);
       console.error('Error response:', error.response?.data);
