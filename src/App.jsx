@@ -34,7 +34,7 @@ import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   const { isAuthenticated, sessionInitialized } = useAuthStore();
-  // Trigger Fresh Deployment - Syncing with updated Railway backend
+  // Trigger Fresh Deployment - Syncing with updated Railway backend (Force redeploy)
   const { initWishlist } = useWishlistStore();
 
   // Force Light Theme Static Only - Removing Dark Mode Support
