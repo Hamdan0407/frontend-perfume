@@ -1,3 +1,4 @@
+// Parfum category is now live - products render normally
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link as RouterLink } from 'react-router-dom';
 import { Filter, X, Search, ChevronDown, SlidersHorizontal, ArrowRight } from 'lucide-react';
