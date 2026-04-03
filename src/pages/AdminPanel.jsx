@@ -48,7 +48,7 @@ export default function AdminPanel() {
     price: '',
     mrp: '',
     stock: '',
-    category: 'Floral',
+    category: 'perfume',
     brand: '',
     imageUrl: '',
     size: '10ml',

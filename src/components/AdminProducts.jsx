@@ -16,7 +16,7 @@ export default function AdminProducts() {
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    category: 'Women',
+    category: 'parfum',
     price: '',
     stock: '',
     description: '',
@@ -166,7 +166,7 @@ export default function AdminProducts() {
     setFormData({
       name: '',
       brand: '',
-      category: 'Women',
+      category: 'parfum',
       price: '',
       stock: '',
       description: '',

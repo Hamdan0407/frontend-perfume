@@ -105,9 +105,10 @@ export default function Navbar() {
                             key={cat.value}
                             to={cat.path}
                             onClick={() => setMobileMenuOpen(false)}
-                            className={`block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors ${cat.value === 'parfum' ? 'opacity-70' : ''}`}
+                            className={`block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors`}
+                            id={`nav-category-${cat.value}`}
                           >
-                            {cat.label}{cat.value === 'parfum' && <span className="text-xs text-accent ml-1">Soon</span>}
+                            {cat.label}
                           </Link>
                       ))}
                     </div>
@@ -191,9 +192,10 @@ export default function Navbar() {
                     <Link
                       key={cat.value}
                       to={cat.path}
-                      className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg ${cat.value === 'parfum' ? 'text-foreground/60' : 'text-foreground'}`}
+                      className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg text-foreground`}
+                      id={`nav-desktop-category-${cat.value}`}
                     >
-                      {cat.label}{cat.value === 'parfum' && <span className="text-xs text-accent ml-1">Soon</span>}
+                      {cat.label}
                     </Link>
                 ))}
               </div>
