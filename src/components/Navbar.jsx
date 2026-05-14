@@ -80,10 +80,10 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Row 1: Hamburger (mobile) | Logo (center) | Search + Login + Profile/Cart (right) */}
-        <div className="grid grid-cols-3 items-center h-[72px]">
+        <div className="relative flex items-center justify-between h-[72px]">
 
-          {/* Left: Hamburger menu (mobile only), empty on desktop for symmetry */}
-          <div className="flex items-center justify-self-start">
+          {/* Left: Hamburger menu (mobile only) */}
+          <div className="flex items-center">
             {/* Mobile Menu Trigger */}
             <div className="md:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
