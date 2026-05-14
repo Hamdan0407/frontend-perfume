@@ -79,10 +79,10 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-        {/* Row 1: Search | Logo | Icons */}
+        {/* Row 1: Hamburger (mobile) | Logo (center) | Search + Login + Profile/Cart (right) */}
         <div className="grid grid-cols-3 items-center h-[72px]">
 
-          {/* Left: Menu (mobile only) */}
+          {/* Left: Hamburger menu (mobile only), empty on desktop for symmetry */}
           <div className="flex items-center justify-self-start">
             {/* Mobile Menu Trigger */}
             <div className="md:hidden">
@@ -177,12 +177,8 @@ export default function Navbar() {
             </Link>
           </div>
 
-
-
-
-
-          {/* Right: Search + Auth + Cart */}
-          <div className="flex items-center gap-4 justify-self-end">
+          {/* Right: Search → Login/Profile → Cart */}
+          <div className="flex items-center gap-3 justify-self-end">
             {/* Search Icon */}
             <button
               onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
@@ -192,53 +188,81 @@ export default function Navbar() {
               <Search className="h-[18px] w-[18px] stroke-[1.5]" />
             </button>
 
-            {isAuthenticated ? (
-              <>
-                {/* User Profile */}
-                <div className="relative hidden sm:block">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300"
-                    title="Account Menu"
-                  >
-                    <User className="h-[18px] w-[18px] stroke-[1.5]" />
-                  </button>
+            {/* Desktop: Auth + Cart */}
+            <div className="hidden md:flex items-center gap-3">
+              {isAuthenticated ? (
+                <>
+                  {/* User Profile Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300"
+                      title="Account Menu"
+                    >
+                      <User className="h-[18px] w-[18px] stroke-[1.5]" />
+                    </button>
 
-                  {dropdownOpen && (
-                    <div className="absolute -right-2 top-12 w-56 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-[9999]">
-                      <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
-                        <p className="text-sm font-semibold text-foreground">{user?.firstName} {user?.lastName}</p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    {dropdownOpen && (
+                      <div className="absolute right-0 top-12 w-56 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-[9999]">
+                        <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                          <p className="text-sm font-semibold text-foreground">{user?.firstName} {user?.lastName}</p>
+                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        </div>
+                        <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
+                          <User className="h-4 w-4" /> My Profile
+                        </Link>
+                        <Link to="/orders" className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
+                          <Package className="h-4 w-4" /> My Orders
+                        </Link>
+                        <Link to="/wishlist" className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
+                          <Heart className="h-4 w-4" /> Wishlist
+                        </Link>
+                        {user?.role === 'ADMIN' && (
+                          <>
+                            <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
+                            <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm text-blue-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
+                              <BarChart3 className="h-4 w-4" /> Dashboard
+                            </Link>
+                            <Link to="/admin" className="flex items-center gap-3 px-4 py-3 text-sm text-orange-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
+                              <Shield className="h-4 w-4" /> Admin Panel
+                            </Link>
+                          </>
+                        )}
+                        <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
+                        <button onClick={() => { logout(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left">
+                          <LogOut className="h-4 w-4" /> Logout
+                        </button>
                       </div>
-                      <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
-                        <User className="h-4 w-4" /> My Profile
-                      </Link>
-                      <Link to="/orders" className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
-                        <Package className="h-4 w-4" /> My Orders
-                      </Link>
-                      <Link to="/wishlist" className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
-                        <Heart className="h-4 w-4" /> Wishlist
-                      </Link>
-                      {user?.role === 'ADMIN' && (
-                        <>
-                          <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
-                          <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm text-blue-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
-                            <BarChart3 className="h-4 w-4" /> Dashboard
-                          </Link>
-                          <Link to="/admin" className="flex items-center gap-3 px-4 py-3 text-sm text-orange-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors" onClick={() => setDropdownOpen(false)}>
-                            <Shield className="h-4 w-4" /> Admin Panel
-                          </Link>
-                        </>
-                      )}
-                      <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
-                      <button onClick={() => { logout(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left">
-                        <LogOut className="h-4 w-4" /> Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                {/* Cart */}
+                  {/* Cart */}
+                  <Link to="/cart" className="relative flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <ShoppingCart className="h-[18px] w-[18px] stroke-[1.5]" />
+                    {itemCount > 0 && (
+                      <Badge className="absolute -top-0.5 -right-0.5 h-[18px] w-[18px] p-0 flex items-center justify-center text-[9px] bg-accent">
+                        {itemCount}
+                      </Badge>
+                    )}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {/* Login text */}
+                  <Link to="/login" className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors duration-300 tracking-wide">
+                    Login
+                  </Link>
+                  {/* Profile/Register icon */}
+                  <Link to="/register" className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300" title="Create Account">
+                    <User className="h-[18px] w-[18px] stroke-[1.5]" />
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile: Cart icon (always visible on mobile when authenticated) */}
+            {isAuthenticated && (
+              <div className="md:hidden">
                 <Link to="/cart" className="relative flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300">
                   <ShoppingCart className="h-[18px] w-[18px] stroke-[1.5]" />
                   {itemCount > 0 && (
@@ -246,15 +270,6 @@ export default function Navbar() {
                       {itemCount}
                     </Badge>
                   )}
-                </Link>
-              </>
-            ) : (
-              <div className="flex items-center gap-4">
-                <Link to="/login" className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors duration-300">
-                  Login
-                </Link>
-                <Link to="/register" className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300">
-                  <User className="h-[18px] w-[18px] stroke-[1.5]" />
                 </Link>
               </div>
             )}
