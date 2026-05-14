@@ -7,8 +7,13 @@ import api from '../api/axios';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
-import { CATEGORY_LIST } from '../constants/productCategories';
 import BulkInquiryModal from './BulkInquiryModal';
+
+// Navbar-specific categories — curated display order for navigation dropdown
+const NAVBAR_CATEGORIES = [
+  { label: 'Premium Oil', value: 'premium attars', path: '/products?category=premium attars' },
+  { label: 'Bakhoor', value: 'bakhoor', path: '/products?category=bakhoor' },
+];
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -74,7 +79,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-[72px] items-center justify-between">
 
           {/* Left Side: Mobile Menu & Logo */}
           <div className="flex items-center gap-2 md:gap-4">
@@ -98,14 +103,14 @@ export default function Navbar() {
                     <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium hover:text-accent transition-colors">
                       Home
                     </Link>
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Collections</p>
-                      {CATEGORY_LIST.map(cat => (
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.2em] mb-3">Collections</p>
+                      {NAVBAR_CATEGORIES.map(cat => (
                           <Link
                             key={cat.value}
                             to={cat.path}
                             onClick={() => setMobileMenuOpen(false)}
-                            className={`block pl-4 py-2 text-base hover:bg-accent/10 rounded-md transition-colors`}
+                            className="block pl-4 py-2.5 text-[15px] tracking-wide hover:bg-accent/10 rounded-md transition-all duration-200"
                             id={`nav-category-${cat.value}`}
                           >
                             {cat.label}
@@ -173,26 +178,26 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-8 ml-8">
+          <div className="hidden md:flex items-center gap-10 ml-10">
             <Link
               to="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-[13px] font-medium uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full"
             >
               Home
             </Link>
 
             {/* Collections Dropdown */}
             <div className="relative group">
-              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <button className="flex items-center gap-1.5 text-[13px] font-medium uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 group-hover:after:w-full">
                 Collections
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-180" />
               </button>
-              <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                {CATEGORY_LIST.filter(cat => cat.value !== 'aroma chemicals').map(cat => (
+              <div className="absolute left-0 top-full mt-3 w-52 bg-white border border-gray-100 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out translate-y-2 group-hover:translate-y-0 z-50 py-2">
+                {NAVBAR_CATEGORIES.map(cat => (
                     <Link
                       key={cat.value}
                       to={cat.path}
-                      className={`block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors first:rounded-t-lg last:rounded-b-lg text-foreground`}
+                      className="block px-5 py-2.5 text-[13px] tracking-wide text-gray-500 hover:text-foreground hover:bg-gray-50 transition-all duration-200 hover:pl-6"
                       id={`nav-desktop-category-${cat.value}`}
                     >
                       {cat.label}
@@ -203,14 +208,14 @@ export default function Navbar() {
 
             <Link
               to="/products?category=aroma chemicals"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-[13px] font-medium uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full"
             >
               Aroma Chemicals
             </Link>
           </div>
 
           {/* Search Bar (Desktop) */}
-          <form onSubmit={handleSearch} className="hidden lg:block flex-1 max-w-lg mx-8 relative">
+          <form onSubmit={handleSearch} className="hidden lg:block flex-1 max-w-md mx-10 relative">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
