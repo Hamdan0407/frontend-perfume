@@ -82,8 +82,8 @@ export default function Navbar() {
         {/* Row 1: Search | Logo | Icons */}
         <div className="grid grid-cols-3 items-center h-[72px]">
 
-          {/* Left: Menu (mobile) + Search */}
-          <div className="flex items-center gap-3 justify-self-start">
+          {/* Left: Menu (mobile only) */}
+          <div className="flex items-center justify-self-start">
             {/* Mobile Menu Trigger */}
             <div className="md:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -168,24 +168,6 @@ export default function Navbar() {
                 </SheetContent>
               </Sheet>
             </div>
-
-            {/* Search Icon (desktop) */}
-            <button
-              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-              className="hidden md:flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300"
-              aria-label="Search"
-            >
-              <Search className="h-[18px] w-[18px] stroke-[1.5]" />
-            </button>
-
-            {/* Search Icon (mobile) */}
-            <button
-              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-              className="md:hidden flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground transition-colors duration-300"
-              aria-label="Search"
-            >
-              <Search className="h-[18px] w-[18px] stroke-[1.5]" />
-            </button>
           </div>
 
           {/* Center: Logo */}
@@ -199,17 +181,16 @@ export default function Navbar() {
 
 
 
-          {/* Right: Profile + Cart */}
-          <div className="flex items-center gap-5 justify-self-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setBulkInquiryOpen(true)}
-              className="hidden md:inline-flex text-muted-foreground hover:text-foreground w-10 h-10"
-              title="Bulk Enquiry"
+          {/* Right: Search + Auth + Cart */}
+          <div className="flex items-center gap-4 justify-self-end">
+            {/* Search Icon */}
+            <button
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300"
+              aria-label="Search"
             >
-              <TrendingUp className="h-[18px] w-[18px] stroke-[1.5]" />
-            </Button>
+              <Search className="h-[18px] w-[18px] stroke-[1.5]" />
+            </button>
 
             {isAuthenticated ? (
               <>
