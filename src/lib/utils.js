@@ -20,7 +20,8 @@ export function formatCategory(category) {
     'PREMIUM_ATTARS': 'Premium Attars',
     'OUD_RESERVE': 'Oud Reserve',
     'BAKHOOR': 'Bakhoor',
-    'AROMA_CHEMICALS': 'Aroma Chemicals'
+    'AROMA_CHEMICALS': 'Aroma Chemicals',
+    'SAMPLE_COLLECTIONS': 'Sample Collections'
   };
 
   if (mapping[category.toUpperCase()]) {

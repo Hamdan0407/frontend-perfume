@@ -184,7 +184,7 @@ export default function AdminPanel() {
   }, [dashboardStats, products]);
 
   // Categories for dropdown
-  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
+  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor', 'sample collections'];
   const getCategoryDisplayName = (cat) => {
     return formatCategory(cat);
   };
@@ -230,6 +230,8 @@ export default function AdminPanel() {
       return ['30ml', '50ml', '100ml'];
     } else if (category === 'aroma chemicals') {
       return ['50g', '100g', '250g', '500g', '1kg'];
+    } else if (category === 'sample collections') {
+      return ['2ml', '3ml', '5ml', '10ml', 'Kit'];
     }
     return ['30ml', '50ml', '100ml']; // default for perfume
   };
