@@ -23,13 +23,13 @@ export function formatCategory(category) {
     'BOOSTERS_AND_BASES': 'Boosters & Bases'
   };
 
-  const upperCat = category.toUpperCase().replace(/ /g, "_");
+  const upperCat = String(category || '').toUpperCase().replace(/ /g, "_");
   if (mapping[upperCat]) {
     return mapping[upperCat];
   }
 
   // Generic fallback: PREMIUM_OIL -> Premium Oil
-  return category
+  return String(category || '')
     .toLowerCase()
     .split(/_|\s/) // Split by underscore or space
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -42,11 +42,13 @@ export function formatCategory(category) {
  * @param {string} category The category string from URL
  * @returns {string} Normalized enum string
  */
-export function toCategoryEnum(category) {
-  if (!category) return category;
+export function toCategoryEnum(input) {
+  if (!input) return input;
   
-  const normalized = category.trim().toLowerCase();
+  const normalized = String(input || '').trim().toLowerCase();
+  
+  // Exact renames
   if (normalized === 'premium attars') return 'PREMIUM_OIL';
   
-  return category.trim().toUpperCase().replace(/ /g, "_");
+  return String(input || '').trim().toUpperCase().replace(/ /g, "_");
 }

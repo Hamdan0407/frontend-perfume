@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -76,31 +77,33 @@ function App() {
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <ScrollToTop />
         <AnnouncementBar />
-        <Navbar />
+        <ErrorBoundary>
+          <Navbar />
+        </ErrorBoundary>
         <main className="flex-grow overflow-x-hidden">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/shipping" element={<ShippingInfo />} />
-            <Route path="/returns" element={<ReturnsExchange />} />
-            <Route path="/faq" element={<FAQ />} />
+            <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+            <Route path="/products" element={<ErrorBoundary><Products /></ErrorBoundary>} />
+            <Route path="/products/:id" element={<ErrorBoundary><ProductDetail /></ErrorBoundary>} />
+            <Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
+            <Route path="/register" element={<ErrorBoundary><Register /></ErrorBoundary>} />
+            <Route path="/forgot-password" element={<ErrorBoundary><ForgotPassword /></ErrorBoundary>} />
+            <Route path="/reset-password" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />
+            <Route path="/contact" element={<ErrorBoundary><ContactUs /></ErrorBoundary>} />
+            <Route path="/shipping" element={<ErrorBoundary><ShippingInfo /></ErrorBoundary>} />
+            <Route path="/returns" element={<ErrorBoundary><ReturnsExchange /></ErrorBoundary>} />
+            <Route path="/faq" element={<ErrorBoundary><FAQ /></ErrorBoundary>} />
 
             {/* Protected Routes */}
-            <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
-            <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
-            <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
-            <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
-            <Route path="/orders/:id" element={<PrivateRoute><OrderDetail /></PrivateRoute>} />
-            <Route path="/invoice/:id" element={<PrivateRoute><InvoicePage /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
-            <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+            <Route path="/wishlist" element={<PrivateRoute><ErrorBoundary><Wishlist /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/cart" element={<PrivateRoute><ErrorBoundary><Cart /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/checkout" element={<PrivateRoute><ErrorBoundary><Checkout /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/orders" element={<PrivateRoute><ErrorBoundary><Orders /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/orders/:id" element={<PrivateRoute><ErrorBoundary><OrderDetail /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/invoice/:id" element={<PrivateRoute><ErrorBoundary><InvoicePage /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><ErrorBoundary><Profile /></ErrorBoundary></PrivateRoute>} />
+            <Route path="/dashboard" element={<AdminRoute><ErrorBoundary><Dashboard /></ErrorBoundary></AdminRoute>} />
+            <Route path="/admin" element={<AdminRoute><ErrorBoundary><AdminPanel /></ErrorBoundary></AdminRoute>} />
           </Routes>
         </main>
         <Footer />

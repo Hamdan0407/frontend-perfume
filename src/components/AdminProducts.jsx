@@ -176,8 +176,8 @@ export default function AdminProducts() {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = String(product.name || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
+      String(product.brand || '').toLowerCase().includes(String(searchTerm || '').toLowerCase());
     const matchesCategory = filterCategory === 'All' || formatCategory(product.category) === filterCategory;
     return matchesSearch && matchesCategory;
   });
@@ -253,7 +253,7 @@ export default function AdminProducts() {
                   </td>
                   <td>{product.brand || 'N/A'}</td>
                   <td><span className="badge">{formatCategory(product.category)}</span></td>
-                  <td className="price">₹{product.price?.toFixed(2) || '0.00'}</td>
+                  <td className="price">₹{Number(product.price || 0).toFixed(2)}</td>
                   <td>
                     <span className={`stock ${product.stock < 20 ? 'low' : ''}`}>
                       {product.stock}

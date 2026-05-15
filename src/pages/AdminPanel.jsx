@@ -190,11 +190,13 @@ export default function AdminPanel() {
   // Categories for dropdown
   // Dynamically derived categories from backend settings
   const categories = React.useMemo(() => {
-    return categorySettings.map(s => s.category.toLowerCase().replace(/_/g, ' '));
+    return (categorySettings || [])
+      .filter(s => s && s.category)
+      .map(s => String(s?.category || '').toLowerCase().replace(/_/g, ' '));
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {
-    const setting = categorySettings.find(s => s.category.toLowerCase().replace(/_/g, ' ') === cat?.toLowerCase() || s.category === cat);
+    const setting = categorySettings.find(s => String(s?.category || '').toLowerCase().replace(/_/g, ' ') === String(cat || '').toLowerCase() || s.category === cat);
     return setting?.label || formatCategory(cat);
   };
 
@@ -1454,31 +1456,31 @@ export default function AdminPanel() {
     const activeProducts = products.filter(p => p.active !== false);
 
     if (!searchQuery) return activeProducts;
-    const query = searchQuery.toLowerCase();
+    const query = String(searchQuery || '').toLowerCase();
     return activeProducts.filter(p =>
-      p.name?.toLowerCase().includes(query) ||
-      p.category?.toLowerCase().includes(query) ||
-      p.brand?.toLowerCase().includes(query)
+      String(p.name || '').toLowerCase().includes(query) ||
+      String(p.category || '').toLowerCase().includes(query) ||
+      String(p.brand || '').toLowerCase().includes(query)
     );
   }, [products, searchQuery]);
 
   const filteredOrders = React.useMemo(() => {
     if (!searchQuery) return orders;
-    const query = searchQuery.toLowerCase();
+    const query = String(searchQuery || '').toLowerCase();
     return orders.filter(o =>
-      o.id?.toString().includes(searchQuery) ||
-      o.customerName?.toLowerCase().includes(query) ||
-      o.status?.toLowerCase().includes(query)
+      String(o.id || '').includes(String(searchQuery || '')) ||
+      String(o.customerName || '').toLowerCase().includes(query) ||
+      String(o.status || '').toLowerCase().includes(query)
     );
   }, [orders, searchQuery]);
 
   const filteredUsers = React.useMemo(() => {
     if (!searchQuery) return users;
-    const query = searchQuery.toLowerCase();
+    const query = String(searchQuery || '').toLowerCase();
     return users.filter(u =>
-      u.email?.toLowerCase().includes(query) ||
-      u.firstName?.toLowerCase().includes(query) ||
-      u.lastName?.toLowerCase().includes(query)
+      String(u.email || '').toLowerCase().includes(query) ||
+      String(u.firstName || '').toLowerCase().includes(query) ||
+      String(u.lastName || '').toLowerCase().includes(query)
     );
   }, [users, searchQuery]);
 
@@ -1487,19 +1489,19 @@ export default function AdminPanel() {
     const notifs = [];
 
     // Pending orders
-    if (analytics.pendingOrders > 0) {
+    if (Number(analytics.pendingOrders || 0) > 0) {
       notifs.push({
         id: 'pending-orders',
         type: 'warning',
         icon: '⏳',
-        title: `${analytics.pendingOrders} Pending Order${analytics.pendingOrders > 1 ? 's' : ''}`,
+        title: `${analytics.pendingOrders} Pending Order${Number(analytics.pendingOrders || 0) > 1 ? 's' : ''}`,
         message: 'Orders awaiting confirmation',
         action: () => { setActiveTab('orders'); setSearchQuery('PENDING'); setShowNotifications(false); }
       });
     }
 
     // Processing orders
-    if (analytics.processingOrders > 0) {
+    if (Number(analytics.processingOrders || 0) > 0) {
       notifs.push({
         id: 'processing-orders',
         type: 'info',
@@ -1511,20 +1513,20 @@ export default function AdminPanel() {
     }
 
     // Low stock products
-    if (analytics.lowStockProducts.length > 0) {
+    if (Array.isArray(analytics.lowStockProducts) && analytics.lowStockProducts.length > 0) {
       notifs.push({
         id: 'low-stock',
         type: 'warning',
         icon: '⚠️',
         title: `${analytics.lowStockProducts.length} Low Stock Items`,
-        message: analytics.lowStockProducts.slice(0, 2).map(p => p.name).join(', ') +
+        message: analytics.lowStockProducts.slice(0, 2).map(p => String(p.name || '')).join(', ') +
           (analytics.lowStockProducts.length > 2 ? '...' : ''),
         action: () => { setActiveTab('products'); setShowNotifications(false); }
       });
     }
 
     // Out of stock products
-    if (analytics.outOfStockProducts.length > 0) {
+    if (Number(analytics.outOfStockProducts?.length || 0) > 0) {
       notifs.push({
         id: 'out-of-stock',
         type: 'danger',
@@ -1536,25 +1538,25 @@ export default function AdminPanel() {
     }
 
     // Shipped orders
-    if (analytics.shippedOrders > 0) {
+    if (Number(analytics.shippedOrders || 0) > 0) {
       notifs.push({
         id: 'shipped',
         type: 'success',
         icon: '🚚',
-        title: `${analytics.shippedOrders} Order${analytics.shippedOrders > 1 ? 's' : ''} Shipped`,
+        title: `${analytics.shippedOrders} Order${Number(analytics.shippedOrders || 0) > 1 ? 's' : ''} Shipped`,
         message: 'On the way to customers',
         action: () => { setActiveTab('orders'); setSearchQuery('SHIPPED'); setShowNotifications(false); }
       });
     }
 
     // Today's performance
-    if (analytics.todayOrders > 0) {
+    if (Number(analytics.todayOrders || 0) > 0) {
       notifs.push({
         id: 'today',
         type: 'success',
         icon: '📈',
         title: `${analytics.todayOrders} Orders Today`,
-        message: `Revenue: ${formatINR(analytics.todayRevenue)}`,
+        message: `Revenue: ${formatINR(analytics.todayRevenue || 0)}`,
         action: () => { setActiveTab('dashboard'); setShowNotifications(false); }
       });
     }
@@ -1617,7 +1619,7 @@ export default function AdminPanel() {
             >
               <Package size={20} />
               {sidebarOpen && <span>Products</span>}
-              {sidebarOpen && <span className="nav-badge">{analytics.activeProductsCount}</span>}
+              {sidebarOpen && <span className="nav-badge">{Number(analytics.activeProductsCount || 0)}</span>}
             </button>
 
             <button
@@ -1626,7 +1628,7 @@ export default function AdminPanel() {
             >
               <ShoppingCart size={20} />
               {sidebarOpen && <span>Orders</span>}
-              {analytics.pendingOrders > 0 && sidebarOpen && (
+              {Number(analytics.pendingOrders || 0) > 0 && sidebarOpen && (
                 <span className="nav-badge warning">{analytics.pendingOrders}</span>
               )}
             </button>
@@ -1679,7 +1681,7 @@ export default function AdminPanel() {
         <div className="sidebar-footer">
           <div className="user-profile">
             <div className="user-avatar">
-              {user?.firstName?.charAt(0) || 'A'}
+              {String(user?.firstName || 'A').charAt(0)}
             </div>
             {sidebarOpen && (
               <div className="user-info">
@@ -1855,32 +1857,32 @@ export default function AdminPanel() {
                   <div className="stat-icon"><DollarSign size={28} /></div>
                   <div className="stat-content">
                     <span className="stat-label">Total Revenue</span>
-                    <span className="stat-value">{formatINR(analytics.totalRevenue)}</span>
-                    <span className="stat-change positive"><ArrowUpRight size={16} /> {analytics.totalOrders} orders</span>
+                    <span className="stat-value">{formatINR(analytics.totalRevenue || 0)}</span>
+                    <span className="stat-change positive"><ArrowUpRight size={16} /> {analytics.totalOrders || 0} orders</span>
                   </div>
                 </div>
                 <div className="stat-card gradient-blue">
                   <div className="stat-icon"><ShoppingCart size={28} /></div>
                   <div className="stat-content">
                     <span className="stat-label">Total Orders</span>
-                    <span className="stat-value">{analytics.totalOrders}</span>
-                    <span className="stat-change warning">{analytics.pendingOrders} pending</span>
+                    <span className="stat-value">{analytics.totalOrders || 0}</span>
+                    <span className="stat-change warning">{analytics.pendingOrders || 0} pending</span>
                   </div>
                 </div>
                 <div className="stat-card gradient-green">
                   <div className="stat-icon"><Package size={28} /></div>
                   <div className="stat-content">
                     <span className="stat-label">Total Stock</span>
-                    <span className="stat-value">{analytics.totalStock.toLocaleString()} units</span>
-                    <span className="stat-change neutral">{analytics.activeProductsCount} products</span>
+                    <span className="stat-value">{Number(analytics.totalStock || 0).toLocaleString()} units</span>
+                    <span className="stat-change neutral">{analytics.activeProductsCount || 0} products</span>
                   </div>
                 </div>
                 <div className="stat-card gradient-orange">
                   <div className="stat-icon"><Users size={28} /></div>
                   <div className="stat-content">
                     <span className="stat-label">Total Customers</span>
-                    <span className="stat-value">{analytics.totalCustomers}</span>
-                    <span className="stat-change positive">{analytics.activeCustomers} active</span>
+                    <span className="stat-value">{analytics.totalCustomers || 0}</span>
+                    <span className="stat-change positive">{analytics.activeCustomers || 0} active</span>
                   </div>
                 </div>
               </div>
@@ -1890,42 +1892,42 @@ export default function AdminPanel() {
                 <div className="stat-card-mini">
                   <div className="mini-icon success">✓</div>
                   <div className="mini-content">
-                    <span className="mini-value">{analytics.deliveredOrders}</span>
+                    <span className="mini-value">{analytics.deliveredOrders || 0}</span>
                     <span className="mini-label">Delivered</span>
                   </div>
                 </div>
                 <div className="stat-card-mini">
                   <div className="mini-icon info">📦</div>
                   <div className="mini-content">
-                    <span className="mini-value">{analytics.shippedOrders}</span>
+                    <span className="mini-value">{analytics.shippedOrders || 0}</span>
                     <span className="mini-label">Shipped</span>
                   </div>
                 </div>
                 <div className="stat-card-mini">
                   <div className="mini-icon warning">⏳</div>
                   <div className="mini-content">
-                    <span className="mini-value">{analytics.processingOrders}</span>
+                    <span className="mini-value">{analytics.processingOrders || 0}</span>
                     <span className="mini-label">Processing</span>
                   </div>
                 </div>
                 <div className="stat-card-mini">
                   <div className="mini-icon danger">⚠️</div>
                   <div className="mini-content">
-                    <span className="mini-value">{analytics.lowStockCount}</span>
+                    <span className="mini-value">{analytics.lowStockCount || 0}</span>
                     <span className="mini-label">Low Stock</span>
                   </div>
                 </div>
                 <div className="stat-card-mini">
                   <div className="mini-icon purple">💰</div>
                   <div className="mini-content">
-                    <span className="mini-value">{formatINR(analytics.avgOrderValue)}</span>
+                    <span className="mini-value">{formatINR(analytics.avgOrderValue || 0)}</span>
                     <span className="mini-label">Avg Order</span>
                   </div>
                 </div>
                 <div className="stat-card-mini">
                   <div className="mini-icon blue">📊</div>
                   <div className="mini-content">
-                    <span className="mini-value">{formatINR(analytics.inventoryValue)}</span>
+                    <span className="mini-value">{formatINR(analytics.inventoryValue || 0)}</span>
                     <span className="mini-label">Inventory Value</span>
                   </div>
                 </div>
@@ -1950,7 +1952,7 @@ export default function AdminPanel() {
                               <span className={`status-badge ${getStatusColor(order.status)}`}>
                                 {order.status || 'Pending'}
                               </span>
-                              <span className="order-amount">{formatINR(order.totalAmount)}</span>
+                              <span className="order-amount">{formatINR(order.totalAmount || 0)}</span>
                             </div>
                           </div>
                         ))}
@@ -1970,7 +1972,7 @@ export default function AdminPanel() {
                     <button className="btn-link" onClick={() => setActiveTab('products')}>View All</button>
                   </div>
                   <div className="card-body">
-                    {analytics.lowStockProducts.length > 0 ? (
+                    {Array.isArray(analytics.lowStockProducts) && analytics.lowStockProducts.length > 0 ? (
                       <div className="low-stock-list">
                         {analytics.lowStockProducts.slice(0, 5).map(product => (
                           <div key={product.id} className="low-stock-item">
@@ -1978,7 +1980,7 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${product.stock === 0 ? 'danger' : 'warning'}`}>
+                            <span className={`stock-count ${Number(product.stock || 0) === 0 ? 'danger' : 'warning'}`}>
                               {product.stock} left
                             </span>
                           </div>
@@ -2025,7 +2027,7 @@ export default function AdminPanel() {
                     <button className="btn-link" onClick={() => setActiveTab('products')}>View All</button>
                   </div>
                   <div className="card-body">
-                    {analytics.activeProducts.slice(0, 5).length > 0 ? (
+                    {Array.isArray(analytics.activeProducts) && analytics.activeProducts.slice(0, 5).length > 0 ? (
                       <div className="top-products-list">
                         {analytics.activeProducts.slice(0, 5).map((product, idx) => (
                           <div key={product.id} className="top-product-item" onClick={() => openEditProductModal(product)}>
@@ -2035,10 +2037,10 @@ export default function AdminPanel() {
                               <span className="product-category">{getCategoryDisplayName(product.category)}</span>
                             </div>
                             <div className="product-prices flex flex-col items-end">
-                              <span className="product-price font-bold">{formatINR(product.discountPrice || product.price)}</span>
-                              {product.discountPrice && product.discountPrice < product.price && (
+                              <span className="product-price font-bold">{formatINR(product.discountPrice || product.price || 0)}</span>
+                              {Number(product.discountPrice || 0) < Number(product.price || 0) && (
                                 <span className="text-[10px] text-muted-foreground line-through opacity-60">
-                                  {formatINR(product.price)}
+                                  {formatINR(product.price || 0)}
                                 </span>
                               )}
                             </div>
@@ -2104,7 +2106,7 @@ export default function AdminPanel() {
                               <div className="product-details">
                                 <span className="product-name">
                                   {product.name}
-                                  {product.variants && product.variants.length > 0 && (
+                                  {Array.isArray(product.variants) && product.variants.length > 0 && (
                                     <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '6px' }}>
                                       ({product.variants.length} {product.variants.length > 1 ? 'variants' : 'variant'})
                                     </span>
@@ -2117,23 +2119,23 @@ export default function AdminPanel() {
                           <td><span className="category-badge">{getCategoryDisplayName(product.category)}</span></td>
                           <td className="price">
                             <div className="flex flex-col">
-                              <span className="font-bold">{formatINR(product.discountPrice || product.price)}</span>
-                              {product.discountPrice && product.discountPrice < product.price && (
+                              <span className="font-bold">{formatINR(product.discountPrice || product.price || 0)}</span>
+                              {Number(product.discountPrice || 0) < Number(product.price || 0) && (
                                 <span className="text-[10px] text-muted-foreground line-through opacity-60">
-                                  {formatINR(product.price)}
+                                  {formatINR(product.price || 0)}
                                 </span>
                               )}
                             </div>
                           </td>
                           <td>
-                            <span className={`stock-badge ${product.stock <= 0 ? 'out' : product.stock <= 10 ? 'low' : 'in'}`}>
-                              {product.stock <= 0 ? 'Out of Stock' : `${product.stock} in stock`}
+                            <span className={`stock-badge ${Number(product.stock || 0) <= 0 ? 'out' : Number(product.stock || 0) <= 10 ? 'low' : 'in'}`}>
+                              {Number(product.stock || 0) <= 0 ? 'Out of Stock' : `${product.stock} in stock`}
                             </span>
                           </td>
                           <td>
                             <div className="rating">
                               <span className="star">⭐</span>
-                              <span>{product.rating?.toFixed(1) || 'N/A'}</span>
+                              <span>{Number(product.rating || 0).toFixed(1)}</span>
                             </div>
                           </td>
                           <td>
@@ -2209,7 +2211,7 @@ export default function AdminPanel() {
                           <td>
                             <div className="customer-cell">
                               <div className="customer-avatar">
-                                {(order.customerName || 'C').charAt(0)}
+                                {String(order.customerName || 'C').charAt(0)}
                               </div>
                               <span>{order.customerName || order.user?.firstName || 'Customer'}</span>
                             </div>
@@ -2218,7 +2220,7 @@ export default function AdminPanel() {
                             <Calendar size={14} />
                             {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                           </td>
-                          <td className="price">{formatINR(order.totalAmount)}</td>
+                          <td className="price">{formatINR(order.totalAmount || 0)}</td>
                           <td>
                             <select
                               className={`status-select ${getStatusColor(order.status)}`}
@@ -2324,14 +2326,14 @@ export default function AdminPanel() {
                           <td>
                             <div className="user-cell">
                               <div className="user-avatar-sm">
-                                {(u.firstName || 'U').charAt(0)}
+                                {String(u.firstName || 'U').charAt(0)}
                               </div>
                               <span>{u.firstName} {u.lastName}</span>
                             </div>
                           </td>
                           <td className="email">{u.email}</td>
                           <td>
-                            <span className={`role-badge ${u.role?.toLowerCase()}`}>
+                            <span className={`role-badge ${String(u.role || '').toLowerCase()}`}>
                               {u.role}
                             </span>
                           </td>
@@ -2902,25 +2904,31 @@ export default function AdminPanel() {
                       <label>Category *</label>
                       <select
                         className="form-input"
-                        value={productForm.category}
+                        value={productForm.category || 'PREMIUM_OIL'}
                         onChange={(e) => {
                           const newCategory = e.target.value;
-                          let defaultSize = '30ml';
-                          if (['attar', 'premium attars', 'oud reserve'].includes(newCategory)) defaultSize = '6ml';
-                          else if (newCategory === 'aroma chemicals') defaultSize = '50g';
-                          else if (newCategory === 'boosters and bases') defaultSize = '500ml';
-
                           setProductForm(prev => {
-                            const next = { ...prev, category: newCategory, size: defaultSize };
+                            const next = { ...prev, category: newCategory };
                             formRef.current = next;
                             return next;
                           });
                         }}
                         required
+                        style={{ height: '42px', backgroundColor: '#f9fafb' }}
                       >
-                        {categorySettings.map(s => (
-                          <option key={s.category} value={s.category}>{s.label || formatCategory(s.category)}</option>
+                        <option value="" disabled>Select Category</option>
+                        {CATEGORY_LIST.map(cat => (
+                          <option key={cat.value} value={String(cat.value).toUpperCase().replace(/ /g, '_')}>
+                            {cat.label}
+                          </option>
                         ))}
+                        {/* Fallback for any categories from backend not in CATEGORY_LIST */}
+                        {categorySettings
+                          .filter(s => !CATEGORY_LIST.find(c => String(c.value).toUpperCase().replace(/ /g, '_') === s.category))
+                          .map(s => (
+                            <option key={s.category} value={s.category}>{s.label || formatCategory(s.category)}</option>
+                          ))
+                        }
                       </select>
                       <div className="flex gap-2 items-center mt-1">
                         <select
@@ -3346,7 +3354,7 @@ export default function AdminPanel() {
                         type="text"
                         className="form-input"
                         value={couponForm.code}
-                        onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                        onChange={(e) => setCouponForm({ ...couponForm, code: String(e.target.value || '').toUpperCase() })}
                         placeholder="e.g., WELCOME10"
                         pattern="[A-Z0-9_\\-]+"
                         title="Only uppercase letters, numbers, hyphens, and underscores"

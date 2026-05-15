@@ -8,7 +8,7 @@ export const groupProducts = (products) => {
 
     const groups = {};
 
-    products.forEach(product => {
+    products.filter(p => p && (p.id || p.name)).forEach(product => {
         // Use brand + name as key to grouping
         const key = `${product.brand || ''}-${product.name}`.trim();
 

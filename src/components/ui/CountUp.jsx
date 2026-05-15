@@ -24,6 +24,7 @@ export default function CountUp({
   const isInView = useInView(ref, { once: true, margin: '0px' });
 
   const getDecimalPlaces = (num) => {
+    if (num === null || num === undefined) return 0;
     const str = num.toString();
     if (str.includes('.')) {
       const decimals = str.split('.')[1];

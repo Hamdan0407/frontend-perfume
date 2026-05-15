@@ -189,15 +189,15 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
 
             <div className="flex items-baseline gap-3">
               <span className="text-2xl sm:text-3xl font-bold text-foreground">
-                ₹{displayPrice.toFixed(0)}
+                ₹{Number(displayPrice || 0).toFixed(0)}
               </span>
               {hasDiscount && (
                 <>
                   <span className="text-xl text-muted-foreground line-through">
-                    ₹{product.price.toFixed(2)}
+                    ₹{Number(product?.price || 0).toFixed(2)}
                   </span>
                   <Badge variant="destructive">
-                    Save ₹{(product.price - product.discountPrice).toFixed(2)}
+                    Save ₹{(Number(product?.price || 0) - Number(product?.discountPrice || 0)).toFixed(2)}
                   </Badge>
                 </>
               )}

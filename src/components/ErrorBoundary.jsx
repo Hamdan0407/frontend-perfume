@@ -42,11 +42,15 @@ class ErrorBoundary extends React.Component {
                 Go Home
               </button>
             </div>
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-8 p-4 bg-slate-100 rounded-lg text-left overflow-auto max-h-40">
-                <p className="text-xs font-mono text-red-800">{this.state.error?.toString()}</p>
-              </div>
-            )}
+            <div className="mt-8 p-4 bg-slate-100 rounded-lg text-left overflow-auto max-h-60">
+              <p className="text-sm font-bold text-red-800 mb-2">Error Detail:</p>
+              <p className="text-xs font-mono text-red-700 break-all">{this.state.error?.toString()}</p>
+              {this.state.error?.stack && (
+                <pre className="mt-4 text-[10px] font-mono text-slate-500 overflow-x-auto">
+                  {this.state.error.stack}
+                </pre>
+              )}
+            </div>
           </div>
         </div>
       );

@@ -78,8 +78,8 @@ export default function AdminUsers() {
           filteredUsers.map(user => (
             <div key={user.id} className={`user-card ${!user.active ? 'blocked' : ''}`}>
               <div className="user-card-header">
-                <div className="user-avatar">{user.firstName?.charAt(0) || 'U'}</div>
-                <span className={`role-badge ${user.role?.toLowerCase()}`}>{user.role}</span>
+                <div className="user-avatar">{String(user.firstName || 'U').charAt(0)}</div>
+                <span className={`role-badge ${String(user.role || '').toLowerCase()}`}>{user.role}</span>
               </div>
 
               <div className="user-card-content">

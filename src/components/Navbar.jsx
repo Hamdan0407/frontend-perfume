@@ -23,8 +23,8 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
-  // Default to all categories until API returns (prevents flickering/empty navbar)
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
+  // Default to only requested categories
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor']);
 
   useEffect(() => {
     fetchEnabledCategories();
@@ -40,7 +40,13 @@ export default function Navbar() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        setEnabledCategories(data);
+        // Filter to only allow the 3 requested categories
+        const filtered = data.filter(cat => {
+          if (!cat) return false;
+          const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
+          return ['aroma chemicals', 'premium oil', 'bakhoor'].includes(name);
+        });
+        setEnabledCategories(filtered);
       }
     } catch (error) {
       // On error (e.g. 401), keep the default list so UI doesn't break
@@ -114,16 +120,23 @@ export default function Navbar() {
                   </SheetHeader>
                   <div className="flex flex-col py-2">
                     <Link to="/" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-                    {enabledCategories.map((cat) => (
-                      <Link 
-                        key={cat.slug || cat.name || (typeof cat === 'string' ? cat : 'cat')}
-                        to={`/products?category=${cat.name || cat}`} 
-                        className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" 
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category')}
-                      </Link>
-                    ))}
+                    {(enabledCategories || []).map((cat, idx) => {
+                      if (!cat) return null;
+                      const name = cat.name || cat;
+                      const label = cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category');
+                      const slug = cat.slug || name;
+
+                      return (
+                        <Link 
+                          key={slug || idx}
+                          to={`/products?category=${name}`} 
+                          className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" 
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {label}
+                        </Link>
+                      );
+                    })}
                     <button onClick={() => { setMobileMenuOpen(false); setBulkInquiryOpen(true); }} className="px-6 py-3 text-sm font-medium text-left text-amber-600 hover:bg-gray-50 dark:hover:bg-slate-900">Bulk Enquiry</button>
                   </div>
                 </SheetContent>
@@ -235,15 +248,22 @@ export default function Navbar() {
             Home
           </Link>
           
-          {(enabledCategories || []).map((cat) => (
-            <Link 
-              key={cat.slug || cat.name || (typeof cat === 'string' ? cat : 'cat')}
-              to={`/products?category=${cat.name || cat}`} 
-              className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full"
-            >
-              {cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category')}
-            </Link>
-          ))}
+          {(enabledCategories || []).map((cat, idx) => {
+            if (!cat) return null;
+            const name = cat.name || cat;
+            const label = cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category');
+            const slug = cat.slug || name;
+
+            return (
+              <Link 
+                key={slug || idx}
+                to={`/products?category=${name}`} 
+                className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full"
+              >
+                {label}
+              </Link>
+            );
+          })}
 
           <button onClick={() => setBulkInquiryOpen(true)} className="text-[13px] font-medium uppercase tracking-[0.12em] text-amber-600 hover:text-amber-700 transition-colors duration-300">
             Bulk Enquiry
