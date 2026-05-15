@@ -12,6 +12,7 @@ import toast from '../utils/toast';
 import { formatCategory } from '../lib/utils';
 import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
+import { CATEGORY_LIST } from '../constants/productCategories';
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -189,10 +190,10 @@ export default function AdminPanel() {
   // Categories for dropdown
   // Categories for dropdown
   // Dynamically derived categories from backend settings
-  const categories = React.useMemo(() => {
+  const safeCategories = React.useMemo(() => {
     return (categorySettings || [])
-      .filter(s => s && s.category)
-      .map(s => String(s?.category || '').toLowerCase().replace(/_/g, ' '));
+      .filter(s => s && s.enabled)
+      .map(s => s.category);
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {
@@ -2904,31 +2905,23 @@ export default function AdminPanel() {
                       <label>Category *</label>
                       <select
                         className="form-input"
-                        value={productForm.category || 'PREMIUM_OIL'}
+                        value={productForm.category || ''}
                         onChange={(e) => {
-                          const newCategory = e.target.value;
+                          const val = e.target.value;
                           setProductForm(prev => {
-                            const next = { ...prev, category: newCategory };
+                            const next = { ...prev, category: val };
                             formRef.current = next;
                             return next;
                           });
                         }}
                         required
-                        style={{ height: '42px', backgroundColor: '#f9fafb' }}
                       >
-                        <option value="" disabled>Select Category</option>
-                        {CATEGORY_LIST.map(cat => (
-                          <option key={cat.value} value={String(cat.value).toUpperCase().replace(/ /g, '_')}>
-                            {cat.label}
+                        <option value="">Select Category</option>
+                        {safeCategories.map(cat => (
+                          <option key={cat} value={cat}>
+                            {getCategoryDisplayName(cat)}
                           </option>
                         ))}
-                        {/* Fallback for any categories from backend not in CATEGORY_LIST */}
-                        {categorySettings
-                          .filter(s => !CATEGORY_LIST.find(c => String(c.value).toUpperCase().replace(/ /g, '_') === s.category))
-                          .map(s => (
-                            <option key={s.category} value={s.category}>{s.label || formatCategory(s.category)}</option>
-                          ))
-                        }
                       </select>
                       <div className="flex gap-2 items-center mt-1">
                         <select
