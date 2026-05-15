@@ -23,21 +23,26 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
-  const [enabledCategories, setEnabledCategories] = useState([]);
+  // Default to all categories until API returns (prevents flickering/empty navbar)
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
 
   useEffect(() => {
+    // Only fetch if session is initialized to avoid auth race conditions
+    fetchEnabledCategories();
     if (isAuthenticated) {
       fetchCart();
     }
-    fetchEnabledCategories();
   }, [isAuthenticated]);
 
   const fetchEnabledCategories = async () => {
     try {
       const { data } = await api.get('categories/enabled');
-      setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+      if (Array.isArray(data)) {
+        setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+      }
     } catch (error) {
-      console.error('Failed to fetch enabled categories:', error);
+      // On error (e.g. 401), keep the default list so UI doesn't break
+      console.warn('Failed to fetch enabled categories, using defaults:', error.message);
     }
   };
 
@@ -46,7 +51,10 @@ export default function Navbar() {
       const { data } = await api.get('cart');
       setCart(data);
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
+      // Don't log full error for 401 as it's handled by interceptor
+      if (error.response?.status !== 401) {
+        console.error('Failed to fetch cart:', error);
+      }
     }
   };
 
@@ -130,7 +138,11 @@ export default function Navbar() {
                         </>
                       )}
                       <div className="border-t border-gray-100 dark:border-slate-700 my-1"></div>
-                      <button onClick={() => { logout(); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left">
+                      <button onClick={() => { 
+                        logout(); 
+                        setCart(null); // Clear cart on logout
+                        setDropdownOpen(false); 
+                      }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-left">
                         <LogOut className="h-4 w-4" /> Logout
                       </button>
                     </div>
@@ -211,7 +223,7 @@ export default function Navbar() {
           
           {enabledCategories.includes('sample collections') && (
             <Link to="/products?category=sample collections" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-              Sample Collection
+              Sample Collections
             </Link>
           )}
           

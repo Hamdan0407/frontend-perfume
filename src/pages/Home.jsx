@@ -31,8 +31,8 @@ export default function Home() {
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
   const [heroProductData, setHeroProductData] = useState(null);
-  const [enabledCategories, setEnabledCategories] = useState([]);
-  const scrollContainerRef = useRef(null);
+  // Default to all categories until API returns (prevents flickering/empty section)
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -44,9 +44,11 @@ export default function Home() {
   const fetchEnabledCategories = async () => {
     try {
       const { data } = await api.get('categories/enabled');
-      setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+      if (Array.isArray(data)) {
+        setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+      }
     } catch (error) {
-      console.error('Failed to fetch enabled categories:', error);
+      console.warn('Failed to fetch enabled categories on Home:', error.message);
     }
   };
 
