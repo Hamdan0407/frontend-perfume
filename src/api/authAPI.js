@@ -74,7 +74,7 @@ const authAPI = {
    * - 401: Invalid or expired refresh token
    */
   refreshToken: async (refreshToken) => {
-    const response = await api.post('auth/refresh-token', { refreshToken });
+    const response = await api.post('auth/refresh-token', null, { params: { refreshToken } });
     return response.data;
   },
 
