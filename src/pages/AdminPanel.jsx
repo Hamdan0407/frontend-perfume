@@ -22,6 +22,7 @@ export default function AdminPanel() {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [coupons, setCoupons] = useState([]);
+  const [categorySettings, setCategorySettings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -186,7 +187,8 @@ export default function AdminPanel() {
   }, [dashboardStats, products]);
 
   // Categories for dropdown
-  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor', 'sample collections'];
+  // Categories for dropdown
+  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor', 'sample collections', 'boosters and bases'];
   const getCategoryDisplayName = (cat) => {
     return formatCategory(cat);
   };
@@ -234,6 +236,8 @@ export default function AdminPanel() {
       return ['50g', '100g', '250g', '500g', '1kg'];
     } else if (category === 'sample collections') {
       return ['2ml', '3ml', '5ml', '10ml', 'Kit'];
+    } else if (category === 'boosters and bases') {
+      return ['50ml', '100ml', '250ml', '500ml', '1L'];
     }
     return ['30ml', '50ml', '100ml']; // default for perfume
   };
@@ -348,12 +352,34 @@ export default function AdminPanel() {
     }
   }, []);
 
+  // Fetch Category Settings
+  const fetchCategorySettings = React.useCallback(async () => {
+    try {
+      const { data } = await api.get('categories/settings');
+      setCategorySettings(data || []);
+    } catch (err) {
+      console.error('Error loading category settings:', err);
+    }
+  }, []);
+
+  const handleToggleCategory = async (category, enabled) => {
+    try {
+      await api.post(`categories/${category}/toggle`, { enabled });
+      toast.success(`Category ${formatCategory(category)} ${enabled ? 'enabled' : 'disabled'}`);
+      fetchCategorySettings();
+    } catch (err) {
+      console.error('Error toggling category:', err);
+      toast.error('Failed to toggle category');
+    }
+  };
+
   // Fetch all data on mount
   useEffect(() => {
     fetchProducts();
     fetchOrders();
     fetchUsers();
     fetchCoupons();
+    fetchCategorySettings();
     fetchDashboardStats();
   }, []);
 
@@ -1529,7 +1555,7 @@ export default function AdminPanel() {
     }
 
     return notifs;
-  }, [
+  }, [analytics]);
 
   const notificationCount = React.useMemo(() =>
     currentNotifications.filter(n => n.type === 'warning' || n.type === 'danger').length,
@@ -1606,6 +1632,14 @@ export default function AdminPanel() {
             >
               <Users size={20} />
               {sidebarOpen && <span>Customers</span>}
+            </button>
+
+            <button
+              className={`nav-item ${activeTab === 'categories' ? 'active' : ''}`}
+              onClick={() => setActiveTab('categories')}
+            >
+              <Settings size={20} />
+              {sidebarOpen && <span>Categories</span>}
             </button>
 
             <button
@@ -1939,7 +1973,8 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${((
+                            <span className={`stock-count ${product.stock === 0 ? 'danger' : 'warning'}`}>
+                              {product.stock} left
                             </span>
                           </div>
                         ))}
@@ -2065,7 +2100,9 @@ export default function AdminPanel() {
                                 <span className="product-name">
                                   {product.name}
                                   {product.variants && product.variants.length > 0 && (
-                                    <span style={{ fontSize: '1
+                                    <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '6px' }}>
+                                      ({product.variants.length} {product.variants.length > 1 ? 'variants' : 'variant'})
+                                    </span>
                                   )}
                                 </span>
                                 <span className="product-id">{product.brand || `ID: ${product.id}`}</span>
@@ -2084,7 +2121,8 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td>
-                            <span className={`stock-badge ${((
+                            <span className={`stock-badge ${product.stock <= 0 ? 'out' : product.stock <= 10 ? 'low' : 'in'}`}>
+                              {product.stock <= 0 ? 'Out of Stock' : `${product.stock} in stock`}
                             </span>
                           </td>
                           <td>
@@ -2472,6 +2510,64 @@ export default function AdminPanel() {
           )}
 
 
+          {/* ==================== CATEGORIES ==================== */}
+          {activeTab === 'categories' && (
+            <div className="section categories-section">
+              <div className="section-header">
+                <div className="section-title">
+                  <h2>📁 Category Management</h2>
+                  <span className="subtitle">Enable or disable categories on the website</span>
+                </div>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => api.post('categories/sync').then(fetchCategorySettings)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <RefreshCw size={16} />
+                  Sync Categories
+                </button>
+              </div>
+
+              <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                {categories.map(cat => {
+                  const setting = categorySettings.find(s => s.category.toLowerCase().replace(/_/g, ' ') === cat.toLowerCase());
+                  const isEnabled = setting ? setting.enabled : true;
+
+                  return (
+                    <div key={cat} className="category-setting-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                      <div>
+                        <h3 style={{ margin: 0, textTransform: 'capitalize', fontSize: '16px', fontWeight: '600' }}>{formatCategory(cat)}</h3>
+                        <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>
+                          {isEnabled ? 'Visible on website' : 'Hidden from website'}
+                        </p>
+                      </div>
+                      <button
+                        className={`status-toggle ${isEnabled ? 'active' : 'inactive'}`}
+                        onClick={() => handleToggleCategory(cat.toUpperCase().replace(/ /g, '_'), !isEnabled)}
+                        style={{ 
+                          padding: '6px 16px', 
+                          borderRadius: '20px', 
+                          fontSize: '13px', 
+                          fontWeight: '500', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px',
+                          backgroundColor: isEnabled ? '#d1fae5' : '#fee2e2',
+                          color: isEnabled ? '#065f46' : '#991b1b',
+                          border: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {isEnabled ? <Check size={14} /> : <XCircle size={14} />}
+                        {isEnabled ? 'Enabled' : 'Disabled'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ==================== SETTINGS ==================== */}
           {activeTab === 'settings' && (
             <div className="section settings-section">
@@ -2806,6 +2902,7 @@ export default function AdminPanel() {
                           let defaultSize = '30ml';
                           if (['attar', 'premium attars', 'oud reserve'].includes(newCategory)) defaultSize = '6ml';
                           else if (newCategory === 'aroma chemicals') defaultSize = '50g';
+                          else if (newCategory === 'boosters and bases') defaultSize = '500ml';
 
                           setProductForm(prev => {
                             const next = { ...prev, category: newCategory, size: defaultSize };
@@ -2818,7 +2915,7 @@ export default function AdminPanel() {
                         {categories.map(cat => (
                           <option key={cat} value={cat}>{getCategoryDisplayName(cat)}</option>
                         ))}
-                      </label>
+                      </select>
                       <div className="flex gap-2 items-center mt-1">
                         <select
                           className="form-input flex-1"

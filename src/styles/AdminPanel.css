@@ -2308,7 +2308,40 @@
     padding: 12px;
   }
 
-  /* Modal responsive */
+  /* ==========================================
+   CATEGORY SETTINGS
+   ========================================== */
+.categories-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.category-setting-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.category-setting-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border-color: #8b5cf6;
+}
+
+.status-toggle.active {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.status-toggle.inactive {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.status-toggle:hover {
+  filter: brightness(0.95);
+}
+
+/* Modal and other shared styles */
   .modal {
     width: 100%;
   }
