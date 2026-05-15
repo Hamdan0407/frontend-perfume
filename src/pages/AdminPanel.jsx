@@ -1529,7 +1529,7 @@ export default function AdminPanel() {
     }
 
     return notifs;
-  }, [
+  }, [analytics]);
 
   const notificationCount = React.useMemo(() =>
     currentNotifications.filter(n => n.type === 'warning' || n.type === 'danger').length,
@@ -1939,7 +1939,8 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${((
+                            <span className={`stock-count ${product.stock === 0 ? 'danger' : 'warning'}`}>
+                              {product.stock} left
                             </span>
                           </div>
                         ))}
@@ -2065,7 +2066,9 @@ export default function AdminPanel() {
                                 <span className="product-name">
                                   {product.name}
                                   {product.variants && product.variants.length > 0 && (
-                                    <span style={{ fontSize: '1
+                                    <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '6px' }}>
+                                      ({product.variants.length} {product.variants.length > 1 ? 'variants' : 'variant'})
+                                    </span>
                                   )}
                                 </span>
                                 <span className="product-id">{product.brand || `ID: ${product.id}`}</span>
@@ -2084,7 +2087,8 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td>
-                            <span className={`stock-badge ${((
+                            <span className={`stock-badge ${product.stock <= 0 ? 'out' : product.stock <= 10 ? 'low' : 'in'}`}>
+                              {product.stock <= 0 ? 'Out of Stock' : `${product.stock} in stock`}
                             </span>
                           </td>
                           <td>
@@ -2818,7 +2822,7 @@ export default function AdminPanel() {
                         {categories.map(cat => (
                           <option key={cat} value={cat}>{getCategoryDisplayName(cat)}</option>
                         ))}
-                      </label>
+                      </select>
                       <div className="flex gap-2 items-center mt-1">
                         <select
                           className="form-input flex-1"
