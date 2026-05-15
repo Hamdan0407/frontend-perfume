@@ -156,6 +156,9 @@ api.interceptors.response.use(
             },
           })
           .then((res) => {
+            if (!res.data || !res.data.token) {
+              throw new Error('Invalid refresh token response');
+            }
             const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = res.data;
 
             // Update tokens in localStorage
