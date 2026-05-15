@@ -9,10 +9,12 @@ import StarRating from './StarRating';
 import StockBadge from './StockBadge';
 
 export default function ProductCard({ product, onQuickView }) {
-  const displayPrice = product.discountPrice || product.price || 0;
-  const hasDiscount = product.discountPrice && product.discountPrice < product.price;
+  const price = Number(product?.price) || 0;
+  const discountPrice = Number(product?.discountPrice) || 0;
+  const displayPrice = discountPrice || price;
+  const hasDiscount = discountPrice > 0 && discountPrice < price;
   const discountPercent = hasDiscount
-    ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+    ? Math.round(((price - discountPrice) / price) * 100)
     : 0;
 
   console.log(`[ProductCard] Rendering product: ${product.id} - ${product.name}`);
@@ -116,12 +118,12 @@ export default function ProductCard({ product, onQuickView }) {
             <div className="flex items-baseline justify-between flex-wrap gap-1">
               <div className="flex items-baseline gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-bold text-foreground">
-                  {product.allVariants?.length > 1 && <span className="text-[10px] sm:text-sm font-medium text-muted-foreground mr-0.5">From</span>}
-                  ₹{(displayPrice || 0).toFixed(0)}
+                  {product?.allVariants?.length > 1 && <span className="text-[10px] sm:text-sm font-medium text-muted-foreground mr-0.5">From</span>}
+                  ₹{Number(displayPrice || 0).toFixed(0)}
                 </span>
                 {hasDiscount && (
                   <span className="text-[10px] sm:text-sm text-muted-foreground line-through">
-                    ₹{(product.price || 0).toFixed(0)}
+                    ₹{Number(price || 0).toFixed(0)}
                   </span>
                 )}
               </div>

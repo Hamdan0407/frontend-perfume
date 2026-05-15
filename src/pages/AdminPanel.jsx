@@ -190,7 +190,9 @@ export default function AdminPanel() {
   // Categories for dropdown
   // Dynamically derived categories from backend settings
   const categories = React.useMemo(() => {
-    return categorySettings.map(s => s.category.toLowerCase().replace(/_/g, ' '));
+    return (categorySettings || [])
+      .filter(s => s && s.category)
+      .map(s => s.category.toLowerCase().replace(/_/g, ' '));
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {

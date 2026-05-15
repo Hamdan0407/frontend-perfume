@@ -90,28 +90,9 @@ export const useAuthStore = create(
       },
 
       /**
-       * Update tokens only (used by interceptor during refresh)
-       */
-      updateTokens: (accessToken, refreshToken, expiresIn) => {
-        const tokenExpiresAt = Date.now() + (expiresIn * 1000);
-        
-        safeLs.setItem('accessToken', accessToken);
-        safeLs.setItem('token', accessToken);
-        if (refreshToken) safeLs.setItem('refreshToken', refreshToken);
-        safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
-
-        set({
-          accessToken,
-          refreshToken: refreshToken || get().refreshToken,
-          tokenExpiresAt,
-          isAuthenticated: true
-        });
-      },
-
-      /**
        * Initialize session after Zustand hydration completes.
        * Validates the hydrated token and marks session as initialized.
-       * Does NOT read from raw localStorage â€” Zustand persist is the source of truth.
+       * Does NOT read from raw localStorage — Zustand persist is the source of truth.
        */
       initializeSession: () => {
         const state = get();
@@ -119,7 +100,7 @@ export const useAuthStore = create(
         if (state.accessToken && state.user && state.tokenExpiresAt) {
           const isExpired = state.tokenExpiresAt - Date.now() < 60 * 1000;
 
-          console.log('ðŸ“‹ Session restore:', {
+          console.log('📋 Session restore:', {
             email: state.user.email,
             role: state.user.role,
             tokenExpired: isExpired,
@@ -139,7 +120,7 @@ export const useAuthStore = create(
             sessionInitialized: true,
           });
         } else {
-          console.log('ðŸ“‹ No existing session found');
+          console.log('📋 No existing session found');
           // Clear any stale legacy keys
           safeLs.removeItem('accessToken');
           safeLs.removeItem('token');
@@ -163,7 +144,7 @@ export const useAuthStore = create(
        */
       updateTokens: (accessToken, refreshToken, expiresIn) => {
         if (!accessToken || !expiresIn) {
-          console.error('ðŸš¨ Invalid token refresh parameters');
+          console.error('🚨 Invalid token refresh parameters');
           return;
         }
 
@@ -179,7 +160,7 @@ export const useAuthStore = create(
 
         safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
 
-        console.log('ðŸ”„ Tokens refreshed, expires at:', new Date(tokenExpiresAt).toISOString());
+        console.log('🔄 Tokens refreshed, expires at:', new Date(tokenExpiresAt).toISOString());
 
         set({
           accessToken,
@@ -226,7 +207,7 @@ export const useAuthStore = create(
       onRehydrateStorage: () => {
         return (state, error) => {
           if (error) {
-            console.error('âŒ Error rehydrating auth store:', error);
+            console.error('❌ Error rehydrating auth store:', error);
             useAuthStore.setState({ sessionInitialized: true, isAuthenticated: false });
             return;
           }
@@ -242,7 +223,7 @@ export const useAuthStore = create(
 
           // Defensive: If no state, treat as logged out
           if (!state || !state.accessToken) {
-            console.log('ðŸ“‹ No persisted session found');
+            console.log('📋 No persisted session found');
             useAuthStore.setState({
               sessionInitialized: true,
               isAuthenticated: false,
@@ -274,7 +255,7 @@ export const useAuthStore = create(
               expiresAt = jwtExpiresAt; // Sync stored expiry with actual token
 
               if (!isValid) {
-                console.warn('âš ï¸ Persisted JWT is expired:', new Date(jwtExpiresAt).toISOString());
+                console.warn('⚠️  Persisted JWT is expired:', new Date(jwtExpiresAt).toISOString());
               }
             } else {
               // Fallback to stored timestamp if parsing fails
@@ -288,7 +269,7 @@ export const useAuthStore = create(
           }
 
           if (isValid) {
-            console.log('âœ… Session restored for:', state.user?.email);
+            console.log('✅ Session restored for:', state.user?.email);
             useAuthStore.setState({
               sessionInitialized: true,
               isAuthenticated: true,

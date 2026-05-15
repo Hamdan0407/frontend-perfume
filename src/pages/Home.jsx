@@ -45,11 +45,13 @@ export default function Home() {
   const fetchEnabledCategories = async () => {
     try {
       const { data } = await api.get('categories/enabled');
+      // Ensure data is an array and filter out any null/undefined entries
       if (Array.isArray(data)) {
-        setEnabledCategories(data);
+        setEnabledCategories(data.filter(Boolean));
       }
     } catch (error) {
       console.warn('Failed to fetch enabled categories on Home:', error.message);
+      // Fallback to basic categories if API fails completely
     }
   };
 
@@ -76,8 +78,12 @@ export default function Home() {
 
       // Fetch current stats
       const res = await api.get('stats');
-      if (res.data) {
-        setSiteStats(res.data);
+      // Only update if we get a valid object (not a 404 HTML string)
+      if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
+        setSiteStats({
+          happyCustomers: Number(res.data.happyCustomers) || 0,
+          visitors: Number(res.data.visitors) || 0
+        });
       }
     } catch (err) {
       console.warn('[Home] Failed to fetch site stats:', err);
@@ -176,7 +182,7 @@ export default function Home() {
       </section>
 
       {/* Hero Product Showcase */}
-      {heroProductData && heroProductData.product && (
+      {heroProductData?.product && (
         <section className="py-16 sm:py-24 bg-white relative overflow-hidden">
           <div className="absolute inset-0 bg-slate-50/50"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -189,8 +195,8 @@ export default function Home() {
                   <div className="absolute -inset-4 bg-accent/10 rounded-full blur-3xl opacity-50 transition-opacity group-hover:opacity-70 duration-500"></div>
                   <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl shadow-2xl transition-transform duration-700 group-hover:scale-[1.02]">
                     <img 
-                      src={heroProductData.customImageUrl || heroProductData.product.imageUrl} 
-                      alt={heroProductData.product.name}
+                      src={heroProductData.customImageUrl || heroProductData.product.imageUrl || ''} 
+                      alt={heroProductData.product.name || 'Hero Product'}
                       className="w-full h-full object-cover object-center"
                     />
                   </div>
@@ -214,7 +220,7 @@ export default function Home() {
 
                 <div className="flex items-end gap-4">
                   <span className="text-3xl font-bold text-gray-900">
-                    ₹{heroProductData.product.price}
+                    ₹{heroProductData.product.discountPrice || heroProductData.product.price}
                   </span>
                   {heroProductData.product.discountPrice && heroProductData.product.discountPrice < heroProductData.product.price && (
                     <span className="text-xl text-gray-400 line-through mb-1">
@@ -248,14 +254,16 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
             {(enabledCategories || []).map((cat, idx) => {
+              if (!cat) return null;
               // Map metadata to categories dynamically
+              const categoryKey = cat.name || cat;
               const metadata = {
                 'PREMIUM_OIL': { subtitle: 'Pure Essence', accent: '#a78bfa' },
                 'BAKHOOR': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
                 'AROMA_CHEMICALS': { subtitle: 'Raw Ingredients', accent: '#38bdf8' },
                 'SAMPLE_COLLECTIONS': { subtitle: 'Discovery Set', accent: '#f59e0b' },
                 'BOOSTERS_AND_BASES': { subtitle: 'Enhancers', accent: '#10b981' }
-              }[cat.name || cat] || { subtitle: 'Explore', accent: '#c9a96e' };
+              }[categoryKey] || { subtitle: 'Explore', accent: '#c9a96e' };
 
               return (
                 <Link
@@ -431,7 +439,7 @@ export default function Home() {
               },
               {
                 icon: Users,
-                to: siteStats.happyCustomers || 249,
+                to: Number(siteStats?.happyCustomers) || 249,
                 suffix: '+',
                 label: 'Happy Customers',
                 color: '#38bdf8',
@@ -445,7 +453,7 @@ export default function Home() {
               },
               {
                 icon: Eye,
-                to: siteStats.visitors || 70,
+                to: Number(siteStats?.visitors) || 70,
                 suffix: '',
                 label: "Today's Visitors",
                 color: '#22d3ee',
