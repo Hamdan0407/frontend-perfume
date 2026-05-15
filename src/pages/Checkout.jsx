@@ -625,7 +625,7 @@ export default function Checkout() {
       // Handle specific error cases
       if (error.response?.status === 400) {
         const errorMsg = error.response?.data?.message || error.response?.data?.error;
-        if (errorMsg?.toLowerCase().includes('stock')) {
+        if (String(errorMsg || '').toLowerCase().includes('stock')) {
           toast.error('Some items in your cart are out of stock. Please update your cart.');
           setTimeout(() => navigate('/cart'), 2000);
         } else {
@@ -1188,7 +1188,7 @@ export default function Checkout() {
                           id="coupon"
                           type="text"
                           value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onChange={(e) => setCouponCode(String(e.target.value || '').toUpperCase())}
                           placeholder="Enter code"
                           className="flex-1"
                           disabled={couponLoading || razorpayOrderResponse}

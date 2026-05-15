@@ -31,12 +31,12 @@ export default function AdminOrders() {
   const filteredOrders = filter === 'All'
     ? orders
     : orders.filter(o => {
-      const status = o.status?.toUpperCase() || '';
-      return status === filter.toUpperCase();
+      const status = String(o.status || '').toUpperCase();
+      return status === String(filter).toUpperCase();
     });
 
   const getStatusIcon = (status) => {
-    const statusUpper = status?.toUpperCase() || '';
+    const statusUpper = String(status || '').toUpperCase();
     if (['PENDING', 'PROCESSING'].includes(statusUpper)) return <Clock size={16} />;
     if (['SHIPPED', 'DELIVERED'].includes(statusUpper)) return <CheckCircle size={16} />;
     if (statusUpper === 'CANCELLED') return <X size={16} />;
@@ -57,7 +57,7 @@ export default function AdminOrders() {
       'OUT_FOR_DELIVERY': 'Out for Delivery',
       'REFUNDED': 'Refunded'
     };
-    return statusMap[status?.toUpperCase()] || status || 'Unknown';
+    return statusMap[String(status || '').toUpperCase()] || status || 'Unknown';
   };
 
   const handleEditStatus = (order) => {
@@ -215,7 +215,7 @@ export default function AdminOrders() {
                         />
                       </div>
                     ) : (
-                      <span className={`status-badge ${order.status?.toLowerCase()}`}>
+                      <span className={`status-badge ${String(order.status || '').toLowerCase()}`}>
                         {getStatusIcon(order.status)}
                         {getStatusDisplay(order.status)}
                       </span>
@@ -278,7 +278,7 @@ export default function AdminOrders() {
                           {shiprocketLoading[order.id] === 'refreshing' ? 'Refreshing...' : 'Refresh'}
                         </button>
                       </div>
-                    ) : ['PACKED', 'HANDOVER', 'SHIPPED'].includes(order.status?.toUpperCase()) ? (
+                    ) : ['PACKED', 'HANDOVER', 'SHIPPED'].includes(String(order.status || '').toUpperCase()) ? (
                       <button
                         className="btn-create-shipment"
                         onClick={() => handleCreateShipment(order.id)}

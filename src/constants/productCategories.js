@@ -34,10 +34,10 @@ export const CATEGORY_LIST = Object.values(PRODUCT_CATEGORIES);
 
 export const mapToCategoryEnum = (input) => {
     if (!input) return null;
-    const normalized = input.trim().toLowerCase();
+    const normalized = String(input || '').trim().toLowerCase();
     
     // Exact renames
     if (normalized === 'premium attars') return 'PREMIUM_OIL';
     
-    return input.trim().toUpperCase().replace(/ /g, '_');
+    return String(input || '').trim().toUpperCase().replace(/ /g, '_');
 };

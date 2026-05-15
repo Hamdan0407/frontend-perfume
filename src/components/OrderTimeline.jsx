@@ -288,7 +288,7 @@ const OrderTimeline = ({ orderId, currentStatus }) => {
                           "font-bold text-sm capitalize",
                           index === 0 ? "text-primary" : "text-slate-700"
                         )}>
-                          {event.status.replace(/_/g, ' ').toLowerCase()}
+                          {String(event.status || '').replace(/_/g, ' ').toLowerCase()}
                         </h4>
                         <span className="text-xs text-slate-500 bg-slate-50 px-2 py-0.5 rounded border whitespace-nowrap">
                           {fullDate} at {time}

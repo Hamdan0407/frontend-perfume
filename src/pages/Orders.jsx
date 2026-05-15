@@ -102,7 +102,7 @@ export default function Orders() {
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Package className="h-16 w-16 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              {filterStatus === 'ALL' ? 'No orders yet' : `No ${filterStatus.toLowerCase()} orders`}
+              {filterStatus === 'ALL' ? 'No orders yet' : `No ${String(filterStatus || '').toLowerCase()} orders`}
             </h3>
             <p className="text-muted-foreground mb-6">
               {filterStatus === 'ALL' ? 'Start shopping to place your first order!' : 'Try a different filter or start shopping'}
