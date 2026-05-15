@@ -6,7 +6,7 @@ export function cn(...inputs) {
 }
 
 /**
- * Formats backend category enums (e.g., PREMIUM_ATTARS) into display labels (e.g., Premium Attars)
+ * Formats backend category enums (e.g., PREMIUM_ATTARS) into display labels (e.g., Premium Oil)
  * @param {string} category The category string from backend
  * @returns {string} Formatted category
  */
@@ -17,7 +17,7 @@ export function formatCategory(category) {
   const mapping = {
     'PARFUM': 'Parfum',
     'PERFUME': 'Parfum', // Ensuring 'perfume' also maps to 'Parfum'
-    'PREMIUM_ATTARS': 'Premium Attars',
+    'PREMIUM_ATTARS': 'Premium Oil',
     'OUD_RESERVE': 'Oud Reserve',
     'BAKHOOR': 'Bakhoor',
     'AROMA_CHEMICALS': 'Aroma Chemicals',
@@ -28,7 +28,7 @@ export function formatCategory(category) {
     return mapping[category.toUpperCase()];
   }
 
-  // Generic fallback: PREMIUM_ATTARS -> Premium Attars
+  // Generic fallback: PREMIUM_ATTARS -> Premium Oil
   return category
     .toLowerCase()
     .split(/_|\s/) // Split by underscore or space

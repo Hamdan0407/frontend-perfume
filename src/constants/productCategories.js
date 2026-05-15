@@ -9,7 +9,7 @@ export const PRODUCT_CATEGORIES = {
         path: '/products?category=parfum'
     },
     PREMIUM_ATTARS: {
-        label: 'Premium Attars',
+        label: 'Premium Oil',
         value: 'premium attars',
         path: '/products?category=premium attars'
     },

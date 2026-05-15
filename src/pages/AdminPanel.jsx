@@ -616,7 +616,7 @@ export default function AdminPanel() {
 
         if (attarProducts.length === 0) return;
 
-        toast(`Migrating ${attarProducts.length} product(s) from "attar" to "premium attars"...`, { icon: 'ℹ️' });
+        toast(`Migrating ${attarProducts.length} product(s) from "attar" to "premium oil"...`, { icon: 'ℹ️' });
 
         let successCount = 0;
         for (const p of attarProducts) {
@@ -635,7 +635,7 @@ export default function AdminPanel() {
         }
 
         if (successCount > 0) {
-          toast.success(`Migrated ${successCount} product(s) to Premium Attars!`);
+          toast.success(`Migrated ${successCount} product(s) to Premium Oil!`);
           fetchProducts();
         }
       } catch (err) {
@@ -1095,7 +1095,7 @@ export default function AdminPanel() {
     doc.setTextColor(...accentColor);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Premium Scents & Luxury Attars', 20, 29);
+    doc.text('Premium Scents & Luxury Oils', 20, 29);
 
     // INVOICE title (right side)
     doc.setTextColor(...primaryColor);
