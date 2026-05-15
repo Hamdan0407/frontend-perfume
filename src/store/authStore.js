@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 // Safe localStorage wrapper for legacy key sync (not used as Zustand storage)
@@ -86,6 +86,25 @@ export const useAuthStore = create(
           tokenExpiresAt: null,
           isAuthenticated: false,
           sessionInitialized: true,
+        });
+      },
+
+      /**
+       * Update tokens only (used by interceptor during refresh)
+       */
+      updateTokens: (accessToken, refreshToken, expiresIn) => {
+        const tokenExpiresAt = Date.now() + (expiresIn * 1000);
+        
+        safeLs.setItem('accessToken', accessToken);
+        safeLs.setItem('token', accessToken);
+        if (refreshToken) safeLs.setItem('refreshToken', refreshToken);
+        safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
+
+        set({
+          accessToken,
+          refreshToken: refreshToken || get().refreshToken,
+          tokenExpiresAt,
+          isAuthenticated: true
         });
       },
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, Menu, TrendingUp } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, Menu } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useEffect, useState } from 'react';
@@ -27,8 +27,10 @@ export default function Navbar() {
   const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
 
   useEffect(() => {
-    // Only fetch if session is initialized to avoid auth race conditions
     fetchEnabledCategories();
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
     }
@@ -97,8 +99,32 @@ export default function Navbar() {
         {/* Row 1: Profile/Cart/Menu (left) | Logo (center) | Search (right) */}
         <div className="grid grid-cols-3 items-center h-[72px]">
 
-          {/* Left: Profile + Cart */}
+          {/* Left: Mobile Menu + Profile + Cart */}
           <div className="flex items-center gap-3 justify-self-start">
+            <div className="md:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <button className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <Menu className="h-[18px] w-[18px]" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72 p-0 bg-white dark:bg-slate-950">
+                  <SheetHeader className="p-6 border-b border-gray-100 dark:border-slate-800">
+                    <SheetTitle>Categories</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col py-2">
+                    <Link to="/" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+                    {enabledCategories.includes('aroma chemicals') && <Link to="/products?category=aroma chemicals" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Aroma Chemicals</Link>}
+                    {enabledCategories.includes('premium oil') && <Link to="/products?category=premium oil" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Premium Oil</Link>}
+                    {enabledCategories.includes('bakhoor') && <Link to="/products?category=bakhoor" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Bakhoor</Link>}
+                    {enabledCategories.includes('sample collections') && <Link to="/products?category=sample collections" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Sample Collections</Link>}
+                    {enabledCategories.includes('boosters and bases') && <Link to="/products?category=boosters and bases" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Boosters & Bases</Link>}
+                    <button onClick={() => { setMobileMenuOpen(false); setBulkInquiryOpen(true); }} className="px-6 py-3 text-sm font-medium text-left text-amber-600 hover:bg-gray-50 dark:hover:bg-slate-900">Bulk Enquiry</button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
             {isAuthenticated ? (
               <>
                 {/* User Profile Dropdown */}
