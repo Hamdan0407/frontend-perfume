@@ -89,8 +89,8 @@ export default function ProductDetail() {
         let allVariants = [];
 
         relatedProducts.forEach(p => {
-          if (p.name && data.name && p.name.toLowerCase() === data.name.toLowerCase() &&
-            ((!p.brand && !data.brand) || (p.brand && data.brand && p.brand.toLowerCase() === data.brand.toLowerCase()))) {
+          if (p.name && data.name && String(p.name).toLowerCase() === String(data.name).toLowerCase() &&
+            ((!p.brand && !data.brand) || (p.brand && data.brand && String(p.brand).toLowerCase() === String(data.brand).toLowerCase()))) {
             // Add existing variants
             if (p.variants && p.variants.length > 0) {
               p.variants.forEach(v => {
@@ -477,7 +477,7 @@ export default function ProductDetail() {
             {/* Variant Selector */}
             {mergedVariants && mergedVariants.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-semibold text-foreground mb-3">{(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}</h3>
+                <h3 className="font-semibold text-foreground mb-3">{String(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}</h3>
                 <div className="flex flex-wrap gap-3">
                   {mergedVariants.map((variant) => (
                     <button
@@ -492,7 +492,7 @@ export default function ProductDetail() {
                           : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                       )}
                     >
-                      {variant.size}{variant.unit || ((product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'g' : 'ml')}
+                      {variant.size}{variant.unit || (String(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'g' : 'ml')}
                       {variant.stock === 0 && (
                         <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
                           Out

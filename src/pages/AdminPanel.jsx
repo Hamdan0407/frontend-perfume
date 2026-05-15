@@ -192,11 +192,11 @@ export default function AdminPanel() {
   const categories = React.useMemo(() => {
     return (categorySettings || [])
       .filter(s => s && s.category)
-      .map(s => s.category.toLowerCase().replace(/_/g, ' '));
+      .map(s => String(s?.category || '').toLowerCase().replace(/_/g, ' '));
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {
-    const setting = categorySettings.find(s => s.category.toLowerCase().replace(/_/g, ' ') === cat?.toLowerCase() || s.category === cat);
+    const setting = categorySettings.find(s => String(s?.category || '').toLowerCase().replace(/_/g, ' ') === String(cat || '').toLowerCase() || s.category === cat);
     return setting?.label || formatCategory(cat);
   };
 
