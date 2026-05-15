@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { Country, City } from 'country-state-city';
 import api from '../api/axios';
 import toast from '../utils/toast';
 import Autocomplete from './Autocomplete';
@@ -17,100 +17,57 @@ const LeadPopup = () => {
     city: ''
   });
 
-  // Autocomplete states
-  const [countries, setCountries] = useState([]);
-  const [filteredCountries, setFilteredCountries] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [filteredCities, setFilteredCities] = useState([]);
-  const [loadingCountries, setLoadingCountries] = useState(false);
-  const [loadingCities, setLoadingCities] = useState(false);
+  // Selected country object (to get ISO code)
+  const [selectedCountryObj, setSelectedCountryObj] = useState(null);
+
+  // Lists for autocomplete
+  const [countrySearch, setCountrySearch] = useState('');
+  const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
-    // Check if already shown in this session
     const hasShown = sessionStorage.getItem('lead_popup_shown');
-    
     if (!hasShown) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 2000); // 2 seconds delay
-
-      // Pre-fetch countries
-      fetchCountries();
-
+      const timer = setTimeout(() => setIsOpen(true), 2000);
       return () => clearTimeout(timer);
     }
   }, []);
 
-  const fetchCountries = async () => {
-    try {
-      setLoadingCountries(true);
-      const res = await axios.get('https://restcountries.com/v3.1/all?fields=name');
-      const countryNames = res.data.map(c => c.name.common).sort();
-      setCountries(countryNames);
-      setFilteredCountries(countryNames.slice(0, 10));
-    } catch (err) {
-      console.error('Error fetching countries:', err);
-    } finally {
-      setLoadingCountries(false);
-    }
+  // Get all countries once
+  const allCountries = useMemo(() => Country.getAllCountries(), []);
+
+  // Filtered countries based on search
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch) return allCountries.slice(0, 10).map(c => c.name);
+    return allCountries
+      .filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase()))
+      .slice(0, 10)
+      .map(c => c.name);
+  }, [countrySearch, allCountries]);
+
+  // Cities for the selected country
+  const countryCities = useMemo(() => {
+    if (!selectedCountryObj) return [];
+    return City.getCitiesOfCountry(selectedCountryObj.isoCode);
+  }, [selectedCountryObj]);
+
+  // Filtered cities based on search
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return countryCities.slice(0, 10).map(c => c.name);
+    return countryCities
+      .filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()))
+      .slice(0, 10)
+      .map(c => c.name);
+  }, [citySearch, countryCities]);
+
+  // Handle country selection
+  const handleCountryChange = (name) => {
+    setCountrySearch(name);
+    setFormData(prev => ({ ...prev, country: name, city: '' }));
+    setCitySearch('');
+    
+    const found = allCountries.find(c => c.name.toLowerCase() === name.toLowerCase());
+    setSelectedCountryObj(found || null);
   };
-
-  const fetchCities = async (countryName) => {
-    if (!countryName) return;
-    try {
-      setLoadingCities(true);
-      const res = await axios.post('https://countriesnow.space/api/v0.1/countries/cities', {
-        country: countryName
-      });
-      const cityNames = res.data.data.sort();
-      setCities(cityNames);
-      setFilteredCities(cityNames.slice(0, 10));
-    } catch (err) {
-      console.error('Error fetching cities:', err);
-      setCities([]);
-      setFilteredCities([]);
-    } finally {
-      setLoadingCities(false);
-    }
-  };
-
-  // Country Search with Debounce
-  useEffect(() => {
-    if (!formData.country) {
-      setFilteredCountries(countries.slice(0, 10));
-      return;
-    }
-    const timer = setTimeout(() => {
-      const filtered = countries.filter(c => 
-        c.toLowerCase().includes(formData.country.toLowerCase())
-      );
-      setFilteredCountries(filtered.slice(0, 10));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [formData.country, countries]);
-
-  // City Search with Debounce
-  useEffect(() => {
-    if (!formData.city) {
-      setFilteredCities(cities.slice(0, 10));
-      return;
-    }
-    const timer = setTimeout(() => {
-      const filtered = cities.filter(c => 
-        c.toLowerCase().includes(formData.city.toLowerCase())
-      );
-      setFilteredCities(filtered.slice(0, 10));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [formData.city, cities]);
-
-  // Fetch cities when country changes
-  useEffect(() => {
-    const isExactMatch = countries.find(c => c.toLowerCase() === formData.country.toLowerCase());
-    if (isExactMatch) {
-      fetchCities(isExactMatch);
-    }
-  }, [formData.country, countries]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -189,17 +146,21 @@ const LeadPopup = () => {
               label="Country"
               placeholder="India"
               value={formData.country}
-              onChange={(val) => setFormData({ ...formData, country: val, city: '' })}
+              onChange={handleCountryChange}
+              onSearch={setCountrySearch}
               suggestions={filteredCountries}
-              loading={loadingCountries}
             />
             <Autocomplete
               label="City"
               placeholder="Mumbai"
               value={formData.city}
-              onChange={(val) => setFormData({ ...formData, city: val })}
+              onChange={(val) => {
+                setFormData({ ...formData, city: val });
+                setCitySearch(val);
+              }}
+              onSearch={setCitySearch}
               suggestions={filteredCities}
-              loading={loadingCities}
+              disabled={!selectedCountryObj}
             />
           </div>
 
