@@ -40,7 +40,7 @@ export default function Navbar() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+        setEnabledCategories(data.map(c => (c || '').toLowerCase().replace(/_/g, ' ')));
       }
     } catch (error) {
       // On error (e.g. 401), keep the default list so UI doesn't break
@@ -229,31 +229,31 @@ export default function Navbar() {
             Home
           </Link>
           
-          {enabledCategories.includes('aroma chemicals') && (
+          {(enabledCategories || []).includes('aroma chemicals') && (
             <Link to="/products?category=aroma chemicals" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
               Aroma Chemicals
             </Link>
           )}
           
-          {enabledCategories.includes('premium oil') && (
+          {(enabledCategories || []).includes('premium oil') && (
             <Link to="/products?category=premium oil" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
               Premium Oil
             </Link>
           )}
           
-          {enabledCategories.includes('bakhoor') && (
+          {(enabledCategories || []).includes('bakhoor') && (
             <Link to="/products?category=bakhoor" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
               Bakhoor
             </Link>
           )}
           
-          {enabledCategories.includes('sample collections') && (
+          {(enabledCategories || []).includes('sample collections') && (
             <Link to="/products?category=sample collections" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
               Sample Collections
             </Link>
           )}
           
-          {enabledCategories.includes('boosters and bases') && (
+          {(enabledCategories || []).includes('boosters and bases') && (
             <Link to="/products?category=boosters and bases" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
               Boosters & Bases
             </Link>

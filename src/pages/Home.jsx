@@ -33,6 +33,7 @@ export default function Home() {
   const [heroProductData, setHeroProductData] = useState(null);
   // Default to all categories until API returns (prevents flickering/empty section)
   const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
+  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -45,7 +46,7 @@ export default function Home() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+        setEnabledCategories(data.map(c => (c || '').toLowerCase().replace(/_/g, ' ')));
       }
     } catch (error) {
       console.warn('Failed to fetch enabled categories on Home:', error.message);
@@ -246,7 +247,7 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
-            {CATEGORY_LIST.filter(c => ['premium oil', 'bakhoor', 'aroma chemicals', 'sample collections', 'boosters and bases'].includes(c.value) && enabledCategories.includes(c.value)).map((cat, idx) => {
+            {(Array.isArray(CATEGORY_LIST) ? CATEGORY_LIST : []).filter(c => ['premium oil', 'bakhoor', 'aroma chemicals', 'sample collections', 'boosters and bases'].includes(c.value) && (enabledCategories || []).includes(c.value)).map((cat, idx) => {
               // Map old metadata to new categories
               const metadata = {
                 'premium oil': { subtitle: 'Pure Essence', accent: '#a78bfa' },
