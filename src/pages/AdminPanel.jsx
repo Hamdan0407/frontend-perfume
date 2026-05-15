@@ -9,7 +9,7 @@ import {
 import { jsPDF } from 'jspdf';
 import { useAuthStore } from '../store/authStore';
 import toast from '../utils/toast';
-import { formatCategory } from '../lib/utils';
+import { formatCategory, sortVariants } from '../lib/utils';
 import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
 import { CATEGORY_LIST } from '../constants/productCategories';
@@ -571,6 +571,7 @@ export default function AdminPanel() {
           active: v.active !== false
         };
       });
+      initialVariants = sortVariants(initialVariants);
     } else {
       // Create variant from product data if no variants exist
       const sizeNum = parseInt(product.size) || 30;

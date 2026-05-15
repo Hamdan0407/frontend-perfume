@@ -12,7 +12,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import StarRating from '../components/StarRating';
 import StockBadge from '../components/StockBadge';
 import RelatedProducts from '../components/RelatedProducts';
-import { cn, formatCategory } from '../lib/utils';
+import { cn, formatCategory, sortVariants } from '../lib/utils';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -115,19 +115,19 @@ export default function ProductDetail() {
           }
         });
 
-        allVariants.sort((a, b) => a.size - b.size);
-        setMergedVariants(allVariants);
+        const sortedVariants = sortVariants(allVariants);
+        setMergedVariants(sortedVariants);
 
         // Auto-select first available variant
-        const firstAvailable = allVariants.find(v => v.active && v.stock > 0) || allVariants[0];
+        const firstAvailable = sortedVariants.find(v => v.active && v.stock > 0) || sortedVariants[0];
         setSelectedVariant(firstAvailable);
       } catch (err) {
         console.error('Failed to fetch related products for variants:', err);
         // Fallback to current product variants
         if (data.variants && data.variants.length > 0) {
-          const firstAvailable = data.variants.find(v => v.active && v.stock > 0) || data.variants[0];
-          setSelectedVariant(firstAvailable);
-          setMergedVariants(data.variants);
+          const sortedV = sortVariants(data.variants);
+          setSelectedVariant(sortedV.find(v => v.active && v.stock > 0) || sortedV[0]);
+          setMergedVariants(sortedV);
         } else if (data.volume) {
           const virtualV = {
             id: `v_${data.id}`,

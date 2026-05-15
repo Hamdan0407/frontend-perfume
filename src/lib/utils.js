@@ -60,3 +60,39 @@ export function toCategoryEnum(input) {
   
   return String(input || '').trim().toUpperCase().replace(/ /g, "_");
 }
+
+/**
+ * Sorts product variants numerically by size, handling units (g, kg, ml, l)
+ * @param {Array} variants Array of variant objects with size and unit properties
+ * @returns {Array} Sorted array
+ */
+export function sortVariants(variants) {
+  if (!Array.isArray(variants)) return [];
+
+  return [...variants].sort((a, b) => {
+    const parseSize = (v) => {
+      if (!v) return 0;
+      
+      // If size is already numeric and we have a unit
+      const sizeValue = parseFloat(v.size);
+      const unit = String(v.unit || '').toLowerCase();
+      
+      // If size is a string like "1kg" or "500gms"
+      if (isNaN(sizeValue) && typeof v.size === 'string') {
+        const match = v.size.match(/^([\d.]+)\s*([a-zA-Z]+)$/);
+        if (match) {
+          const val = parseFloat(match[1]);
+          const u = match[2].toLowerCase();
+          if (u === 'kg' || u === 'l') return val * 1000;
+          return val;
+        }
+      }
+
+      // Handle unit multiplication
+      if (unit === 'kg' || unit === 'l') return sizeValue * 1000;
+      return sizeValue;
+    };
+
+    return parseSize(a) - parseSize(b);
+  });
+}
