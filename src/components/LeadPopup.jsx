@@ -101,7 +101,7 @@ const LeadPopup = () => {
 
         <div className="lead-popup-header">
           <h2>Join the MUWAS Elite</h2>
-          <p>Subscribe to receive exclusive offers, early access to new collections, and personalized fragrance recommendations.</p>
+          <p>Subscribe to receive exclusive offers, early access to new collections, and members-only deals.</p>
         </div>
 
         <form className="lead-popup-form" onSubmit={handleSubmit}>
