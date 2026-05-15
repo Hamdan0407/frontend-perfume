@@ -31,8 +31,8 @@ export default function Home() {
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
   const [heroProductData, setHeroProductData] = useState(null);
-  // Default to only requested categories (prevents flickering/empty section)
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor']);
+  // Default to only requested categories
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases']);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -47,11 +47,11 @@ export default function Home() {
       const { data } = await api.get('categories/enabled');
       // Ensure data is an array and filter out any null/undefined entries
       if (Array.isArray(data)) {
-        // Filter to only allow the 3 requested categories
+        // Filter to only allow the 4 requested categories
         setEnabledCategories(data.filter(cat => {
           if (!cat) return false;
           const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
-          return ['aroma chemicals', 'premium oil', 'bakhoor'].includes(name);
+          return ['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases'].includes(name);
         }));
       }
     } catch (error) {

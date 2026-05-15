@@ -191,9 +191,15 @@ export default function AdminPanel() {
   // Categories for dropdown
   // Dynamically derived categories from backend settings
   const safeCategories = React.useMemo(() => {
-    return (categorySettings || [])
-      .filter(s => s && s.enabled)
-      .map(s => s.category);
+    // If settings from API exist, use those that are enabled
+    if (categorySettings && categorySettings.length > 0) {
+      const fromSettings = categorySettings
+        .filter(s => s && s.enabled)
+        .map(s => s.category);
+      if (fromSettings.length > 0) return fromSettings;
+    }
+    // Fallback to constants if API empty/failed
+    return CATEGORY_LIST.map(c => String(c.value).toUpperCase().replace(/ /g, '_'));
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {
