@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from '../utils/toast';
-import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown, MapPin, Truck } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Package, Tag, ChevronDown, MapPin, Truck, TrendingUp } from 'lucide-react';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
@@ -427,10 +427,15 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* Weekly sales counter */}
-            <p className="text-red-500 font-semibold text-sm">
-              🛒 {((product.id * 7 + 3) % 21 + 50) + (product.weeklySalesCount || 0)}+ fragrance lovers bought this recently
-            </p>
+            {/* Subtle Social Proof */}
+            <div className="flex items-center gap-2.5 py-1 animate-in fade-in duration-700">
+              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-50 border border-slate-100">
+                <TrendingUp className="w-3 h-3 text-slate-400" />
+              </div>
+              <p className="text-[13px] text-slate-500 font-light tracking-wide italic">
+                Frequently chosen by fragrance enthusiasts
+              </p>
+            </div>
 
             <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
