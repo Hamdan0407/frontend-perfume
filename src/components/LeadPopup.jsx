@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/axios';
 import toast from '../utils/toast';
+import Autocomplete from './Autocomplete';
 import '../styles/LeadPopup.css';
 
 const LeadPopup = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,6 +16,14 @@ const LeadPopup = () => {
     country: '',
     city: ''
   });
+
+  // Autocomplete states
+  const [countries, setCountries] = useState([]);
+  const [filteredCountries, setFilteredCountries] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [filteredCities, setFilteredCities] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
 
   useEffect(() => {
     // Check if already shown in this session
@@ -24,9 +34,83 @@ const LeadPopup = () => {
         setIsOpen(true);
       }, 2000); // 2 seconds delay
 
+      // Pre-fetch countries
+      fetchCountries();
+
       return () => clearTimeout(timer);
     }
   }, []);
+
+  const fetchCountries = async () => {
+    try {
+      setLoadingCountries(true);
+      const res = await axios.get('https://restcountries.com/v3.1/all?fields=name');
+      const countryNames = res.data.map(c => c.name.common).sort();
+      setCountries(countryNames);
+      setFilteredCountries(countryNames.slice(0, 10));
+    } catch (err) {
+      console.error('Error fetching countries:', err);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
+
+  const fetchCities = async (countryName) => {
+    if (!countryName) return;
+    try {
+      setLoadingCities(true);
+      const res = await axios.post('https://countriesnow.space/api/v0.1/countries/cities', {
+        country: countryName
+      });
+      const cityNames = res.data.data.sort();
+      setCities(cityNames);
+      setFilteredCities(cityNames.slice(0, 10));
+    } catch (err) {
+      console.error('Error fetching cities:', err);
+      setCities([]);
+      setFilteredCities([]);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  // Country Search with Debounce
+  useEffect(() => {
+    if (!formData.country) {
+      setFilteredCountries(countries.slice(0, 10));
+      return;
+    }
+    const timer = setTimeout(() => {
+      const filtered = countries.filter(c => 
+        c.toLowerCase().includes(formData.country.toLowerCase())
+      );
+      setFilteredCountries(filtered.slice(0, 10));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [formData.country, countries]);
+
+  // City Search with Debounce
+  useEffect(() => {
+    if (!formData.city) {
+      setFilteredCities(cities.slice(0, 10));
+      return;
+    }
+    const timer = setTimeout(() => {
+      const filtered = cities.filter(c => 
+        c.toLowerCase().includes(formData.city.toLowerCase())
+      );
+      setFilteredCities(filtered.slice(0, 10));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [formData.city, cities]);
+
+  // Fetch cities when country changes
+  useEffect(() => {
+    const isExactMatch = countries.find(c => c.toLowerCase() === formData.country.toLowerCase());
+    if (isExactMatch) {
+      fetchCities(isExactMatch);
+    }
+  }, [formData.country, countries]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -35,7 +119,7 @@ const LeadPopup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       await api.post('/leads/subscribe', formData);
@@ -45,7 +129,7 @@ const LeadPopup = () => {
       console.error('Lead submission error:', error);
       toast.error(error.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -101,32 +185,26 @@ const LeadPopup = () => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div className="lead-form-group">
-              <label>Country</label>
-              <input
-                type="text"
-                className="lead-form-input"
-                placeholder="India"
-                required
-                value={formData.country}
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-              />
-            </div>
-            <div className="lead-form-group">
-              <label>City</label>
-              <input
-                type="text"
-                className="lead-form-input"
-                placeholder="Mumbai"
-                required
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              />
-            </div>
+            <Autocomplete
+              label="Country"
+              placeholder="India"
+              value={formData.country}
+              onChange={(val) => setFormData({ ...formData, country: val, city: '' })}
+              suggestions={filteredCountries}
+              loading={loadingCountries}
+            />
+            <Autocomplete
+              label="City"
+              placeholder="Mumbai"
+              value={formData.city}
+              onChange={(val) => setFormData({ ...formData, city: val })}
+              suggestions={filteredCities}
+              loading={loadingCities}
+            />
           </div>
 
-          <button type="submit" className="lead-submit-btn" disabled={loading}>
-            {loading ? (
+          <button type="submit" className="lead-submit-btn" disabled={isSubmitting}>
+            {isSubmitting ? (
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                 <Loader2 className="animate-spin" size={18} />
                 Submitting...
