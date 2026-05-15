@@ -31,13 +31,24 @@ export default function Home() {
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
   const [heroProductData, setHeroProductData] = useState(null);
+  const [enabledCategories, setEnabledCategories] = useState([]);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     fetchFeaturedProducts();
     fetchSiteStats();
     fetchHeroProductData();
+    fetchEnabledCategories();
   }, []);
+
+  const fetchEnabledCategories = async () => {
+    try {
+      const { data } = await api.get('categories/enabled');
+      setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+    } catch (error) {
+      console.error('Failed to fetch enabled categories:', error);
+    }
+  };
 
   const fetchHeroProductData = async () => {
     try {
@@ -233,7 +244,7 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
-            {CATEGORY_LIST.filter(c => ['premium attars', 'bakhoor', 'aroma chemicals'].includes(c.value)).map((cat, idx) => {
+            {CATEGORY_LIST.filter(c => ['premium attars', 'bakhoor', 'aroma chemicals'].includes(c.value) && enabledCategories.includes(c.value)).map((cat, idx) => {
               // Map old metadata to new categories
               const metadata = {
                 'premium attars': { subtitle: 'Pure Essence', accent: '#a78bfa' },

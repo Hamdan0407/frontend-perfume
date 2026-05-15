@@ -23,12 +23,23 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
+  const [enabledCategories, setEnabledCategories] = useState([]);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
     }
+    fetchEnabledCategories();
   }, [isAuthenticated]);
+
+  const fetchEnabledCategories = async () => {
+    try {
+      const { data } = await api.get('categories/enabled');
+      setEnabledCategories(data.map(c => c.toLowerCase().replace(/_/g, ' ')));
+    } catch (error) {
+      console.error('Failed to fetch enabled categories:', error);
+    }
+  };
 
   const fetchCart = async () => {
     try {
@@ -179,21 +190,37 @@ export default function Navbar() {
           <Link to="/" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
             Home
           </Link>
-          <Link to="/products?category=aroma chemicals" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-            Aroma Chemicals
-          </Link>
-          <Link to="/products?category=premium attars" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-            Premium Oil
-          </Link>
-          <Link to="/products?category=bakhoor" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-            Bakhoor
-          </Link>
-          <Link to="/products?category=sample collections" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-            Sample Collection
-          </Link>
-          <Link to="/products?category=boosters and bases" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-            Boosters & Bases
-          </Link>
+          
+          {enabledCategories.includes('aroma chemicals') && (
+            <Link to="/products?category=aroma chemicals" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+              Aroma Chemicals
+            </Link>
+          )}
+          
+          {enabledCategories.includes('premium attars') && (
+            <Link to="/products?category=premium attars" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+              Premium Oil
+            </Link>
+          )}
+          
+          {enabledCategories.includes('bakhoor') && (
+            <Link to="/products?category=bakhoor" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+              Bakhoor
+            </Link>
+          )}
+          
+          {enabledCategories.includes('sample collections') && (
+            <Link to="/products?category=sample collections" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+              Sample Collection
+            </Link>
+          )}
+          
+          {enabledCategories.includes('boosters and bases') && (
+            <Link to="/products?category=boosters and bases" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+              Boosters & Bases
+            </Link>
+          )}
+
           <button onClick={() => setBulkInquiryOpen(true)} className="text-[13px] font-medium uppercase tracking-[0.12em] text-amber-600 hover:text-amber-700 transition-colors duration-300">
             Bulk Enquiry
           </button>
