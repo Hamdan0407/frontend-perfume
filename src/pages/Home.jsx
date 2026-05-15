@@ -244,12 +244,14 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
-            {CATEGORY_LIST.filter(c => ['premium attars', 'bakhoor', 'aroma chemicals'].includes(c.value) && enabledCategories.includes(c.value)).map((cat, idx) => {
+            {CATEGORY_LIST.filter(c => ['premium oil', 'bakhoor', 'aroma chemicals', 'sample collections', 'boosters and bases'].includes(c.value) && enabledCategories.includes(c.value)).map((cat, idx) => {
               // Map old metadata to new categories
               const metadata = {
-                'premium attars': { subtitle: 'Pure Essence', accent: '#a78bfa' },
+                'premium oil': { subtitle: 'Pure Essence', accent: '#a78bfa' },
                 'bakhoor': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
-                'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' }
+                'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' },
+                'sample collections': { subtitle: 'Discovery Set', accent: '#f59e0b' },
+                'boosters and bases': { subtitle: 'Enhancers', accent: '#10b981' }
               }[cat.value] || { subtitle: 'Explore', accent: '#c9a96e' };
 
               const cardContent = (

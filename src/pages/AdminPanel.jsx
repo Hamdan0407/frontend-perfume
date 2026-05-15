@@ -188,7 +188,7 @@ export default function AdminPanel() {
 
   // Categories for dropdown
   // Categories for dropdown
-  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor', 'sample collections', 'boosters and bases'];
+  const categories = ['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases'];
   const getCategoryDisplayName = (cat) => {
     return formatCategory(cat);
   };

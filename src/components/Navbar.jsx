@@ -197,8 +197,8 @@ export default function Navbar() {
             </Link>
           )}
           
-          {enabledCategories.includes('premium attars') && (
-            <Link to="/products?category=premium attars" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+          {enabledCategories.includes('premium oil') && (
+            <Link to="/products?category=premium oil" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
               Premium Oil
             </Link>
           )}
