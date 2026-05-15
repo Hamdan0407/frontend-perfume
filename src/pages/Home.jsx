@@ -41,7 +41,7 @@ export default function Home() {
 
   const fetchHeroProductData = async () => {
     try {
-      const res = await api.get('hero-product');
+      const res = await api.get('products/hero');
       if (res.data && res.data.isActive && res.data.product) {
         setHeroProductData(res.data);
       }

@@ -51,9 +51,11 @@ export default function AdminPanel() {
     category: 'perfume',
     brand: '',
     imageUrl: '',
-    size: '10ml',
+    size: '30ml', // default for perfume
     type: 'Eau de Parfum',
-    active: true
+    active: true,
+    featured: false,
+    isHero: false
   });
 
   // Variants management
@@ -100,43 +102,6 @@ export default function AdminPanel() {
     freeShippingThreshold: '899',
     defaultShippingCost: '99'
   });
-
-  // Hero Product form
-  const [heroForm, setHeroForm] = useState({
-    id: null,
-    productId: '',
-    customDescription: '',
-    customImageUrl: '',
-    isActive: false
-  });
-  
-  const fetchHeroProduct = React.useCallback(async () => {
-    try {
-      const { data } = await api.get('hero-product');
-      if (data) {
-        setHeroForm({
-          id: data.id,
-          productId: data.product?.id || '',
-          customDescription: data.customDescription || '',
-          customImageUrl: data.customImageUrl || '',
-          isActive: data.isActive || false
-        });
-      }
-    } catch (err) {
-      if (err.response?.status !== 404) {
-        console.error('Error fetching hero product:', err);
-      } else {
-        // Reset if not found
-        setHeroForm({
-          id: null,
-          productId: '',
-          customDescription: '',
-          customImageUrl: '',
-          isActive: false
-        });
-      }
-    }
-  }, []);
 
   // Global discount state
   const [globalDiscount, setGlobalDiscount] = useState({ enabled: false, percentage: 0 });
@@ -390,7 +355,6 @@ export default function AdminPanel() {
     fetchUsers();
     fetchCoupons();
     fetchDashboardStats();
-    fetchHeroProduct();
   }, []);
 
   // Real-time auto-refresh every 10 seconds for dashboard
@@ -434,8 +398,7 @@ export default function AdminPanel() {
     if (activeTab === 'orders') fetchOrders();
     if (activeTab === 'users') fetchUsers();
     if (activeTab === 'coupons') fetchCoupons();
-    if (activeTab === 'hero-product') fetchHeroProduct();
-  }, [activeTab, fetchProducts, fetchOrders, fetchUsers, fetchCoupons, fetchHeroProduct]);
+  }, [activeTab, fetchProducts, fetchOrders, fetchUsers, fetchCoupons]);
 
   const handleLogout = React.useCallback(() => {
     logout();
@@ -465,7 +428,8 @@ export default function AdminPanel() {
       size: '30ml', // default for perfume
       type: 'Eau de Parfum',
       active: true,
-      featured: false
+      featured: false,
+      isHero: false
     });
     setProductVariants([]);
     setImagePreview(null);
@@ -490,7 +454,8 @@ export default function AdminPanel() {
       size: product.size || (product.category === 'attar' ? '6ml' : '30ml'),
       type: product.type || 'Eau de Parfum',
       active: product.active !== false,
-      featured: product.featured === true
+      featured: product.featured === true,
+      isHero: product.isHero || false
     };
     setProductForm(initialForm);
     formRef.current = initialForm;
@@ -610,6 +575,7 @@ export default function AdminPanel() {
       type: currentForm.type || 'Eau de Parfum',
       active: currentForm.active !== false,
       featured: currentForm.featured === true,
+      isHero: currentForm.isHero === true,
       volume: parseInt(primaryVariant.size) || 0,
       variants: variantsData
     };
@@ -635,38 +601,6 @@ export default function AdminPanel() {
       console.error('Product save error:', err);
       const errorMsg = err.response?.data?.message || 'Failed to save product';
       toast.error(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveHeroProduct = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (!heroForm.productId) {
-        toast.error('Please select a product');
-        return;
-      }
-      
-      const payload = {
-        productId: heroForm.productId,
-        customDescription: heroForm.customDescription,
-        customImageUrl: heroForm.customImageUrl,
-        isActive: heroForm.isActive
-      };
-      
-      if (heroForm.id) {
-        await api.put(`hero-product/${heroForm.id}`, payload);
-      } else {
-        await api.post('hero-product', payload);
-      }
-      
-      toast.success('Hero Product saved successfully!');
-      fetchHeroProduct();
-    } catch (err) {
-      console.error('Failed to save Hero Product:', err);
-      toast.error('Failed to save Hero Product');
     } finally {
       setLoading(false);
     }
@@ -1595,7 +1529,7 @@ export default function AdminPanel() {
     }
 
     return notifs;
-  }, [analytics, formatINR]);
+  }, [
 
   const notificationCount = React.useMemo(() =>
     currentNotifications.filter(n => n.type === 'warning' || n.type === 'danger').length,
@@ -1689,19 +1623,10 @@ export default function AdminPanel() {
               {sidebarOpen && <span>Coupons</span>}
               {sidebarOpen && <span className="nav-badge">{coupons.length}</span>}
             </button>
-
-            <button
-              className={`nav-item ${activeTab === 'hero-product' ? 'active' : ''}`}
-              onClick={() => setActiveTab('hero-product')}
-            >
-              <ImageIcon size={20} />
-              {sidebarOpen && <span>Hero Product</span>}
-            </button>
           </div>
 
           <div className="nav-section">
-            {sidebarOpen && <span className="nav-section-title">Settings</span>}
-
+            {sidebarOpen && <span className="nav-section-title">Others</span>}
             <button
               className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
               onClick={() => setActiveTab('settings')}
@@ -2014,8 +1939,7 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${((product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0) <= 5 ? 'critical' : 'warning'}`}>
-                              {(product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0} left
+                            <span className={`stock-count ${((
                             </span>
                           </div>
                         ))}
@@ -2141,9 +2065,7 @@ export default function AdminPanel() {
                                 <span className="product-name">
                                   {product.name}
                                   {product.variants && product.variants.length > 0 && (
-                                    <span style={{ fontSize: '10px', color: '#666', marginLeft: '5px', fontWeight: 'normal' }}>
-                                      ({product.variants[0].size}{product.variants[0].unit || 'ml'}{product.variants.length > 1 ? '+' : ''})
-                                    </span>
+                                    <span style={{ fontSize: '1
                                   )}
                                 </span>
                                 <span className="product-id">{product.brand || `ID: ${product.id}`}</span>
@@ -2162,8 +2084,7 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td>
-                            <span className={`stock-badge ${((product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0) < 10 ? 'low' : 'ok'}`}>
-                              {(product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0} units
+                            <span className={`stock-badge ${((
                             </span>
                           </td>
                           <td>
@@ -2551,82 +2472,6 @@ export default function AdminPanel() {
           )}
 
 
-          {/* ==================== HERO PRODUCT ==================== */}
-          {activeTab === 'hero-product' && (
-            <div className="section hero-product-section">
-              <div className="section-header">
-                <div className="section-title">
-                  <h2>Hero Product</h2>
-                  <span className="subtitle">Manage the featured product on the homepage</span>
-                </div>
-              </div>
-
-              <div className="settings-grid">
-                <div className="settings-card" style={{ gridColumn: '1 / -1' }}>
-                  <form onSubmit={handleSaveHeroProduct} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div className="form-group">
-                      <label>Select Product</label>
-                      <select 
-                        className="form-input"
-                        value={heroForm.productId}
-                        onChange={(e) => setHeroForm({ ...heroForm, productId: e.target.value })}
-                        required
-                      >
-                        <option value="">-- Select a product --</option>
-                        {products.filter(p => p.active !== false).map(p => (
-                          <option key={p.id} value={p.id}>{p.name} - {formatINR(p.price)}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Custom Short Description (Optional)</label>
-                      <textarea
-                        className="form-input"
-                        value={heroForm.customDescription}
-                        onChange={(e) => setHeroForm({ ...heroForm, customDescription: e.target.value })}
-                        placeholder="Overrides the default product description on the hero banner..."
-                        rows="3"
-                      ></textarea>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Custom Hero Image URL (Optional)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={heroForm.customImageUrl}
-                        onChange={(e) => setHeroForm({ ...heroForm, customImageUrl: e.target.value })}
-                        placeholder="Overrides the default product image (URL)..."
-                      />
-                      {heroForm.customImageUrl && (
-                        <div style={{ marginTop: '10px' }}>
-                          <img src={heroForm.customImageUrl} alt="Hero Preview" style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'cover' }} />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="form-group checkbox-group">
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input
-                          type="checkbox"
-                          checked={heroForm.isActive}
-                          onChange={(e) => setHeroForm({ ...heroForm, isActive: e.target.checked })}
-                          style={{ width: '18px', height: '18px' }}
-                        />
-                        Enable Hero Product Section on Homepage
-                      </label>
-                    </div>
-
-                    <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }} disabled={loading}>
-                      {loading ? 'Saving...' : 'Save Hero Product'}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ==================== SETTINGS ==================== */}
           {activeTab === 'settings' && (
             <div className="section settings-section">
@@ -2973,33 +2818,6 @@ export default function AdminPanel() {
                         {categories.map(cat => (
                           <option key={cat} value={cat}>{getCategoryDisplayName(cat)}</option>
                         ))}
-                      </select>
-                    </div>
-
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label className="flex justify-between items-center">
-                        Type
-                        <div className="flex gap-2 items-center">
-                          <input
-                            type="text"
-                            placeholder="Add new..."
-                            className="text-xs px-2 py-1 border rounded w-24"
-                            value={newType}
-                            onChange={(e) => setNewType(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addProductType())}
-                          />
-                          <button
-                            type="button"
-                            onClick={addProductType}
-                            className="p-1 bg-primary text-white rounded hover:bg-primary/90"
-                            title="Add Type"
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
                       </label>
                       <div className="flex gap-2 items-center mt-1">
                         <select
@@ -3036,6 +2854,9 @@ export default function AdminPanel() {
                         <option value="inactive">✗ Inactive</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="form-row">
                     <div className="form-group">
                       <label className="flex items-center gap-2 cursor-pointer mt-7">
                         <input
@@ -3044,7 +2865,18 @@ export default function AdminPanel() {
                           checked={productForm.featured || false}
                           onChange={(e) => setProductForm({ ...productForm, featured: e.target.checked })}
                         />
-                        <span className="text-sm font-medium">Featured Product</span>
+                        <span className="text-sm font-medium">Featured</span>
+                      </label>
+                    </div>
+                    <div className="form-group">
+                      <label className="flex items-center gap-2 cursor-pointer mt-7">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          checked={productForm.isHero || false}
+                          onChange={(e) => setProductForm({ ...productForm, isHero: e.target.checked })}
+                        />
+                        <span className="text-sm font-medium">Set as Hero Product</span>
                       </label>
                     </div>
                   </div>
