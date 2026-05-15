@@ -13,6 +13,14 @@ export function cn(...inputs) {
 export function formatCategory(category) {
   if (!category) return "";
 
+  // If category is an object, extract the string value
+  let catStr = category;
+  if (typeof category === 'object') {
+    catStr = category.name || category.displayName || category.label || category.id || "";
+  }
+
+  if (!catStr || typeof catStr !== 'string') return "";
+
   // Special mapping for common backend enums to specific labels if needed
   const mapping = {
     'PREMIUM_ATTARS': 'Premium Oil',
@@ -23,13 +31,13 @@ export function formatCategory(category) {
     'BOOSTERS_AND_BASES': 'Boosters & Bases'
   };
 
-  const upperCat = String(category || '').toUpperCase().replace(/ /g, "_");
+  const upperCat = String(catStr || '').toUpperCase().replace(/ /g, "_");
   if (mapping[upperCat]) {
     return mapping[upperCat];
   }
 
   // Generic fallback: PREMIUM_OIL -> Premium Oil
-  return String(category || '')
+  return String(catStr || '')
     .toLowerCase()
     .split(/_|\s/) // Split by underscore or space
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
