@@ -17,6 +17,11 @@ export const PRODUCT_CATEGORIES = {
         label: 'Aroma Chemicals',
         value: 'aroma chemicals',
         path: '/products?category=aroma chemicals'
+    },
+    BOOSTERS_AND_BASES: {
+        label: 'Booster & Bases',
+        value: 'boosters and bases',
+        path: '/products?category=boosters and bases'
     }
 };
 

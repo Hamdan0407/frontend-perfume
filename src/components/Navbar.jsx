@@ -24,7 +24,7 @@ export default function Navbar() {
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
   // Default to only requested categories
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor']);
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases']);
 
   useEffect(() => {
     fetchEnabledCategories();
@@ -40,11 +40,11 @@ export default function Navbar() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        // Filter to only allow the 3 requested categories
+        // Filter to only allow the 4 requested categories
         const filtered = data.filter(cat => {
           if (!cat) return false;
           const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
-          return ['aroma chemicals', 'premium oil', 'bakhoor'].includes(name);
+          return ['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases'].includes(name);
         });
         setEnabledCategories(filtered);
       }
