@@ -15,7 +15,7 @@ import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
 import CountUp from '../components/ui/CountUp';
 import toast from '../utils/toast';
 import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin, Eye, Star } from 'lucide-react';
-import { CATEGORY_LIST } from '../constants/productCategories';
+
 
 import '../styles/HomeTheme.css';
 
@@ -46,7 +46,7 @@ export default function Home() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        setEnabledCategories(data.map(c => (c || '').toLowerCase().replace(/_/g, ' ')));
+        setEnabledCategories(data);
       }
     } catch (error) {
       console.warn('Failed to fetch enabled categories on Home:', error.message);
@@ -247,18 +247,22 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
-            {(Array.isArray(CATEGORY_LIST) ? CATEGORY_LIST : []).filter(c => ['premium oil', 'bakhoor', 'aroma chemicals', 'sample collections', 'boosters and bases'].includes(c.value) && (enabledCategories || []).includes(c.value)).map((cat, idx) => {
-              // Map old metadata to new categories
+            {(enabledCategories || []).map((cat, idx) => {
+              // Map metadata to categories dynamically
               const metadata = {
-                'premium oil': { subtitle: 'Pure Essence', accent: '#a78bfa' },
-                'bakhoor': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
-                'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' },
-                'sample collections': { subtitle: 'Discovery Set', accent: '#f59e0b' },
-                'boosters and bases': { subtitle: 'Enhancers', accent: '#10b981' }
-              }[cat.value] || { subtitle: 'Explore', accent: '#c9a96e' };
+                'PREMIUM_OIL': { subtitle: 'Pure Essence', accent: '#a78bfa' },
+                'BAKHOOR': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
+                'AROMA_CHEMICALS': { subtitle: 'Raw Ingredients', accent: '#38bdf8' },
+                'SAMPLE_COLLECTIONS': { subtitle: 'Discovery Set', accent: '#f59e0b' },
+                'BOOSTERS_AND_BASES': { subtitle: 'Enhancers', accent: '#10b981' }
+              }[cat.name || cat] || { subtitle: 'Explore', accent: '#c9a96e' };
 
-              const cardContent = (
-                <>
+              return (
+                <Link
+                  key={cat.name || (typeof cat === 'string' ? cat : idx)}
+                  to={`/products?category=${cat.name || cat}`}
+                  className="group relative h-72 sm:h-80 overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-700"
+                >
                   {/* Black gradient background */}
                   <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-black to-gray-900 transition-all duration-500" />
 
@@ -298,29 +302,16 @@ export default function Home() {
                       {metadata.subtitle}
                     </span>
 
-                    {/* Category Name */}
-                    <h3
-                      className="text-white text-base sm:text-lg lg:text-xl font-bold tracking-wide group-hover:tracking-wider transition-all duration-500 leading-tight"
-                      style={{
-                        textShadow: `0 0 20px ${metadata.accent}30`
-                      }}
-                    >
-                      {cat.label}
+                    {/* Main Title */}
+                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-6 group-hover:scale-110 transition-transform duration-500">
+                      {cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Collection')}
                     </h3>
 
-                    {/* Decorative bottom element */}
-                    <div
-                      className="w-8 h-[1px] mt-4 opacity-40 group-hover:w-12 group-hover:opacity-80 transition-all duration-500"
-                      style={{ backgroundColor: metadata.accent }}
-                    />
-
-                    {/* Explore / Coming Soon Link */}
-                    <span className="mt-4 text-[10px] sm:text-xs text-white/40 group-hover:text-white/80 tracking-widest uppercase transition-all duration-300 flex items-center gap-1">
-                        <>
-                          Explore
-                          <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
-                        </>
-                    </span>
+                    {/* Shop Button Style Link */}
+                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-white text-[10px] sm:text-xs font-semibold uppercase tracking-widest group-hover:bg-white group-hover:text-black transition-all duration-500">
+                      Shop Now
+                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
 
                   {/* Bottom accent line */}
@@ -328,21 +319,8 @@ export default function Home() {
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-3/4 transition-all duration-500 ease-out rounded-full"
                     style={{ backgroundColor: metadata.accent }}
                   />
-                </>
-              );
-
-              return (
-                <Link
-                  key={cat.value}
-                  to={cat.path}
-                  className="group relative overflow-hidden rounded-2xl aspect-[3/4] cursor-pointer"
-                  style={{
-                    animationDelay: `${idx * 100}ms`,
-                  }}
-                >
-                  {cardContent}
                 </Link>
-              )
+              );
             })}
           </div>
         </div>
