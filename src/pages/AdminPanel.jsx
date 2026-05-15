@@ -188,9 +188,14 @@ export default function AdminPanel() {
 
   // Categories for dropdown
   // Categories for dropdown
-  const categories = ['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases'];
+  // Dynamically derived categories from backend settings
+  const categories = React.useMemo(() => {
+    return categorySettings.map(s => s.category.toLowerCase().replace(/_/g, ' '));
+  }, [categorySettings]);
+
   const getCategoryDisplayName = (cat) => {
-    return formatCategory(cat);
+    const setting = categorySettings.find(s => s.category.toLowerCase().replace(/_/g, ' ') === cat?.toLowerCase() || s.category === cat);
+    return setting?.label || formatCategory(cat);
   };
 
   // Product Types state with persistence
@@ -2529,21 +2534,22 @@ export default function AdminPanel() {
               </div>
 
               <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                {categories.map(cat => {
-                  const setting = categorySettings.find(s => s.category.toLowerCase().replace(/_/g, ' ') === cat.toLowerCase());
-                  const isEnabled = setting ? setting.enabled : true;
+                {categorySettings.map(setting => {
+                  const cat = setting.category;
+                  const displayName = setting.label || formatCategory(cat);
+                  const isEnabled = setting.enabled;
 
                   return (
                     <div key={cat} className="category-setting-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                       <div>
-                        <h3 style={{ margin: 0, textTransform: 'capitalize', fontSize: '16px', fontWeight: '600' }}>{formatCategory(cat)}</h3>
+                        <h3 style={{ margin: 0, textTransform: 'capitalize', fontSize: '16px', fontWeight: '600' }}>{displayName}</h3>
                         <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>
                           {isEnabled ? 'Visible on website' : 'Hidden from website'}
                         </p>
                       </div>
                       <button
                         className={`status-toggle ${isEnabled ? 'active' : 'inactive'}`}
-                        onClick={() => handleToggleCategory(cat.toUpperCase().replace(/ /g, '_'), !isEnabled)}
+                        onClick={() => handleToggleCategory(cat, !isEnabled)}
                         style={{ 
                           padding: '6px 16px', 
                           borderRadius: '20px', 
@@ -2912,8 +2918,8 @@ export default function AdminPanel() {
                         }}
                         required
                       >
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{getCategoryDisplayName(cat)}</option>
+                        {categorySettings.map(s => (
+                          <option key={s.category} value={s.category}>{s.label || formatCategory(s.category)}</option>
                         ))}
                       </select>
                       <div className="flex gap-2 items-center mt-1">

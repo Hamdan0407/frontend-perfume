@@ -40,11 +40,11 @@ export default function Navbar() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        setEnabledCategories(data.map(c => (c || '').toLowerCase().replace(/_/g, ' ')));
+        setEnabledCategories(data);
       }
     } catch (error) {
       // On error (e.g. 401), keep the default list so UI doesn't break
-      console.warn('Failed to fetch enabled categories, using defaults:', error.message);
+      console.warn('Failed to fetch enabled categories:', error.message);
     }
   };
 
@@ -114,11 +114,16 @@ export default function Navbar() {
                   </SheetHeader>
                   <div className="flex flex-col py-2">
                     <Link to="/" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-                    {enabledCategories.includes('aroma chemicals') && <Link to="/products?category=aroma chemicals" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Aroma Chemicals</Link>}
-                    {enabledCategories.includes('premium oil') && <Link to="/products?category=premium oil" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Premium Oil</Link>}
-                    {enabledCategories.includes('bakhoor') && <Link to="/products?category=bakhoor" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Bakhoor</Link>}
-                    {enabledCategories.includes('sample collections') && <Link to="/products?category=sample collections" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Sample Collections</Link>}
-                    {enabledCategories.includes('boosters and bases') && <Link to="/products?category=boosters and bases" className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" onClick={() => setMobileMenuOpen(false)}>Boosters & Bases</Link>}
+                    {enabledCategories.map((cat) => (
+                      <Link 
+                        key={cat.slug || cat.name || (typeof cat === 'string' ? cat : 'cat')}
+                        to={`/products?category=${cat.name || cat}`} 
+                        className="px-6 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900" 
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category')}
+                      </Link>
+                    ))}
                     <button onClick={() => { setMobileMenuOpen(false); setBulkInquiryOpen(true); }} className="px-6 py-3 text-sm font-medium text-left text-amber-600 hover:bg-gray-50 dark:hover:bg-slate-900">Bulk Enquiry</button>
                   </div>
                 </SheetContent>
@@ -223,47 +228,27 @@ export default function Navbar() {
           </div>
         </div>
 
+
         {/* Row 2: Desktop Navigation Links */}
         <div className="hidden md:flex items-center justify-center gap-10 h-11 border-t border-border/30">
           <Link to="/" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
             Home
           </Link>
           
-          {(enabledCategories || []).includes('aroma chemicals') && (
-            <Link to="/products?category=aroma chemicals" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-              Aroma Chemicals
+          {(enabledCategories || []).map((cat) => (
+            <Link 
+              key={cat.slug || cat.name || (typeof cat === 'string' ? cat : 'cat')}
+              to={`/products?category=${cat.name || cat}`} 
+              className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full"
+            >
+              {cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category')}
             </Link>
-          )}
-          
-          {(enabledCategories || []).includes('premium oil') && (
-            <Link to="/products?category=premium oil" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-              Premium Oil
-            </Link>
-          )}
-          
-          {(enabledCategories || []).includes('bakhoor') && (
-            <Link to="/products?category=bakhoor" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-              Bakhoor
-            </Link>
-          )}
-          
-          {(enabledCategories || []).includes('sample collections') && (
-            <Link to="/products?category=sample collections" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-              Sample Collections
-            </Link>
-          )}
-          
-          {(enabledCategories || []).includes('boosters and bases') && (
-            <Link to="/products?category=boosters and bases" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
-              Boosters & Bases
-            </Link>
-          )}
+          ))}
 
           <button onClick={() => setBulkInquiryOpen(true)} className="text-[13px] font-medium uppercase tracking-[0.12em] text-amber-600 hover:text-amber-700 transition-colors duration-300">
             Bulk Enquiry
           </button>
         </div>
-
         {/* Search Bar (Collapsible - used on all screen sizes) */}
         {mobileSearchOpen && (
           <div className="pb-4 px-2 animate-in slide-in-from-top-2 relative border-t border-border/30">
