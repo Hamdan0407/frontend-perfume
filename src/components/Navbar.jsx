@@ -23,8 +23,8 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
-  // Default to all categories until API returns (prevents flickering/empty navbar)
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
+  // Default to only requested categories
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor']);
 
   useEffect(() => {
     fetchEnabledCategories();
@@ -40,7 +40,13 @@ export default function Navbar() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        setEnabledCategories(data);
+        // Filter to only allow the 3 requested categories
+        const filtered = data.filter(cat => {
+          if (!cat) return false;
+          const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
+          return ['aroma chemicals', 'premium oil', 'bakhoor'].includes(name);
+        });
+        setEnabledCategories(filtered);
       }
     } catch (error) {
       // On error (e.g. 401), keep the default list so UI doesn't break

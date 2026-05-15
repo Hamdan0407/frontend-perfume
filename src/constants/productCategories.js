@@ -17,16 +17,6 @@ export const PRODUCT_CATEGORIES = {
         label: 'Aroma Chemicals',
         value: 'aroma chemicals',
         path: '/products?category=aroma chemicals'
-    },
-    SAMPLE_COLLECTIONS: {
-        label: 'Sample Collections',
-        value: 'sample collections',
-        path: '/products?category=sample collections'
-    },
-    BOOSTERS_AND_BASES: {
-        label: 'Boosters & Bases',
-        value: 'boosters and bases',
-        path: '/products?category=boosters and bases'
     }
 };
 

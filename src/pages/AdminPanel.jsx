@@ -12,6 +12,7 @@ import toast from '../utils/toast';
 import { formatCategory } from '../lib/utils';
 import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
+import { CATEGORY_LIST } from '../constants/productCategories';
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -189,10 +190,10 @@ export default function AdminPanel() {
   // Categories for dropdown
   // Categories for dropdown
   // Dynamically derived categories from backend settings
-  const categories = React.useMemo(() => {
+  const safeCategories = React.useMemo(() => {
     return (categorySettings || [])
-      .filter(s => s && s.category)
-      .map(s => String(s?.category || '').toLowerCase().replace(/_/g, ' '));
+      .filter(s => s && s.enabled)
+      .map(s => s.category);
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {
@@ -2904,24 +2905,22 @@ export default function AdminPanel() {
                       <label>Category *</label>
                       <select
                         className="form-input"
-                        value={productForm.category}
+                        value={productForm.category || ''}
                         onChange={(e) => {
-                          const newCategory = e.target.value;
-                          let defaultSize = '30ml';
-                          if (['attar', 'premium attars', 'oud reserve'].includes(newCategory)) defaultSize = '6ml';
-                          else if (newCategory === 'aroma chemicals') defaultSize = '50g';
-                          else if (newCategory === 'boosters and bases') defaultSize = '500ml';
-
+                          const val = e.target.value;
                           setProductForm(prev => {
-                            const next = { ...prev, category: newCategory, size: defaultSize };
+                            const next = { ...prev, category: val };
                             formRef.current = next;
                             return next;
                           });
                         }}
                         required
                       >
-                        {categorySettings.map(s => (
-                          <option key={s.category} value={s.category}>{s.label || formatCategory(s.category)}</option>
+                        <option value="">Select Category</option>
+                        {safeCategories.map(cat => (
+                          <option key={cat} value={cat}>
+                            {getCategoryDisplayName(cat)}
+                          </option>
                         ))}
                       </select>
                       <div className="flex gap-2 items-center mt-1">

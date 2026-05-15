@@ -31,8 +31,8 @@ export default function Home() {
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
   const [heroProductData, setHeroProductData] = useState(null);
-  // Default to all categories until API returns (prevents flickering/empty section)
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'sample collections', 'boosters and bases']);
+  // Default to only requested categories (prevents flickering/empty section)
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor']);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -47,7 +47,12 @@ export default function Home() {
       const { data } = await api.get('categories/enabled');
       // Ensure data is an array and filter out any null/undefined entries
       if (Array.isArray(data)) {
-        setEnabledCategories(data.filter(Boolean));
+        // Filter to only allow the 3 requested categories
+        setEnabledCategories(data.filter(cat => {
+          if (!cat) return false;
+          const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
+          return ['aroma chemicals', 'premium oil', 'bakhoor'].includes(name);
+        }));
       }
     } catch (error) {
       console.warn('Failed to fetch enabled categories on Home:', error.message);
@@ -252,7 +257,7 @@ export default function Home() {
               Find the perfect fragrance tailored to your style
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
             {(enabledCategories || []).map((cat, idx) => {
               if (!cat) return null;
               // Map metadata to categories dynamically
