@@ -1,7 +1,29 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Instagram, Facebook, Twitter, Linkedin, TrendingUp } from 'lucide-react';
+import api from '../api/axios';
+import { CATEGORY_ORDER } from '../constants/productCategories';
 
 export default function Footer() {
+  const [enabledCategories, setEnabledCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get('categories/enabled');
+        if (Array.isArray(data)) {
+          const sorted = CATEGORY_ORDER
+            .map(orderKey => data.find(cat => (cat.name || cat).toUpperCase() === orderKey))
+            .filter(Boolean);
+          setEnabledCategories(sorted);
+        }
+      } catch (err) {
+        console.warn('Footer categories fetch failed');
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <footer className="bg-white text-gray-800 mt-16 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -20,13 +42,15 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-gray-900">Quick Links</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link to="/products" className="hover:text-amber-500 transition-colors">Shop All</Link></li>
-              <li><Link to="/products?category=sample collections" className="hover:text-amber-500 transition-colors">Sample Collections</Link></li>
-              <li><Link to="/products?category=parfum" className="hover:text-amber-500 transition-colors">Parfum</Link></li>
-              <li><Link to="/products?category=premium attars" className="hover:text-amber-500 transition-colors">Premium Oil</Link></li>
-              <li><Link to="/products?category=oud reserve" className="hover:text-amber-500 transition-colors">Oud Reserve</Link></li>
-              <li><Link to="/products?category=bakhoor" className="hover:text-amber-500 transition-colors">Bakhoor</Link></li>
-              <li><Link to="/products?category=aroma chemicals" className="hover:text-amber-500 transition-colors">Aroma Chemicals</Link></li>
+              <li><Link to="/" className="hover:text-amber-500 transition-colors">Home</Link></li>
+              {enabledCategories.map(cat => (
+                <li key={cat.name || cat}>
+                  <Link to={`/products?category=${cat.name || cat}`} className="hover:text-amber-500 transition-colors">
+                    {cat.label || (typeof cat === 'string' ? cat.replace(/_/g, ' ') : 'Category')}
+                  </Link>
+                </li>
+              ))}
+              <li><Link to="/products?category=bulk enquiry" className="hover:text-amber-500 transition-colors">Bulk Enquiry</Link></li>
             </ul>
           </div>
 

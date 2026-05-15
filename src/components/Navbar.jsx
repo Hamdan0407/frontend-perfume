@@ -24,7 +24,15 @@ export default function Navbar() {
   const [loading, setLoading] = useState(false);
   const [bulkInquiryOpen, setBulkInquiryOpen] = useState(false);
   // Default to only requested categories
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases']);
+  const [enabledCategories, setEnabledCategories] = useState([]);
+
+  // Fixed order for categories
+  const CATEGORY_ORDER = [
+    'AROMA_CHEMICALS',
+    'BOOSTERS_AND_BASES',
+    'PREMIUM_OIL',
+    'BAKHOOR'
+  ];
 
   useEffect(() => {
     fetchEnabledCategories();
@@ -40,16 +48,19 @@ export default function Navbar() {
     try {
       const { data } = await api.get('categories/enabled');
       if (Array.isArray(data)) {
-        // Filter to only allow the 4 requested categories
-        const filtered = data.filter(cat => {
-          if (!cat) return false;
-          const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
-          return ['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases'].includes(name);
-        });
-        setEnabledCategories(filtered);
+        // Filter and sort according to the fixed order
+        const sorted = CATEGORY_ORDER
+          .map(orderKey => {
+            return data.find(cat => {
+              const name = (cat.name || cat).toUpperCase();
+              return name === orderKey;
+            });
+          })
+          .filter(Boolean); // Remove if category is disabled (not found in data)
+
+        setEnabledCategories(sorted);
       }
     } catch (error) {
-      // On error (e.g. 401), keep the default list so UI doesn't break
       console.warn('Failed to fetch enabled categories:', error.message);
     }
   };

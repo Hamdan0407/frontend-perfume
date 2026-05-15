@@ -45,20 +45,30 @@ export default function Home() {
   }, []);
 
   const fetchEnabledCategories = async () => {
+    const CATEGORY_ORDER = [
+      'AROMA_CHEMICALS',
+      'BOOSTERS_AND_BASES',
+      'PREMIUM_OIL',
+      'BAKHOOR'
+    ];
+
     try {
       const { data } = await api.get('categories/enabled');
-      // Ensure data is an array and filter out any null/undefined entries
       if (Array.isArray(data)) {
-        // Filter to only allow the 4 requested categories
-        setEnabledCategories(data.filter(cat => {
-          if (!cat) return false;
-          const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
-          return ['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases'].includes(name);
-        }));
+        // Filter and sort according to the fixed order
+        const sorted = CATEGORY_ORDER
+          .map(orderKey => {
+            return data.find(cat => {
+              const name = (cat.name || cat).toUpperCase();
+              return name === orderKey;
+            });
+          })
+          .filter(Boolean); // Remove if category is disabled
+
+        setEnabledCategories(sorted);
       }
     } catch (error) {
       console.warn('Failed to fetch enabled categories on Home:', error.message);
-      // Fallback to basic categories if API fails completely
     }
   };
 
