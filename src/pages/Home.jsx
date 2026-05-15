@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
+
+const LeadPopup = lazy(() => import('../components/LeadPopup'));
 import productAPI from '../api/productAPI';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
@@ -665,6 +667,10 @@ export default function Home() {
 
       {/* Purchase Notifications - Only on Home Page */}
       <PurchaseNotification />
+
+      <Suspense fallback={null}>
+        <LeadPopup />
+      </Suspense>
     </div>
   );
 }

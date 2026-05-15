@@ -23,6 +23,7 @@ export default function AdminPanel() {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [coupons, setCoupons] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [categorySettings, setCategorySettings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -366,6 +367,15 @@ export default function AdminPanel() {
     }
   }, []);
 
+  const fetchLeads = React.useCallback(async () => {
+    try {
+      const { data } = await api.get('leads/all');
+      setLeads(data || []);
+    } catch (err) {
+      console.error('Error loading leads:', err);
+    }
+  }, []);
+
   // Fetch Category Settings
   const fetchCategorySettings = React.useCallback(async () => {
     try {
@@ -393,6 +403,7 @@ export default function AdminPanel() {
     fetchOrders();
     fetchUsers();
     fetchCoupons();
+    fetchLeads();
     fetchCategorySettings();
     fetchDashboardStats();
   }, []);
@@ -438,6 +449,7 @@ export default function AdminPanel() {
     if (activeTab === 'orders') fetchOrders();
     if (activeTab === 'users') fetchUsers();
     if (activeTab === 'coupons') fetchCoupons();
+    if (activeTab === 'leads') fetchLeads();
   }, [activeTab, fetchProducts, fetchOrders, fetchUsers, fetchCoupons]);
 
   const handleLogout = React.useCallback(() => {
@@ -452,6 +464,34 @@ export default function AdminPanel() {
     setLastUpdated(new Date());
     toast.success('Data refreshed!');
   }, [fetchProducts, fetchOrders, fetchUsers]);
+
+  const exportLeadsToCSV = () => {
+    if (leads.length === 0) return;
+    
+    const headers = ['Name', 'Email', 'Phone', 'Country', 'City', 'Created At'];
+    const rows = leads.map(l => [
+      l.name,
+      l.email,
+      l.phone,
+      l.country,
+      l.city,
+      new Date(l.createdAt).toLocaleString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `leads_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // ==================== PRODUCT OPERATIONS ====================
 
@@ -1671,6 +1711,15 @@ export default function AdminPanel() {
               {sidebarOpen && <span>Coupons</span>}
               {sidebarOpen && <span className="nav-badge">{coupons.length}</span>}
             </button>
+
+            <button
+              className={`nav-item ${activeTab === 'leads' ? 'active' : ''}`}
+              onClick={() => setActiveTab('leads')}
+            >
+              <FileText size={20} />
+              {sidebarOpen && <span>Leads</span>}
+              {sidebarOpen && <span className="nav-badge">{leads.length}</span>}
+            </button>
           </div>
 
           <div className="nav-section">
@@ -2518,6 +2567,132 @@ export default function AdminPanel() {
                     <Plus size={18} />
                     Create First Coupon
                   </button>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* ==================== LEADS ==================== */}
+          {activeTab === 'leads' && (
+            <div className="section">
+              <div className="section-header">
+                <div className="section-title">
+                  <h2>Lead Generation</h2>
+                  <span className="subtitle">{leads.length} total subscribers</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={exportLeadsToCSV}
+                    className="btn btn-outline"
+                    disabled={leads.length === 0}
+                  >
+                    <Download size={18} />
+                    Export CSV
+                  </button>
+                  <button
+                    onClick={fetchLeads}
+                    className="btn btn-primary"
+                  >
+                    <RefreshCw size={18} />
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              <div className="section-filters">
+                <div className="search-box">
+                  <Search size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search leads by name, email or phone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="loading-state">
+                  <div className="spinner"></div>
+                  <p>Loading leads...</p>
+                </div>
+              ) : leads.length > 0 ? (
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Subscriber</th>
+                        <th>Contact Info</th>
+                        <th>Location</th>
+                        <th>Joined Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads
+                        .filter(l => 
+                          String(l.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          String(l.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          String(l.phone || '').includes(searchQuery) ||
+                          String(l.city || '').toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .map(lead => (
+                          <tr key={lead.id}>
+                            <td>
+                              <div className="user-cell">
+                                <div className="user-avatar small">
+                                  {String(lead.name || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{lead.name}</span>
+                                  <span className="text-xs text-slate-500">ID: #{lead.id}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Bell size={12} className="text-slate-400" />
+                                  <span>{lead.email}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <ArrowUpRight size={12} className="text-slate-400" />
+                                  <span>{lead.phone}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-2">
+                                <MapPin size={14} className="text-slate-400" />
+                                <span>{lead.city}, {lead.country}</span>
+                              </div>
+                            </td>
+                            <td className="date-cell">
+                              <div className="flex flex-col">
+                                <span>{new Date(lead.createdAt).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}</span>
+                                <span className="text-xs text-slate-400">
+                                  {new Date(lead.createdAt).toLocaleTimeString('en-IN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon-wrapper">
+                    <Users size={48} />
+                  </div>
+                  <h3>No Leads Found</h3>
+                  <p>Your subscription popup will start gathering leads soon.</p>
                 </div>
               )}
             </div>
