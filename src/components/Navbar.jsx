@@ -11,6 +11,7 @@ import BulkInquiryModal from './BulkInquiryModal';
 
 // Navbar-specific categories — curated display order for navigation dropdown
 const NAVBAR_CATEGORIES = [
+  { label: 'Sample Collections', value: 'sample collections', path: '/products?category=sample collections' },
   { label: 'Premium Oil', value: 'premium attars', path: '/products?category=premium attars' },
   { label: 'Bakhoor', value: 'bakhoor', path: '/products?category=bakhoor' },
 ];

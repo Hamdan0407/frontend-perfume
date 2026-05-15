@@ -51,9 +51,11 @@ export default function AdminPanel() {
     category: 'perfume',
     brand: '',
     imageUrl: '',
-    size: '10ml',
+    size: '30ml', // default for perfume
     type: 'Eau de Parfum',
-    active: true
+    active: true,
+    featured: false,
+    isHero: false
   });
 
   // Variants management
@@ -184,7 +186,7 @@ export default function AdminPanel() {
   }, [dashboardStats, products]);
 
   // Categories for dropdown
-  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor'];
+  const categories = ['perfume', 'aroma chemicals', 'premium attars', 'oud reserve', 'bakhoor', 'sample collections'];
   const getCategoryDisplayName = (cat) => {
     return formatCategory(cat);
   };
@@ -230,6 +232,8 @@ export default function AdminPanel() {
       return ['30ml', '50ml', '100ml'];
     } else if (category === 'aroma chemicals') {
       return ['50g', '100g', '250g', '500g', '1kg'];
+    } else if (category === 'sample collections') {
+      return ['2ml', '3ml', '5ml', '10ml', 'Kit'];
     }
     return ['30ml', '50ml', '100ml']; // default for perfume
   };
@@ -424,7 +428,8 @@ export default function AdminPanel() {
       size: '30ml', // default for perfume
       type: 'Eau de Parfum',
       active: true,
-      featured: false
+      featured: false,
+      isHero: false
     });
     setProductVariants([]);
     setImagePreview(null);
@@ -449,7 +454,8 @@ export default function AdminPanel() {
       size: product.size || (product.category === 'attar' ? '6ml' : '30ml'),
       type: product.type || 'Eau de Parfum',
       active: product.active !== false,
-      featured: product.featured === true
+      featured: product.featured === true,
+      isHero: product.isHero || false
     };
     setProductForm(initialForm);
     formRef.current = initialForm;
@@ -569,6 +575,7 @@ export default function AdminPanel() {
       type: currentForm.type || 'Eau de Parfum',
       active: currentForm.active !== false,
       featured: currentForm.featured === true,
+      isHero: currentForm.isHero === true,
       volume: parseInt(primaryVariant.size) || 0,
       variants: variantsData
     };
@@ -614,7 +621,7 @@ export default function AdminPanel() {
 
         if (attarProducts.length === 0) return;
 
-        toast(`Migrating ${attarProducts.length} product(s) from "attar" to "premium attars"...`, { icon: 'ℹ️' });
+        toast(`Migrating ${attarProducts.length} product(s) from "attar" to "premium oil"...`, { icon: 'ℹ️' });
 
         let successCount = 0;
         for (const p of attarProducts) {
@@ -633,7 +640,7 @@ export default function AdminPanel() {
         }
 
         if (successCount > 0) {
-          toast.success(`Migrated ${successCount} product(s) to Premium Attars!`);
+          toast.success(`Migrated ${successCount} product(s) to Premium Oil!`);
           fetchProducts();
         }
       } catch (err) {
@@ -1093,7 +1100,7 @@ export default function AdminPanel() {
     doc.setTextColor(...accentColor);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Premium Scents & Luxury Attars', 20, 29);
+    doc.text('Premium Scents & Luxury Oils', 20, 29);
 
     // INVOICE title (right side)
     doc.setTextColor(...primaryColor);
@@ -1522,7 +1529,7 @@ export default function AdminPanel() {
     }
 
     return notifs;
-  }, [analytics, formatINR]);
+  }, [
 
   const notificationCount = React.useMemo(() =>
     currentNotifications.filter(n => n.type === 'warning' || n.type === 'danger').length,
@@ -1619,8 +1626,7 @@ export default function AdminPanel() {
           </div>
 
           <div className="nav-section">
-            {sidebarOpen && <span className="nav-section-title">Settings</span>}
-
+            {sidebarOpen && <span className="nav-section-title">Others</span>}
             <button
               className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
               onClick={() => setActiveTab('settings')}
@@ -1933,8 +1939,7 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${((product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0) <= 5 ? 'critical' : 'warning'}`}>
-                              {(product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0} left
+                            <span className={`stock-count ${((
                             </span>
                           </div>
                         ))}
@@ -2060,9 +2065,7 @@ export default function AdminPanel() {
                                 <span className="product-name">
                                   {product.name}
                                   {product.variants && product.variants.length > 0 && (
-                                    <span style={{ fontSize: '10px', color: '#666', marginLeft: '5px', fontWeight: 'normal' }}>
-                                      ({product.variants[0].size}{product.variants[0].unit || 'ml'}{product.variants.length > 1 ? '+' : ''})
-                                    </span>
+                                    <span style={{ fontSize: '1
                                   )}
                                 </span>
                                 <span className="product-id">{product.brand || `ID: ${product.id}`}</span>
@@ -2081,8 +2084,7 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td>
-                            <span className={`stock-badge ${((product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0) < 10 ? 'low' : 'ok'}`}>
-                              {(product.variants?.length > 0 ? product.variants.reduce((s,v) => s + (v.stock||0), 0) : product.stock) || 0} units
+                            <span className={`stock-badge ${((
                             </span>
                           </td>
                           <td>
@@ -2469,6 +2471,7 @@ export default function AdminPanel() {
             </div>
           )}
 
+
           {/* ==================== SETTINGS ==================== */}
           {activeTab === 'settings' && (
             <div className="section settings-section">
@@ -2815,33 +2818,6 @@ export default function AdminPanel() {
                         {categories.map(cat => (
                           <option key={cat} value={cat}>{getCategoryDisplayName(cat)}</option>
                         ))}
-                      </select>
-                    </div>
-
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label className="flex justify-between items-center">
-                        Type
-                        <div className="flex gap-2 items-center">
-                          <input
-                            type="text"
-                            placeholder="Add new..."
-                            className="text-xs px-2 py-1 border rounded w-24"
-                            value={newType}
-                            onChange={(e) => setNewType(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addProductType())}
-                          />
-                          <button
-                            type="button"
-                            onClick={addProductType}
-                            className="p-1 bg-primary text-white rounded hover:bg-primary/90"
-                            title="Add Type"
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
                       </label>
                       <div className="flex gap-2 items-center mt-1">
                         <select
@@ -2878,6 +2854,9 @@ export default function AdminPanel() {
                         <option value="inactive">✗ Inactive</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="form-row">
                     <div className="form-group">
                       <label className="flex items-center gap-2 cursor-pointer mt-7">
                         <input
@@ -2886,7 +2865,18 @@ export default function AdminPanel() {
                           checked={productForm.featured || false}
                           onChange={(e) => setProductForm({ ...productForm, featured: e.target.checked })}
                         />
-                        <span className="text-sm font-medium">Featured Product</span>
+                        <span className="text-sm font-medium">Featured</span>
+                      </label>
+                    </div>
+                    <div className="form-group">
+                      <label className="flex items-center gap-2 cursor-pointer mt-7">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          checked={productForm.isHero || false}
+                          onChange={(e) => setProductForm({ ...productForm, isHero: e.target.checked })}
+                        />
+                        <span className="text-sm font-medium">Set as Hero Product</span>
                       </label>
                     </div>
                   </div>

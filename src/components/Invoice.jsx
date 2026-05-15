@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 const Invoice = forwardRef(({ order, company }, ref) => {
   const c = {
     name: 'MUWAS PERFUMES',
-    tagline: 'Premium Scents & Luxury Attars',
+    tagline: 'Premium Scents & Luxury Oils',
     address: 'No 3, Modi Ibrahim Street, Ambur',
     city: 'Tamil Nadu',
     pinCode: '635802',

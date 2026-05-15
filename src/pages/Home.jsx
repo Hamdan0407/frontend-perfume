@@ -14,7 +14,7 @@ import PurchaseNotification from '../components/PurchaseNotification';
 import LoginSuccessAnimation from '../components/LoginSuccessAnimation';
 import CountUp from '../components/ui/CountUp';
 import toast from '../utils/toast';
-import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin, Eye } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, ShieldCheck, Truck, Award, Users, Package, MapPin, Eye, Star } from 'lucide-react';
 import { CATEGORY_LIST } from '../constants/productCategories';
 
 import '../styles/HomeTheme.css';
@@ -30,12 +30,27 @@ export default function Home() {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
+  const [heroProductData, setHeroProductData] = useState(null);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     fetchFeaturedProducts();
     fetchSiteStats();
+    fetchHeroProductData();
   }, []);
+
+  const fetchHeroProductData = async () => {
+    try {
+      const res = await api.get('products/hero');
+      if (res.data && res.data.isActive && res.data.product) {
+        setHeroProductData(res.data);
+      }
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        console.warn('[Home] Failed to fetch hero product:', err);
+      }
+    }
+  };
 
   // Fetch site stats from backend & record visit
   const fetchSiteStats = async () => {
@@ -146,22 +161,82 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Hero Product Showcase */}
+      {heroProductData && heroProductData.product && (
+        <section className="py-16 sm:py-24 bg-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-slate-50/50"></div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+              
+              {/* Product Image */}
+              <div className="w-full lg:w-1/2 flex justify-center">
+                <div className="relative group">
+                  {/* Decorative background elements */}
+                  <div className="absolute -inset-4 bg-accent/10 rounded-full blur-3xl opacity-50 transition-opacity group-hover:opacity-70 duration-500"></div>
+                  <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl shadow-2xl transition-transform duration-700 group-hover:scale-[1.02]">
+                    <img 
+                      src={heroProductData.customImageUrl || heroProductData.product.imageUrl} 
+                      alt={heroProductData.product.name}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Details */}
+              <div className="w-full lg:w-1/2 space-y-8">
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-semibold tracking-wide uppercase">
+                    <Star className="w-4 h-4" />
+                    Featured Signature
+                  </div>
+                  <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
+                    {heroProductData.product.name}
+                  </h2>
+                  <p className="text-lg text-gray-600 leading-relaxed font-light">
+                    {heroProductData.customDescription || heroProductData.product.description}
+                  </p>
+                </div>
+
+                <div className="flex items-end gap-4">
+                  <span className="text-3xl font-bold text-gray-900">
+                    ₹{heroProductData.product.price}
+                  </span>
+                  {heroProductData.product.discountPrice && heroProductData.product.discountPrice < heroProductData.product.price && (
+                    <span className="text-xl text-gray-400 line-through mb-1">
+                      ₹{heroProductData.product.price}
+                    </span>
+                  )}
+                </div>
+
+                <div className="pt-4 flex flex-col sm:flex-row gap-4">
+                  <Button asChild size="lg" className="bg-gray-900 hover:bg-black text-white h-14 px-8 text-base shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Link to={`/product/${heroProductData.product.id}`}>
+                      View Product
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Collections */}
-      <section className="py-16 sm:py-20 lg:py-24">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
+          <div className="text-center mb-10 sm:mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Our Collections</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Find the perfect fragrance tailored to your style
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-            {CATEGORY_LIST.map((cat, idx) => {
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
+            {CATEGORY_LIST.filter(c => ['premium attars', 'bakhoor', 'aroma chemicals'].includes(c.value)).map((cat, idx) => {
               // Map old metadata to new categories
               const metadata = {
-                'parfum': { subtitle: 'Luxury Scents', accent: '#c9a96e' },
                 'premium attars': { subtitle: 'Pure Essence', accent: '#a78bfa' },
-                'oud reserve': { subtitle: 'Exotic Woods', accent: '#f59e0b' },
                 'bakhoor': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
                 'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' }
               }[cat.value] || { subtitle: 'Explore', accent: '#c9a96e' };

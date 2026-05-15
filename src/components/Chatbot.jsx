@@ -23,7 +23,7 @@ export default function Chatbot() {
     {
       id: 1,
       type: 'bot',
-      text: '👋 **Assalamu Alaikum! Welcome to MUWAS!**\n\nI\'m Sophie, your personal fragrance advisor. 🌹\n\nI can help you discover:\n🕌 **Premium Attars** – Luxury traditional attars\n🪵 **Oud Reserve** – Rare oud oils\n💰 **Budget picks** – "Products under 500"\n🔍 **Product details** – Just say a product name\n\nWhat are you looking for today?',
+      text: '👋 **Assalamu Alaikum! Welcome to MUWAS!**\n\nI\'m Sophie, your personal fragrance advisor. 🌹\n\nI can help you discover:\n🕌 **Premium Oil** – Luxury traditional oils\n🪵 **Oud Reserve** – Rare oud oils\n💰 **Budget picks** – "Products under 500"\n🔍 **Product details** – Just say a product name\n\nWhat are you looking for today?',
       timestamp: new Date()
     }
   ]);
@@ -86,7 +86,7 @@ export default function Chatbot() {
   };
 
   const quickSuggestions = [
-    { label: '🕌 Premium Attars', msg: 'Show me Premium Attars', color: 'amber' },
+    { label: '🕌 Premium Oil', msg: 'Show me Premium Oil', color: 'amber' },
     { label: '🪵 Oud Reserve', msg: 'Show me Oud Reserve', color: 'yellow' },
     { label: '🏆 Best Rated', msg: 'Show me the best rated products', color: 'emerald' },
     { label: '💰 Under ₹500', msg: 'Products under 500', color: 'sky' },
