@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, ChevronDown, Menu, TrendingUp } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Package, Shield, Heart, Search, BarChart3, Menu, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useEffect, useState } from 'react';
@@ -9,12 +9,7 @@ import { Badge } from './ui/badge';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './ui/sheet';
 import BulkInquiryModal from './BulkInquiryModal';
 
-// Navbar-specific categories — curated display order for navigation dropdown
-const NAVBAR_CATEGORIES = [
-  { label: 'Sample Collections', value: 'sample collections', path: '/products?category=sample collections' },
-  { label: 'Premium Oil', value: 'premium attars', path: '/products?category=premium attars' },
-  { label: 'Bakhoor', value: 'bakhoor', path: '/products?category=bakhoor' },
-];
+
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -184,21 +179,20 @@ export default function Navbar() {
           <Link to="/" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
             Home
           </Link>
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 group-hover:after:w-full">
-              Collections
-              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-180" />
-            </button>
-            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-52 bg-white border border-gray-100 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out translate-y-2 group-hover:translate-y-0 z-50 py-2">
-              {NAVBAR_CATEGORIES.map(cat => (
-                <Link key={cat.value} to={cat.path} className="block px-5 py-2.5 text-[13px] tracking-wide text-gray-500 hover:text-foreground hover:bg-gray-50 transition-all duration-200 hover:pl-6" id={`nav-desktop-category-${cat.value}`}>
-                  {cat.label}
-                </Link>
-              ))}
-            </div>
-          </div>
           <Link to="/products?category=aroma chemicals" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
             Aroma Chemicals
+          </Link>
+          <Link to="/products?category=premium attars" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+            Premium Oil
+          </Link>
+          <Link to="/products?category=bakhoor" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+            Bakhoor
+          </Link>
+          <Link to="/products?category=sample collections" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+            Sample Collection
+          </Link>
+          <Link to="/products?category=boosters and bases" className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[1.5px] after:bg-foreground after:transition-all after:duration-300 hover:after:w-full">
+            Boosters & Bases
           </Link>
           <button onClick={() => setBulkInquiryOpen(true)} className="text-[13px] font-medium uppercase tracking-[0.12em] text-amber-600 hover:text-amber-700 transition-colors duration-300">
             Bulk Enquiry
