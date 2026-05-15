@@ -270,9 +270,14 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
-            {(enabledCategories || []).map((cat, idx) => {
-              if (!cat) return null;
-              // Map metadata to categories dynamically
+            {(enabledCategories || [])
+              .filter(cat => {
+                const name = (cat.name || cat).toUpperCase();
+                return name !== 'BAKHOOR';
+              })
+              .map((cat, idx) => {
+                if (!cat) return null;
+                // Map metadata to categories dynamically
               const categoryKey = cat.name || cat;
               const metadata = {
                 'PREMIUM_OIL': { subtitle: 'Pure Essence', accent: '#a78bfa' },
