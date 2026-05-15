@@ -147,21 +147,19 @@ export default function Home() {
       </section>
 
       {/* Collections */}
-      <section className="py-16 sm:py-20 lg:py-24">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
+          <div className="text-center mb-10 sm:mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Our Collections</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Find the perfect fragrance tailored to your style
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-            {CATEGORY_LIST.map((cat, idx) => {
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
+            {CATEGORY_LIST.filter(c => ['premium attars', 'bakhoor', 'aroma chemicals'].includes(c.value)).map((cat, idx) => {
               // Map old metadata to new categories
               const metadata = {
-                'parfum': { subtitle: 'Luxury Scents', accent: '#c9a96e' },
                 'premium attars': { subtitle: 'Pure Essence', accent: '#a78bfa' },
-                'oud reserve': { subtitle: 'Exotic Woods', accent: '#f59e0b' },
                 'bakhoor': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
                 'aroma chemicals': { subtitle: 'Raw Ingredients', accent: '#38bdf8' }
               }[cat.value] || { subtitle: 'Explore', accent: '#c9a96e' };
