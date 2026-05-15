@@ -238,7 +238,7 @@ export default function Home() {
 
                 <div className="pt-4 flex flex-col sm:flex-row gap-4">
                   <Button asChild size="lg" className="bg-gray-900 hover:bg-black text-white h-14 px-8 text-base shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Link to={`/product/${heroProductData.product.id}`}>
+                    <Link to={`/products/${heroProductData.product.id}`}>
                       View Product
                     </Link>
                   </Button>
