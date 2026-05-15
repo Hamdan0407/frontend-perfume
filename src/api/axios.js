@@ -208,8 +208,10 @@ api.interceptors.response.use(
 
             processQueue(err, null);
 
-            // Redirect to login with session expired message
-            window.location.href = '/login?session=expired';
+            // Redirect to login with session expired message (only if not already there)
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?session=expired';
+            }
             return Promise.reject(err);
           });
       } else {
@@ -233,7 +235,9 @@ api.interceptors.response.use(
           }
         }
 
-        window.location.href = '/login?session=expired';
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login?session=expired';
+        }
         return Promise.reject(error);
       }
     }

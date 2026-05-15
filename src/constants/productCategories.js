@@ -19,7 +19,7 @@ export const PRODUCT_CATEGORIES = {
         path: '/products?category=aroma chemicals'
     },
     SAMPLE_COLLECTIONS: {
-        label: 'Sample Collection',
+        label: 'Sample Collections',
         value: 'sample collections',
         path: '/products?category=sample collections'
     },
