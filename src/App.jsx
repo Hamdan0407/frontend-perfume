@@ -12,6 +12,14 @@ import ScrollToTop from './components/ScrollToTop';
 import { useAuthStore } from './store/authStore';
 import { useWishlistStore } from './store/wishlistStore';
 
+// Synchronous imports for critical paths to prevent chunk loading issues
+import Home from './pages/Home';
+import Products from './pages/Products';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+
 // Version-safe lazy loading with retry logic
 const lazyRetry = (componentImport) =>
   lazy(async () => {
@@ -52,14 +60,8 @@ const lazyRetry = (componentImport) =>
     }
   });
 
-// Lazy load pages with retry handling
-const Home = lazyRetry(() => import('./pages/Home'));
-const Products = lazyRetry(() => import('./pages/Products'));
+// Lazy load non-critical pages with retry handling
 const ProductDetail = lazyRetry(() => import('./pages/ProductDetail'));
-const Cart = lazyRetry(() => import('./pages/Cart'));
-const Checkout = lazyRetry(() => import('./pages/Checkout'));
-const Login = lazyRetry(() => import('./pages/Login'));
-const Register = lazyRetry(() => import('./pages/Register'));
 const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
 const Orders = lazyRetry(() => import('./pages/Orders'));
 const OrderDetail = lazyRetry(() => import('./pages/OrderDetail'));
