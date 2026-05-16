@@ -495,8 +495,10 @@ export default function ProductDetail() {
 
             {/* Variant Selector */}
             {mergedVariants && mergedVariants.length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-semibold text-foreground mb-3">{String(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}</h3>
+              <div className="space-y-4">
+                <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">
+                  {String(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}
+                </p>
                 <div className="flex flex-wrap gap-3">
                   {mergedVariants.map((variant) => (
                     <button
@@ -523,45 +525,53 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              {currentStock > 0 && (
-                <div className="flex items-center border border-border rounded-md">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-16 text-center border-x border-border py-2 bg-background focus:outline-none"
-                    min="1"
-                    max={currentStock}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
-                    disabled={quantity >= currentStock}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+            <div className="space-y-6 pt-4">
+              {currentStock > 0 ? (
+                <div className="space-y-4">
+                  <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">Quantity</p>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <div className="flex items-center justify-between w-full sm:w-auto h-14 bg-slate-50 border border-slate-200 rounded-full px-2 min-w-[140px]">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 hover:bg-white rounded-full transition-all duration-300"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        disabled={quantity <= 1}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-10 text-center font-bold text-slate-900">{quantity}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 hover:bg-white rounded-full transition-all duration-300"
+                        onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
+                        disabled={quantity >= currentStock}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <Button
+                      onClick={handleAddToCart}
+                      className="flex-1 h-14 rounded-full text-base sm:text-lg font-bold shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 transition-all active:scale-95"
+                      size="lg"
+                    >
+                      <ShoppingCart className="h-5 w-5 mr-3" />
+                      Add to Cart
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                <Button
+                  disabled
+                  variant="secondary"
+                  className="w-full h-14 rounded-full text-lg font-bold opacity-60"
+                  size="lg"
+                >
+                  Out of Stock
+                </Button>
               )}
-              <Button
-                onClick={handleAddToCart}
-                disabled={currentStock === 0}
-                className="flex-1"
-                size="lg"
-                variant={currentStock === 0 ? "secondary" : "default"}
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                {currentStock === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </Button>
             </div>
 
             {/* Low Stock Warning */}
