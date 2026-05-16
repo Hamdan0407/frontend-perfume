@@ -15,23 +15,39 @@ import { useWishlistStore } from './store/wishlistStore';
 // Version-safe lazy loading with retry logic
 const lazyRetry = (componentImport) =>
   lazy(async () => {
-    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-      window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
-    );
+    // try-catch for sessionStorage access (fails in some private/incognito modes)
+    let pageHasAlreadyBeenForceRefreshed = false;
+    try {
+      pageHasAlreadyBeenForceRefreshed = JSON.parse(
+        window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+      );
+    } catch (e) {
+      console.warn('Storage access failed:', e);
+    }
 
     try {
       const component = await componentImport();
-      window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      try {
+        window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      } catch (e) {}
       return component;
     } catch (error) {
       if (!pageHasAlreadyBeenForceRefreshed) {
         // Log the error and refresh the page to fetch new chunks
-        console.warn('Dynamic import failed, refreshing page...', error);
-        window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
-        return window.location.reload();
+        console.error('Dynamic import failed, refreshing page...', error);
+        try {
+          window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+        } catch (e) {}
+        
+        // Immediate reload to recover
+        window.location.reload();
+        
+        // Return a promise that never resolves - browser will reload anyway
+        return new Promise(() => {});
       }
 
       // If we already tried to refresh and it still fails, throw the error
+      console.error('Dynamic import failed twice, app cannot continue:', error);
       throw error;
     }
   });
@@ -108,8 +124,11 @@ function App() {
         }}
       />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
-        <ScrollToTop />
-        <AnnouncementBar />
+        <ErrorBoundary fallback={<div className="p-4 text-center">Loading error recovery...</div>}>
+          <ScrollToTop />
+        <ErrorBoundary fallback={<div className="h-1 bg-amber-500" />}>
+          <AnnouncementBar />
+        </ErrorBoundary>
         <ErrorBoundary>
           <Navbar />
         </ErrorBoundary>
@@ -141,10 +160,15 @@ function App() {
             </Routes>
           </Suspense>
         </main>
-        <Footer />
+        <ErrorBoundary fallback={<div className="py-8 text-center text-slate-400">© 2026 Muwas Perfumes</div>}>
+          <Footer />
+        </ErrorBoundary>
 
         {/* Chatbot Widget */}
-        <Chatbot />
+        <ErrorBoundary fallback={null}>
+          <Chatbot />
+        </ErrorBoundary>
+      </ErrorBoundary>
       </div>
     </>
   );

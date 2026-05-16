@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Loader2 } from 'lucide-react';
-import { Country, City } from 'country-state-city';
 import api from '../api/axios';
 import toast from '../utils/toast';
 import Autocomplete from './Autocomplete';
@@ -23,8 +22,12 @@ const LeadPopup = () => {
   // Lists for autocomplete
   const [countrySearch, setCountrySearch] = useState('');
   const [citySearch, setCitySearch] = useState('');
+  
+  // Dynamic library state
+  const [geoLib, setGeoLib] = useState(null);
 
   useEffect(() => {
+    // 1. Initial Popup Timer
     const hasShown = sessionStorage.getItem('lead_popup_shown');
     if (!hasShown) {
       const timer = setTimeout(() => setIsOpen(true), 2000);
@@ -32,32 +35,49 @@ const LeadPopup = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // 2. Load heavy library only when popup opens
+    if (isOpen && !geoLib) {
+      import('country-state-city').then(lib => {
+        setGeoLib({
+          Country: lib.Country,
+          City: lib.City
+        });
+      }).catch(err => console.error('Failed to load geo library:', err));
+    }
+  }, [isOpen, geoLib]);
+
   // Get all countries once
-  const allCountries = useMemo(() => Country.getAllCountries(), []);
+  const allCountries = useMemo(() => {
+    if (!geoLib) return [];
+    return geoLib.Country.getAllCountries();
+  }, [geoLib]);
 
   // Filtered countries based on search
   const filteredCountries = useMemo(() => {
+    if (!geoLib) return [];
     if (!countrySearch) return allCountries.slice(0, 10).map(c => c.name);
     return allCountries
       .filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase()))
       .slice(0, 10)
       .map(c => c.name);
-  }, [countrySearch, allCountries]);
+  }, [countrySearch, allCountries, geoLib]);
 
   // Cities for the selected country
   const countryCities = useMemo(() => {
-    if (!selectedCountryObj) return [];
-    return City.getCitiesOfCountry(selectedCountryObj.isoCode);
-  }, [selectedCountryObj]);
+    if (!selectedCountryObj || !geoLib) return [];
+    return geoLib.City.getCitiesOfCountry(selectedCountryObj.isoCode);
+  }, [selectedCountryObj, geoLib]);
 
   // Filtered cities based on search
   const filteredCities = useMemo(() => {
+    if (!geoLib) return [];
     if (!citySearch) return countryCities.slice(0, 10).map(c => c.name);
     return countryCities
       .filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()))
       .slice(0, 10)
       .map(c => c.name);
-  }, [citySearch, countryCities]);
+  }, [citySearch, countryCities, geoLib]);
 
   // Handle country selection
   const handleCountryChange = (name) => {
