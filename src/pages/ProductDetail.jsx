@@ -330,69 +330,86 @@ export default function ProductDetail() {
     : (product.discountPrice && product.discountPrice < product.price);
   const currentStock = selectedVariant ? (selectedVariant.stock || 0) : (product.stock || 0);
 
+  const allImages = [product.imageUrl, ...(product.additionalImages || [])].filter(Boolean);
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Product Images */}
-          <div className="space-y-4">
-            <div className="relative aspect-square overflow-hidden rounded-xl border border-border/40 bg-[#FAFAFA] flex items-center justify-center p-6 sm:p-12 transition-all duration-300">
-              <img
-                src={selectedImage || 'https://placehold.co/600x600?text=Perfume'}
-                alt={product.name}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'https://placehold.co/600x600?text=No+Image';
-                }}
-                className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-sm transition-transform duration-500 hover:scale-105"
-              />
-            </div>
-            {product.additionalImages?.length > 0 && (
-              <div className="grid grid-cols-4 gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+          {/* Product Images Section */}
+          <div className="lg:col-span-7 flex flex-col md:flex-row gap-6">
+            {/* Desktop Side Thumbnails */}
+            <div className="hidden md:flex flex-col gap-4 w-24 shrink-0 order-1">
+              {allImages.map((img, idx) => (
                 <button
-                  onClick={() => setSelectedImage(product.imageUrl)}
+                  key={idx}
+                  onClick={() => setSelectedImage(img)}
                   className={cn(
-                    "aspect-square overflow-hidden rounded-md border-2 transition-colors",
-                    selectedImage === product.imageUrl ? "border-primary" : "border-border hover:border-muted-foreground"
+                    "aspect-square rounded-xl border bg-white p-2 transition-all duration-500 overflow-hidden group",
+                    selectedImage === img
+                      ? "border-primary/60 shadow-lg ring-1 ring-primary/20 scale-105"
+                      : "border-border/40 hover:border-border opacity-70 hover:opacity-100"
                   )}
                 >
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://placehold.co/150x150?text=No+Image';
-                    }}
-                    className="w-full h-full object-contain p-2"
+                  <img 
+                    src={img} 
+                    alt={`${product.name} ${idx + 1}`}
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
                   />
                 </button>
-                {product.additionalImages.map((img, idx) => (
+              ))}
+            </div>
+
+            {/* Main Product Image Container */}
+            <div className="flex-1 order-2">
+              <div className="relative aspect-square overflow-hidden rounded-3xl border border-border/30 bg-gradient-to-br from-white via-[#FAFAFA] to-[#F5F5F5] flex items-center justify-center p-8 sm:p-16 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] transition-all duration-700 group">
+                {/* Subtle Radial Shine */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.8),transparent)] pointer-events-none" />
+                
+                <img
+                  src={selectedImage || 'https://placehold.co/600x600?text=Perfume'}
+                  alt={product.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://placehold.co/600x600?text=No+Image';
+                  }}
+                  className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.12)] transition-all duration-1000 ease-out group-hover:scale-[1.08] relative z-10"
+                />
+
+                {/* Badge/Tag overlay if needed */}
+                {hasDiscount && (
+                  <div className="absolute top-6 right-6 z-20">
+                    <Badge variant="destructive" className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full">
+                      -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Thumbnails */}
+              <div className="flex md:hidden gap-3 mt-6 pb-2 overflow-x-auto no-scrollbar">
+                {allImages.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     className={cn(
-                      "aspect-square overflow-hidden rounded-md border-2 transition-colors",
-                      selectedImage === img ? "border-primary" : "border-border hover:border-muted-foreground"
+                      "w-20 aspect-square shrink-0 rounded-xl border bg-white p-2 transition-all duration-300",
+                      selectedImage === img
+                        ? "border-primary shadow-md scale-105"
+                        : "border-border/50"
                     )}
                   >
-                    <img
-                      src={img}
-                      alt={`${product.name} ${idx + 2}`}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/150x150?text=No+Image';
-                      }}
-                      className="w-full h-full object-contain p-2"
-                    />
+                    <img src={img} alt="" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Product Info */}
-          <div className="space-y-6">
-            <div>
+          {/* Product Info Section */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-4">
+              <div className="flex flex-col gap-3">
               {product.brand && (
                 <Badge variant="secondary" className="mb-3">
                   {product.brand}
@@ -411,19 +428,16 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            <div className="flex items-baseline gap-3">
-              {hasDiscount && (
-                <span className="text-2xl text-muted-foreground line-through decoration-red-500/20">
-                  ₹{product.price.toFixed(0)}
-                </span>
-              )}
-              <span className="text-3xl sm:text-4xl font-bold text-foreground">
+            </div>
+
+            <div className="flex items-baseline gap-4">
+              <span className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">
                 ₹{(displayPrice || 0).toFixed(0)}
               </span>
               {hasDiscount && (
-                <Badge variant="destructive">
-                  Save {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-                </Badge>
+                <span className="text-2xl text-muted-foreground line-through decoration-slate-400/40">
+                  ₹{product.price.toFixed(0)}
+                </span>
               )}
             </div>
 
