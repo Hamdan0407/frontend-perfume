@@ -432,6 +432,10 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                   </Button>
                 </div>
 
+                <p className="text-[10px] text-center text-slate-400 mt-4 uppercase tracking-[0.1em] font-medium">
+                  Tax included. Shipping cost calculated at checkout.
+                </p>
+
               </div>
             </div>
           </>
