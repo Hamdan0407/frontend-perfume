@@ -255,11 +255,9 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
               <div className="flex-1 mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900">Selection</h3>
-                  {fullProduct.type && (
-                    <Badge variant="outline" className="text-[10px] font-bold border-slate-200 text-slate-500">
-                      {typeof fullProduct.type === 'object' ? (fullProduct.type.name || fullProduct.type.label) : fullProduct.type}
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="text-[10px] font-bold border-slate-200 text-slate-500">
+                    {formatCategory(fullProduct.category)}
+                  </Badge>
                 </div>
 
                 <div className="space-y-3">
