@@ -28,6 +28,7 @@ export default function Products() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [error, setError] = useState(null); // Added error state
 
   const category = searchParams.get('category') || '';
   const brand = searchParams.get('brand') || '';
@@ -38,22 +39,26 @@ export default function Products() {
 
 
   useEffect(() => {
-    fetchProducts();
+    const controller = new AbortController();
+    fetchProducts(controller.signal);
     fetchBrands();
+    return () => controller.abort();
   }, [category, brand, type, search, page, sortBy, sortDir, minPrice, maxPrice, inStockOnly]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (signal) => {
     setLoading(true);
+    setError(null);
     setProducts([]); // Clear products before fetching as requested
 
     try {
+      let response;
       // If we only have a category filter, use the standard GET /products?category=...
-      // This satisfies the user request for the URL format products?category=PARFUM
       if (category && !search && !brand && !type && !minPrice && !maxPrice && !inStockOnly) {
         const categoryEnum = toCategoryEnum(category);
         console.log(`[Products] Requesting: GET /api/products?category=${categoryEnum}`);
 
-        const { data } = await api.get('products', {
+        response = await api.get('products', {
+          signal,
           params: {
             category: categoryEnum,
             page,
@@ -62,49 +67,46 @@ export default function Products() {
             sortDir
           }
         });
+      } else {
+        // Use the unified filtering system for complex filters (POST products/filter)
+        const filterBody = {
+          searchQuery: search || null,
+          category: category ? toCategoryEnum(category) : null,
+          type: type || null,
+          brands: brand ? [brand] : null,
+          minPrice: minPrice ? parseFloat(minPrice) : null,
+          maxPrice: maxPrice ? parseFloat(maxPrice) : null,
+          inStock: inStockOnly || null,
+          page: page,
+          size: 12,
+          sortBy: sortBy,
+          sortDir: sortDir
+        };
 
-        console.log('[Products] GET Category Param Response:', data);
-        let content = data.content || (Array.isArray(data) ? data : []);
-        const grouped = groupProducts(content);
-        setProducts(grouped);
-        setTotalPages(data.totalPages || 1);
-        setLoading(false);
-        return;
+        console.log(`[Products] Requesting: POST products/filter`);
+        response = await api.post('products/filter', filterBody, { signal });
       }
 
-      // Use the unified filtering system for complex filters (POST products/filter)
-      const filterBody = {
-        searchQuery: search || null,
-        category: category ? toCategoryEnum(category) : null,
-        type: type || null,
-        brands: brand ? [brand] : null,
-        minPrice: minPrice ? parseFloat(minPrice) : null,
-        maxPrice: maxPrice ? parseFloat(maxPrice) : null,
-        inStock: inStockOnly || null,
-        page: page,
-        size: 12,
-        sortBy: sortBy,
-        sortDir: sortDir
-      };
-
-      console.log(`[Products] Requesting: POST products/filter`);
-      console.log(`[Products] Payload:`, filterBody);
-
-      // Fix: Removed leading slash to ensure axios appends to baseURL properly
-      const { data } = await api.post('products/filter', filterBody);
-      console.log('[Products] POST Filter Response received:', data);
-
-      // Standardize response content
+      const { data } = response;
       let content = data.content || (Array.isArray(data) ? data : []);
-      console.log(`[Products] Raw items for category ${category}:`, content.length);
-
       const grouped = groupProducts(content);
-      console.log(`[Products] Grouped items to display:`, grouped.length);
-
       setProducts(grouped);
       setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
+    } catch (err) {
+      if (err.name === 'CanceledError') return;
+      
+      console.error('Failed to fetch products:', err);
+      let message = 'Failed to load products. Please try again.';
+      
+      if (!window.navigator.onLine) {
+        message = 'No internet connection. Please check your network.';
+      } else if (err.code === 'ECONNABORTED') {
+        message = 'Request timed out. The server is taking too long to respond.';
+      } else if (err.response?.status >= 500) {
+        message = 'Server error occurred. Our team has been notified.';
+      }
+      
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -254,6 +256,23 @@ export default function Products() {
                   </div>
                 ))}
               </div>
+            ) : error ? (
+              <Card className="border-destructive/20 bg-destructive/5">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                    <X className="h-6 w-6 text-destructive" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-destructive mb-2">Error Loading Products</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => fetchProducts()}
+                    className="gap-2"
+                  >
+                    Try Again
+                  </Button>
+                </CardContent>
+              </Card>
             ) : (Array.isArray(products) && products.length > 0) ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">

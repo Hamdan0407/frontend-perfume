@@ -53,6 +53,10 @@ const api = axios.create({
   timeout: 30000,
 });
 
+// Configure retry parameters
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 1000; // 1 second
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -330,9 +334,20 @@ api.interceptors.response.use(
      * Handle 500 Internal Server Error
      * Server-side error
      */
-    if (response?.status >= 500) {
-      const message = response.data?.message || 'An error occurred on the server';
-      console.error('Server error:', message);
+    /**
+     * Handle Network Errors and Timeouts with Auto-Retry
+     * Only retry GET requests to ensure idempotency
+     */
+    const isNetworkError = !response && !error.message?.includes('auth');
+    const isIdempotent = originalRequest.method === 'get';
+    
+    if ((isNetworkError || response?.status >= 500) && isIdempotent && (originalRequest._retryCount || 0) < MAX_RETRIES) {
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      console.warn(`⚠️ Retrying request (${originalRequest._retryCount}/${MAX_RETRIES}):`, originalRequest.url);
+      
+      // Delay before retry
+      return new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
+        .then(() => api(originalRequest));
     }
 
     // Return error for component-level handling

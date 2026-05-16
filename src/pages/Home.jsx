@@ -38,10 +38,15 @@ export default function Home() {
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
-    fetchFeaturedProducts();
-    fetchSiteStats();
-    fetchHeroProductData();
-    fetchEnabledCategories();
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    fetchFeaturedProducts(signal);
+    fetchSiteStats(signal);
+    fetchHeroProductData(signal);
+    fetchEnabledCategories(signal);
+
+    return () => controller.abort();
   }, []);
 
   const fetchEnabledCategories = async () => {
@@ -109,30 +114,27 @@ export default function Home() {
 
   // Removed handleIntroComplete as intro is removed
 
-  const fetchFeaturedProducts = async () => {
+  const fetchFeaturedProducts = async (signal) => {
     setLoading(true);
     setError(null);
 
     try {
       console.log('[Home] Fetching featured products...');
-      const data = await productAPI.getFeaturedProducts(8);
+      // Using axios instance directly for signal support if needed, or pass signal to service
+      const { data } = await api.get('products/featured', { signal });
       console.log('[Home] Featured products response received:', data);
 
-      // Backend returns a direct List<ProductResponse> for featured products
       const productsList = Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : []);
-      console.log('[Home] Raw products list size:', productsList.length);
-
       const grouped = groupProducts(productsList);
-      console.log('[Home] Grouped products size:', grouped.length);
-
       setFeaturedProducts(grouped);
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to load featured products';
+      if (err.name === 'CanceledError') return;
+      
+      const message = err.response?.data?.message || 'Failed to load featured products. Please check your connection.';
       setError(message);
       console.error('Failed to fetch featured products:', err);
 
-      // Only show toast for unexpected errors, not validation errors
-      if (err.response?.status !== 400) {
+      if (err.response?.status !== 400 && !err.message?.includes('canceled')) {
         toast.error(message);
       }
     } finally {
