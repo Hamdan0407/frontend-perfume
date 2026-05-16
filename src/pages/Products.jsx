@@ -132,6 +132,14 @@ export default function Products() {
     setPage(0);
   };
 
+  const handleSortChange = (newSortBy, newSortDir) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('sortBy', newSortBy);
+    newParams.set('sortDir', newSortDir);
+    setSearchParams(newParams);
+    setPage(0);
+  };
+
   const handlePriceFilter = () => {
     setPage(0);
     fetchProducts();
@@ -208,8 +216,7 @@ export default function Products() {
                 value={`${sortBy}-${sortDir}`}
                 onChange={(e) => {
                   const [newSortBy, newSortDir] = e.target.value.split('-');
-                  handleFilterChange('sortBy', newSortBy);
-                  handleFilterChange('sortDir', newSortDir);
+                  handleSortChange(newSortBy, newSortDir);
                 }}
                 className="w-full h-10 rounded-md border border-slate-200 bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring"
               >
@@ -405,8 +412,7 @@ function FiltersContent({
             value={`${sortBy}-${sortDir}`}
             onChange={(e) => {
               const [newSortBy, newSortDir] = e.target.value.split('-');
-              handleFilterChange('sortBy', newSortBy);
-              handleFilterChange('sortDir', newSortDir);
+              handleSortChange(newSortBy, newSortDir);
             }}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
