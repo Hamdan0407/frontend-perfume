@@ -116,7 +116,7 @@ export default function Navbar() {
         {/* Row 1: Profile/Cart/Menu (left) | Logo (center) | Search (right) */}
         <div className="grid grid-cols-3 items-center h-[72px]">
 
-          {/* Left: Mobile Menu + Profile + Cart */}
+          {/* Left: Mobile Menu + Search */}
           <div className="flex items-center gap-3 justify-self-start">
             <div className="md:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -154,6 +154,24 @@ export default function Navbar() {
               </Sheet>
             </div>
 
+            {/* Search Icon (Now on the Left) */}
+            <button
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300"
+              aria-label="Search"
+            >
+              <Search className="h-[18px] w-[18px] stroke-[1.5]" />
+            </button>
+          </div>
+
+          <div className="flex justify-center justify-self-center">
+            <Link to="/" className="flex items-center">
+              <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-11 w-auto" />
+            </Link>
+          </div>
+
+          {/* Right: Profile + Cart */}
+          <div className="flex items-center gap-3 justify-self-end justify-end">
             {isAuthenticated ? (
               <>
                 {/* User Profile Dropdown */}
@@ -167,7 +185,7 @@ export default function Navbar() {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute left-0 top-12 w-56 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-[9999]">
+                    <div className="absolute right-0 top-12 w-56 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-[9999]">
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
                         <p className="text-sm font-semibold text-foreground">{user?.firstName} {user?.lastName}</p>
                         <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -231,24 +249,6 @@ export default function Navbar() {
                 </Link>
               </>
             )}
-          </div>
-
-          <div className="flex justify-center justify-self-center">
-            <Link to="/" className="flex items-center">
-              <img src="/muwas-logo-nobg.png" alt="Muwas Logo" className="h-11 w-auto" />
-            </Link>
-          </div>
-
-          {/* Right: Search */}
-          <div className="flex items-center gap-3 justify-self-end justify-end">
-            {/* Search Icon */}
-            <button
-              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-              className="flex items-center justify-center w-10 h-10 text-muted-foreground hover:text-foreground transition-colors duration-300"
-              aria-label="Search"
-            >
-              <Search className="h-[18px] w-[18px] stroke-[1.5]" />
-            </button>
           </div>
         </div>
 
