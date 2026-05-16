@@ -431,10 +431,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                     )}
                   </Button>
                 </div>
-                
-                <p className="text-[10px] text-center text-slate-400 mt-4 uppercase tracking-[0.1em] font-medium">
-                  Free shipping on orders above ₹999 in India
-                </p>
+
               </div>
             </div>
           </>
