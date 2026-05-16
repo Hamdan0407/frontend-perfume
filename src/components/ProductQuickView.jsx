@@ -110,41 +110,75 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
   };
 
   const handleAddToCart = async () => {
-    const { count } = calculateTotals();
-    if (count === 0) {
+    // 1. Final validation check
+    const { subtotal: currentSubtotal, count: currentCount } = calculateTotals();
+    
+    if (currentCount === 0) {
       toast.error('Please select at least one item');
       return;
     }
 
+    if (!fullProduct || !fullProduct.id) {
+      toast.error('Product details are still loading. Please try again in a moment.');
+      return;
+    }
+
     setAddingToCart(true);
+    
     try {
+      // 2. Collect items from the latest state
       const itemsToAdd = [];
       if (fullProduct.variants && fullProduct.variants.length > 0) {
         fullProduct.variants.forEach(v => {
           const qty = variantQuantities[v.id] || 0;
           if (qty > 0) {
-            itemsToAdd.push({ productId: fullProduct.id, variantId: v.id, quantity: qty });
+            itemsToAdd.push({ 
+              productId: fullProduct.id, 
+              variantId: v.id, 
+              quantity: qty 
+            });
           }
         });
       } else {
         const qty = variantQuantities['base'] || 0;
         if (qty > 0) {
-          itemsToAdd.push({ productId: fullProduct.id, quantity: qty });
+          itemsToAdd.push({ 
+            productId: fullProduct.id, 
+            quantity: qty 
+          });
         }
       }
 
-      // We need to add items sequentially or use a bulk endpoint if available
-      // Since there's no bulk endpoint in the current API, we add them one by one
-      for (const item of itemsToAdd) {
-        const { data } = await api.post('cart/items', item);
-        setCart(data);
+      // 3. Prevent execution if somehow empty despite count check
+      if (itemsToAdd.length === 0) {
+        setAddingToCart(false);
+        return;
       }
 
-      toast.success(`Added ${count} item(s) to your cart`);
-      onClose();
+      // 4. Fire requests sequentially to ensure cart synchronization on backend
+      // Using a for...of loop for reliable async execution
+      let finalCartData = null;
+      for (const item of itemsToAdd) {
+        const response = await api.post('cart/items', item);
+        finalCartData = response.data;
+      }
+
+      // 5. Update store only once with the final state
+      if (finalCartData) {
+        setCart(finalCartData);
+      }
+
+      toast.success(`Successfully added ${currentCount} item(s) to your cart`);
+      
+      // Delay closing slightly for better UX/feedback
+      setTimeout(() => {
+        onClose();
+      }, 500);
+
     } catch (error) {
-      console.error('Add to cart error:', error);
-      toast.error(error.response?.data?.message || 'Failed to add items to cart');
+      console.error('[QuickView] Add to cart error:', error);
+      const errorMessage = error.response?.data?.message || 'Unable to add items. Please ensure you are logged in.';
+      toast.error(errorMessage);
     } finally {
       setAddingToCart(false);
     }
