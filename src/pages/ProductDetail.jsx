@@ -13,7 +13,6 @@ import StarRating from '../components/StarRating';
 import StockBadge from '../components/StockBadge';
 import RelatedProducts from '../components/RelatedProducts';
 import { cn, formatCategory, sortVariants } from '../lib/utils';
-import { useCartStore } from '../store/cartStore';
 
 // Premium Skeleton Component for Luxury Feel
 const ProductSkeleton = () => (
