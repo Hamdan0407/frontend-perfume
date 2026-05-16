@@ -9,7 +9,7 @@ import {
 import { jsPDF } from 'jspdf';
 import { useAuthStore } from '../store/authStore';
 import toast from '../utils/toast';
-import { formatCategory } from '../lib/utils';
+import { formatCategory, sortVariants } from '../lib/utils';
 import api from '../api/axios.js';
 import '../styles/AdminPanel.css';
 import { CATEGORY_LIST } from '../constants/productCategories';
@@ -204,8 +204,20 @@ export default function AdminPanel() {
   }, [categorySettings]);
 
   const getCategoryDisplayName = (cat) => {
-    const setting = categorySettings.find(s => String(s?.category || '').toLowerCase().replace(/_/g, ' ') === String(cat || '').toLowerCase() || s.category === cat);
-    return setting?.label || formatCategory(cat);
+    if (!cat) return "N/A";
+    
+    // Extract string value if cat is an object
+    const catValue = typeof cat === 'object' 
+      ? (cat.name || cat.displayName || cat.label || cat.id || "")
+      : cat;
+    
+    if (!catValue) return "N/A";
+
+    const setting = categorySettings.find(s => 
+      String(s?.category || '').toLowerCase().replace(/_/g, ' ') === String(catValue || '').toLowerCase() || 
+      s.category === catValue
+    );
+    return setting?.label || formatCategory(catValue);
   };
 
   // Product Types state with persistence
@@ -528,7 +540,7 @@ export default function AdminPanel() {
       price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
       mrp: hasDiscount ? product.price.toString() : '',
       stock: product.stock?.toString() || '',
-      category: product.category || 'perfume',
+      category: typeof product.category === 'object' ? (product.category.name || product.category.id || '') : (product.category || 'perfume'),
       brand: product.brand || '',
       imageUrl: product.imageUrl || '',
       size: product.size || (product.category === 'attar' ? '6ml' : '30ml'),
@@ -541,7 +553,7 @@ export default function AdminPanel() {
     formRef.current = initialForm;
 
     // Handle legacy size selection based on category
-    const currentCategory = product.category || 'perfume';
+    const currentCategory = initialForm.category;
     const defaultSize = (currentCategory === 'attar' || currentCategory === 'premium attars' || currentCategory === 'oud reserve') ? '6ml' : '30ml';
 
     let initialVariants = [];
@@ -559,6 +571,7 @@ export default function AdminPanel() {
           active: v.active !== false
         };
       });
+      initialVariants = sortVariants(initialVariants);
     } else {
       // Create variant from product data if no variants exist
       const sizeNum = parseInt(product.size) || 30;
@@ -1506,7 +1519,7 @@ export default function AdminPanel() {
     const query = String(searchQuery || '').toLowerCase();
     return activeProducts.filter(p =>
       String(p.name || '').toLowerCase().includes(query) ||
-      String(p.category || '').toLowerCase().includes(query) ||
+      getCategoryDisplayName(p.category).toLowerCase().includes(query) ||
       String(p.brand || '').toLowerCase().includes(query)
     );
   }, [products, searchQuery]);

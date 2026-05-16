@@ -45,20 +45,30 @@ export default function Home() {
   }, []);
 
   const fetchEnabledCategories = async () => {
+    const CATEGORY_ORDER = [
+      'AROMA_CHEMICALS',
+      'BOOSTERS_AND_BASES',
+      'PREMIUM_OIL',
+      'BAKHOOR'
+    ];
+
     try {
       const { data } = await api.get('categories/enabled');
-      // Ensure data is an array and filter out any null/undefined entries
       if (Array.isArray(data)) {
-        // Filter to only allow the 4 requested categories
-        setEnabledCategories(data.filter(cat => {
-          if (!cat) return false;
-          const name = (cat.name || cat).toLowerCase().replace(/_/g, ' ');
-          return ['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases'].includes(name);
-        }));
+        // Filter and sort according to the fixed order
+        const sorted = CATEGORY_ORDER
+          .map(orderKey => {
+            return data.find(cat => {
+              const name = (cat.name || cat).toUpperCase();
+              return name === orderKey;
+            });
+          })
+          .filter(Boolean); // Remove if category is disabled
+
+        setEnabledCategories(sorted);
       }
     } catch (error) {
       console.warn('Failed to fetch enabled categories on Home:', error.message);
-      // Fallback to basic categories if API fails completely
     }
   };
 
@@ -238,7 +248,7 @@ export default function Home() {
 
                 <div className="pt-4 flex flex-col sm:flex-row gap-4">
                   <Button asChild size="lg" className="bg-gray-900 hover:bg-black text-white h-14 px-8 text-base shadow-lg hover:shadow-xl transition-all duration-300">
-                    <Link to={`/product/${heroProductData.product.id}`}>
+                    <Link to={`/products/${heroProductData.product.id}`}>
                       View Product
                     </Link>
                   </Button>
@@ -260,9 +270,14 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
-            {(enabledCategories || []).map((cat, idx) => {
-              if (!cat) return null;
-              // Map metadata to categories dynamically
+            {(enabledCategories || [])
+              .filter(cat => {
+                const name = (cat.name || cat).toUpperCase();
+                return name !== 'BAKHOOR';
+              })
+              .map((cat, idx) => {
+                if (!cat) return null;
+                // Map metadata to categories dynamically
               const categoryKey = cat.name || cat;
               const metadata = {
                 'PREMIUM_OIL': { subtitle: 'Pure Essence', accent: '#a78bfa' },

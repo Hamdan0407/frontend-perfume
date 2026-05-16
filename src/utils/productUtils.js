@@ -1,3 +1,5 @@
+import { sortVariants } from '../lib/utils';
+
 /**
  * Groups products by their base name to handle multi-size variants in the UI.
  * This ensures that if we have "Gucci Bloom 30ml" and "Gucci Bloom 100ml", 
@@ -35,7 +37,7 @@ export const groupProducts = (products) => {
 
             // If the product already has variants from the backend, use those too
             if (product.variants && product.variants.length > 0) {
-                groups[key].allVariants = product.variants;
+                groups[key].allVariants = sortVariants(product.variants);
             } else {
                 groups[key].allVariants = groups[key].variants;
             }
@@ -62,9 +64,9 @@ export const groupProducts = (products) => {
                         uniqueVariants.push(v);
                     }
                 });
-                groups[key].allVariants = uniqueVariants;
+                groups[key].allVariants = sortVariants(uniqueVariants);
             } else {
-                groups[key].allVariants = groups[key].variants;
+                groups[key].allVariants = sortVariants(groups[key].variants);
             }
 
             // Update group price to lowest available variant price

@@ -25,6 +25,16 @@ export const PRODUCT_CATEGORIES = {
     }
 };
 
+/**
+ * Curated order for storefront navigation
+ */
+export const CATEGORY_ORDER = [
+    'AROMA_CHEMICALS',
+    'BOOSTERS_AND_BASES',
+    'PREMIUM_OIL',
+    'BAKHOOR'
+];
+
 export const CATEGORY_LIST = Object.values(PRODUCT_CATEGORIES);
 
 export const mapToCategoryEnum = (input) => {
