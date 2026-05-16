@@ -279,7 +279,7 @@ export default function AdminPanel() {
     setLoading(true);
     try {
       // Use admin endpoint to ensure we see all products (active/inactive)
-      const { data } = await api.get('admin/products?size=200');
+      const { data } = await api.get('admin/products?size=50');
       setProducts(data.content || data || []);
     } catch (err) {
       console.error('Error loading products:', err);
@@ -293,7 +293,7 @@ export default function AdminPanel() {
   const fetchOrders = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('admin/orders?size=100');
+      const { data } = await api.get('admin/orders?size=50');
       setOrders(data.content || data || []);
     } catch (err) {
       console.error('Error loading orders:', err);
@@ -326,13 +326,13 @@ export default function AdminPanel() {
       setDashboardStats(null);
 
       // Add cache-busting parameter
-      const cacheBuster = `?_t=${Date.now()}&size=200`;
+      const cacheBuster = `?_t=${Date.now()}&size=50`;
 
       // Fetch all data including server-calculated stats
       const [productsRes, ordersRes, usersRes, statsRes] = await Promise.all([
         api.get(`admin/products${cacheBuster}`),
-        api.get(`admin/orders${cacheBuster.replace('size=200', 'size=100')}`),
-        api.get(`admin/users${cacheBuster.replace('size=200', 'size=100')}`),
+        api.get(`admin/orders${cacheBuster}`),
+        api.get(`admin/users${cacheBuster}`),
         api.get(`admin/stats?_t=${Date.now()}`)
       ]);
 
@@ -355,7 +355,7 @@ export default function AdminPanel() {
   const fetchUsers = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('admin/users?size=100');
+      const { data } = await api.get('admin/users?size=50');
       setUsers(data.content || data || []);
     } catch (err) {
       console.error('Error loading users:', err);
@@ -409,16 +409,11 @@ export default function AdminPanel() {
     }
   };
 
-  // Fetch all data on mount
+  // Fetch initial dashboard data on mount
   useEffect(() => {
-    fetchProducts();
-    fetchOrders();
-    fetchUsers();
-    fetchCoupons();
-    fetchLeads();
-    fetchCategorySettings();
     fetchDashboardStats();
-  }, []);
+    fetchCategorySettings();
+  }, [fetchDashboardStats, fetchCategorySettings]);
 
   // Real-time auto-refresh every 10 seconds for dashboard
   useEffect(() => {
@@ -427,9 +422,9 @@ export default function AdminPanel() {
         // Silent refresh without loading spinner
         try {
           const [productsRes, ordersRes, usersRes, statsRes] = await Promise.allSettled([
-            api.get('admin/products?size=200'),
-            api.get('admin/orders?size=100'),
-            api.get('admin/users?size=100'),
+            api.get('admin/products?size=50'),
+            api.get('admin/orders?size=50'),
+            api.get('admin/users?size=50'),
             api.get('admin/stats')
           ]);
 
@@ -708,7 +703,7 @@ export default function AdminPanel() {
     const migrateAttarProducts = async () => {
       try {
         // Use admin endpoint to get ALL products (including inactive)
-        const { data } = await api.get('admin/products?size=200');
+        const { data } = await api.get('admin/products?size=50');
         const allProducts = data.content || data || [];
         const attarProducts = allProducts.filter(p => p.category === 'attar');
 

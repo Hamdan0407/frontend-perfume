@@ -26,7 +26,7 @@ const ProductSkeleton = () => (
         </div>
         <div className="flex-1 aspect-square rounded-3xl bg-slate-100 shadow-sm" />
       </div>
-      <div className="lg:col-span-5 space-y-8">
+      <div className="lg:col-span-5 space-y-5">
         <div className="space-y-4">
           <div className="h-4 w-24 bg-slate-100 rounded-full" />
           <div className="h-10 w-full bg-slate-100 rounded-lg" />
@@ -453,22 +453,21 @@ export default function ProductDetail() {
           </div>
 
           {/* Product Info Section */}
-          <div className="lg:col-span-5 space-y-8">
+          <div className="lg:col-span-5 space-y-5">
             <div className="space-y-4">
               <div className="flex flex-col gap-3">
               {product.brand && (
-                <Badge variant="secondary" className="mb-3">
+                <Badge variant="secondary" className="mb-1 w-fit">
                   {product.brand}
                 </Badge>
               )}
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">{product.name}</h1>
-
-              {/* Stock Indicator Badge */}
-              <div className="mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-1">{product.name}</h1>
+              
+              <div className="mb-2">
                 <StockBadge stock={product.stock} />
               </div>
 
-              <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center gap-2 mb-2">
                 <StarRating value={averageRating || product.rating} readOnly={true} size="md" />
                 <span className="text-sm text-muted-foreground">({totalReviews || product.reviewCount} reviews)</span>
               </div>
@@ -499,8 +498,8 @@ export default function ProductDetail() {
 
             <p className="text-muted-foreground leading-relaxed">{product.description}</p>
 
-            <Card>
-              <CardContent className="grid grid-cols-2 gap-4 p-6">
+            <Card className="border-border/40 shadow-sm">
+              <CardContent className="grid grid-cols-2 gap-4 p-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Category</p>
                   <p className="font-medium text-foreground">{formatCategory(product.category)}</p>
@@ -571,17 +570,17 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="space-y-8 pt-6">
+            <div className="space-y-4">
               {currentStock > 0 ? (
-                <div className="space-y-8">
+                <div className="space-y-4">
                   {/* Quantity Section - Row 1 */}
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">Quantity</p>
-                    <div className="flex items-center justify-between w-full sm:w-[180px] h-14 bg-slate-50 border border-slate-200 rounded-full px-3">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Quantity</p>
+                    <div className="flex items-center justify-between w-full sm:w-[160px] h-12 bg-slate-50 border border-slate-200 rounded-full px-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 hover:bg-white rounded-full transition-all duration-300"
+                        className="h-9 w-9 hover:bg-white rounded-full transition-all duration-300"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         disabled={quantity <= 1}
                       >
@@ -591,7 +590,7 @@ export default function ProductDetail() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 hover:bg-white rounded-full transition-all duration-300"
+                        className="h-9 w-9 hover:bg-white rounded-full transition-all duration-300"
                         onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
                         disabled={quantity >= currentStock}
                       >

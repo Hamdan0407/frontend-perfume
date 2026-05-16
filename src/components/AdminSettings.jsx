@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, Lock, Bell, Shield, Eye } from 'lucide-react';
 import '../styles/AdminSettings.css';
+import api from '../api/axios';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
@@ -28,15 +29,8 @@ export default function AdminSettings() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/admin/settings', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(settings)
-      });
-      if (response.ok) {
+      const response = await api.put('admin/settings', settings);
+      if (response.status === 200) {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       }

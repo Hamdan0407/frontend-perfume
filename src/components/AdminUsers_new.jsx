@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Shield, LogOut, Lock, Unlock } from 'lucide-react';
 import toast from '../utils/toast';
 import '../styles/AdminUsers.css';
+import api from '../api/axios';
 
 const POSITION_LABELS = {
   ADMIN: '👔 Manager/Owner',
@@ -30,13 +31,9 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/admin/users?size=100', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const response = await api.get('admin/users?size=50');
+      if (response.status === 200) {
+        const data = response.data;
         setUsers(data.content || []);
       } else {
         toast.error('Failed to load users');
@@ -52,15 +49,8 @@ export default function AdminUsers() {
   const handleBlockUser = async (userId, currentStatus) => {
     try {
       const action = currentStatus ? 'block' : 'unblock';
-      const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/${action}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
+      const response = await api.patch(`admin/users/${userId}/${action}`);
+      if (response.status === 200) {
         fetchUsers();
         toast.success(`User ${action}ed successfully`);
       } else {
