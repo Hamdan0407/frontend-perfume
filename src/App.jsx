@@ -12,27 +12,51 @@ import ScrollToTop from './components/ScrollToTop';
 import { useAuthStore } from './store/authStore';
 import { useWishlistStore } from './store/wishlistStore';
 
-// Lazy load pages
-const Home = lazy(() => import('./pages/Home'));
-const Products = lazy(() => import('./pages/Products'));
-const ProductDetail = lazy(() => import('./pages/ProductDetail'));
-const Cart = lazy(() => import('./pages/Cart'));
-const Checkout = lazy(() => import('./pages/Checkout'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const Wishlist = lazy(() => import('./pages/Wishlist'));
-const Orders = lazy(() => import('./pages/Orders'));
-const OrderDetail = lazy(() => import('./pages/OrderDetail'));
-const InvoicePage = lazy(() => import('./pages/InvoicePage'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const AdminPanel = lazy(() => import('./pages/AdminPanel'));
-const Profile = lazy(() => import('./pages/Profile'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const ContactUs = lazy(() => import('./pages/ContactUs'));
-const ShippingInfo = lazy(() => import('./pages/ShippingInfo'));
-const ReturnsExchange = lazy(() => import('./pages/ReturnsExchange'));
-const FAQ = lazy(() => import('./pages/FAQ'));
+// Version-safe lazy loading with retry logic
+const lazyRetry = (componentImport) =>
+  lazy(async () => {
+    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+      window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+    );
+
+    try {
+      const component = await componentImport();
+      window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      return component;
+    } catch (error) {
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        // Log the error and refresh the page to fetch new chunks
+        console.warn('Dynamic import failed, refreshing page...', error);
+        window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+        return window.location.reload();
+      }
+
+      // If we already tried to refresh and it still fails, throw the error
+      throw error;
+    }
+  });
+
+// Lazy load pages with retry handling
+const Home = lazyRetry(() => import('./pages/Home'));
+const Products = lazyRetry(() => import('./pages/Products'));
+const ProductDetail = lazyRetry(() => import('./pages/ProductDetail'));
+const Cart = lazyRetry(() => import('./pages/Cart'));
+const Checkout = lazyRetry(() => import('./pages/Checkout'));
+const Login = lazyRetry(() => import('./pages/Login'));
+const Register = lazyRetry(() => import('./pages/Register'));
+const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
+const Orders = lazyRetry(() => import('./pages/Orders'));
+const OrderDetail = lazyRetry(() => import('./pages/OrderDetail'));
+const InvoicePage = lazyRetry(() => import('./pages/InvoicePage'));
+const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
+const AdminPanel = lazyRetry(() => import('./pages/AdminPanel'));
+const Profile = lazyRetry(() => import('./pages/Profile'));
+const ForgotPassword = lazyRetry(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazyRetry(() => import('./pages/ResetPassword'));
+const ContactUs = lazyRetry(() => import('./pages/ContactUs'));
+const ShippingInfo = lazyRetry(() => import('./pages/ShippingInfo'));
+const ReturnsExchange = lazyRetry(() => import('./pages/ReturnsExchange'));
+const FAQ = lazyRetry(() => import('./pages/FAQ'));
 
 // Loading fallback component
 const PageLoader = () => (
