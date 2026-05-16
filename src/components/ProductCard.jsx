@@ -19,7 +19,7 @@ export default function ProductCard({ product, onQuickView }) {
 
   console.log(`[ProductCard] Rendering product: ${product.id} - ${product.name}`);
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 group h-full flex flex-col shadow-sm">
+    <Card className="overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1 border-border/40 group h-full flex flex-col shadow-sm bg-white rounded-2xl">
       <Link to={`/products/${product.id}`} className="block flex-1 flex flex-col" onClick={() => console.log(`[ProductCard] Clicking product ID: ${product.id}`)}>
         <div className="relative aspect-[3/4] overflow-hidden bg-muted sm:aspect-[3/4]">
           <img
@@ -29,7 +29,7 @@ export default function ProductCard({ product, onQuickView }) {
               e.target.onerror = null; // Prevent infinite loop
               e.target.src = 'https://placehold.co/600x400?text=No+Image';
             }}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute top-3 left-3">
             <WishlistButton productId={product.id} />
@@ -50,19 +50,18 @@ export default function ProductCard({ product, onQuickView }) {
             )}
           </div>
 
-          {/* Quick View Button - Responsive behavior */}
-          <div className="absolute inset-x-0 bottom-0 p-2 sm:p-4 translate-y-full group-hover:translate-y-0 md:group-hover:translate-y-0 transition-transform duration-300 md:translate-y-full">
+          {/* Premium Quick View Button */}
+          <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5 translate-y-full group-hover:translate-y-0 transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 z-20">
             <Button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onQuickView?.(product);
               }}
-              className="w-full bg-white/95 hover:bg-white text-foreground backdrop-blur-sm shadow-md text-[10px] sm:text-xs h-8 sm:h-10"
-              size="sm"
+              variant="outline"
+              className="w-full bg-white/95 hover:bg-slate-900 hover:text-white text-slate-900 border-slate-200 backdrop-blur-md shadow-xl text-xs font-bold h-11 rounded-full transition-all duration-300 transform active:scale-95"
             >
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Quick View
+              Choose Options
             </Button>
           </div>
 
