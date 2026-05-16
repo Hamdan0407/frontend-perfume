@@ -336,7 +336,7 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+            <div className="relative aspect-square overflow-hidden rounded-xl border border-border/40 bg-[#FAFAFA] flex items-center justify-center p-6 sm:p-12 transition-all duration-300">
               <img
                 src={selectedImage || 'https://placehold.co/600x600?text=Perfume'}
                 alt={product.name}
@@ -344,7 +344,7 @@ export default function ProductDetail() {
                   e.target.onerror = null;
                   e.target.src = 'https://placehold.co/600x600?text=No+Image';
                 }}
-                className="w-full h-full object-cover"
+                className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-sm transition-transform duration-500 hover:scale-105"
               />
             </div>
             {product.additionalImages?.length > 0 && (
@@ -363,7 +363,7 @@ export default function ProductDetail() {
                       e.target.onerror = null;
                       e.target.src = 'https://placehold.co/150x150?text=No+Image';
                     }}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-2"
                   />
                 </button>
                 {product.additionalImages.map((img, idx) => (
@@ -382,7 +382,7 @@ export default function ProductDetail() {
                         e.target.onerror = null;
                         e.target.src = 'https://placehold.co/150x150?text=No+Image';
                       }}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain p-2"
                     />
                   </button>
                 ))}
