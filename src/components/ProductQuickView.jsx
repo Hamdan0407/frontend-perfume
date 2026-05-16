@@ -235,21 +235,31 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
             {/* Right Column: Information & Selection */}
             <div className="flex-1 flex flex-col p-6 sm:p-8 overflow-y-auto no-scrollbar bg-white">
               {/* Header Info */}
-              <div className="mb-8">
-                {fullProduct.brand && (
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">{fullProduct.brand}</p>
-                )}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  {fullProduct.brand && (
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                      {fullProduct.brand}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-slate-300">•</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
+                    {formatCategory(fullProduct.category)}
+                  </span>
+                </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">{fullProduct.name}</h2>
-                <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 italic">{fullProduct.description}</p>
+                <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 italic">{fullProduct.description}</p>
               </div>
 
               {/* Variant Selection Table */}
               <div className="flex-1 mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900">Selection</h3>
-                  <Badge variant="outline" className="text-[10px] font-bold border-slate-200 text-slate-500">
-                    {fullProduct.type || 'Eau de Parfum'}
-                  </Badge>
+                  {fullProduct.type && (
+                    <Badge variant="outline" className="text-[10px] font-bold border-slate-200 text-slate-500">
+                      {typeof fullProduct.type === 'object' ? (fullProduct.type.name || fullProduct.type.label) : fullProduct.type}
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="space-y-3">
