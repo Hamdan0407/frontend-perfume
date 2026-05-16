@@ -215,6 +215,37 @@ export default function ProductDetail() {
     }
   };
 
+  const handleBuyItNow = async () => {
+    if (!product) return;
+
+    if (!isAuthenticated) {
+      toast('Please login to continue', { icon: 'ℹ️' });
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const isVirtualVariant = selectedVariant?.id && String(selectedVariant.id).startsWith('v_');
+      const targetProductId = isVirtualVariant ? product.id : (selectedVariant?.productId || product.id);
+
+      const requestData = {
+        productId: targetProductId,
+        quantity
+      };
+
+      if (selectedVariant && !isVirtualVariant) {
+        requestData.variantId = selectedVariant.id;
+      }
+
+      const { data } = await api.post('cart/items', requestData);
+      setCart(data);
+      navigate('/checkout');
+    } catch (error) {
+      console.error('Buy It Now error:', error);
+      toast.error(error.response?.data?.message || 'Failed to proceed to checkout');
+    }
+  };
+
   const handleSubmitReview = async (e) => {
     e.preventDefault();
 
@@ -525,12 +556,13 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="space-y-6 pt-4">
+            <div className="space-y-8 pt-6">
               {currentStock > 0 ? (
-                <div className="space-y-4">
-                  <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">Quantity</p>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <div className="flex items-center justify-between w-full sm:w-auto h-14 bg-slate-50 border border-slate-200 rounded-full px-2 min-w-[140px]">
+                <div className="space-y-8">
+                  {/* Quantity Section - Row 1 */}
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">Quantity</p>
+                    <div className="flex items-center justify-between w-full sm:w-[180px] h-14 bg-slate-50 border border-slate-200 rounded-full px-3">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -540,7 +572,7 @@ export default function ProductDetail() {
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
-                      <span className="w-10 text-center font-bold text-slate-900">{quantity}</span>
+                      <span className="text-base font-bold text-slate-900">{quantity}</span>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -551,26 +583,39 @@ export default function ProductDetail() {
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
+                  </div>
 
+                  {/* Action Buttons - Row 2 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Button
                       onClick={handleAddToCart}
-                      className="flex-1 h-14 rounded-full text-base sm:text-lg font-bold shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 transition-all active:scale-95"
+                      variant="outline"
+                      className="h-14 rounded-full text-base font-bold border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 active:scale-95"
                       size="lg"
                     >
                       <ShoppingCart className="h-5 w-5 mr-3" />
                       Add to Cart
                     </Button>
+                    <Button
+                      onClick={handleBuyItNow}
+                      className="h-14 rounded-full text-base font-bold bg-[#0A1128] hover:bg-[#000814] text-white shadow-2xl shadow-slate-900/20 transition-all duration-300 active:scale-95 border border-[#0A1128]"
+                      size="lg"
+                    >
+                      Buy It Now
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <Button
-                  disabled
-                  variant="secondary"
-                  className="w-full h-14 rounded-full text-lg font-bold opacity-60"
-                  size="lg"
-                >
-                  Out of Stock
-                </Button>
+                <div className="pt-4">
+                  <Button
+                    disabled
+                    variant="secondary"
+                    className="w-full h-14 rounded-full text-lg font-bold opacity-60"
+                    size="lg"
+                  >
+                    Out of Stock
+                  </Button>
+                </div>
               )}
             </div>
 
