@@ -13,6 +13,46 @@ import StarRating from '../components/StarRating';
 import StockBadge from '../components/StockBadge';
 import RelatedProducts from '../components/RelatedProducts';
 import { cn, formatCategory, sortVariants } from '../lib/utils';
+import { useCartStore } from '../store/cartStore';
+
+// Premium Skeleton Component for Luxury Feel
+const ProductSkeleton = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 animate-pulse">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+      <div className="lg:col-span-7 flex flex-col md:flex-row gap-6">
+        <div className="hidden md:flex flex-col gap-4 w-24 shrink-0">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="aspect-square rounded-xl bg-slate-100" />
+          ))}
+        </div>
+        <div className="flex-1 aspect-square rounded-3xl bg-slate-100 shadow-sm" />
+      </div>
+      <div className="lg:col-span-5 space-y-8">
+        <div className="space-y-4">
+          <div className="h-4 w-24 bg-slate-100 rounded-full" />
+          <div className="h-10 w-full bg-slate-100 rounded-lg" />
+          <div className="h-4 w-48 bg-slate-100 rounded-full" />
+        </div>
+        <div className="h-12 w-32 bg-slate-100 rounded-lg" />
+        <div className="space-y-4">
+          <div className="h-4 w-32 bg-slate-100 rounded-full" />
+          <div className="flex gap-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-12 w-20 bg-slate-100 rounded-full" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div className="h-4 w-24 bg-slate-100 rounded-full" />
+          <div className="flex gap-4">
+            <div className="h-14 w-32 bg-slate-100 rounded-full" />
+            <div className="h-14 flex-1 bg-slate-100 rounded-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -49,17 +89,30 @@ export default function ProductDetail() {
   }, [id]);
 
   useEffect(() => {
-    // Reset review state when navigating to a different product
+    // Reset state and scroll to top
+    window.scrollTo(0, 0);
     setReviews([]);
     setTotalReviews(0);
     setAverageRating(0);
     setReviewPage(0);
     setHasMoreReviews(false);
-    fetchProduct();
-    fetchReviews();
-    if (isAuthenticated) {
-      checkPurchaseStatus();
-    }
+    
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchProduct(),
+        fetchReviews(0, false),
+        isAuthenticated ? checkPurchaseStatus() : Promise.resolve()
+      ]);
+      setLoading(false);
+    };
+
+    loadData();
+
+    return () => {
+      const existingLink = document.getElementById('hero-image-preload');
+      if (existingLink) existingLink.remove();
+    };
   }, [id, isAuthenticated]);
 
   const checkPurchaseStatus = async () => {
@@ -75,31 +128,34 @@ export default function ProductDetail() {
   };
 
   const fetchProduct = async () => {
-    console.log(`[ProductDetail] Fetching details for ID: ${id}`);
     try {
       const { data } = await api.get(`products/${id}`);
-      console.log(`[ProductDetail] Data received:`, data);
       setProduct(data);
       setSelectedImage(data.imageUrl);
-      // Fetch related products to merge variants (for products with same name/brand but different volumes)
+
+      // Preload the main hero image for LCP optimization
+      const link = document.createElement('link');
+      link.id = 'hero-image-preload';
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = data.imageUrl;
+      document.head.appendChild(link);
+
+      // Fetch related products to merge variants
       try {
         const { data: relatedData } = await api.get(`products/search?query=${encodeURIComponent(data.name)}&brand=${encodeURIComponent(data.brand)}&size=50`);
         const relatedProducts = relatedData.content || relatedData || [];
 
         let allVariants = [];
-
         relatedProducts.forEach(p => {
           if (p.name && data.name && String(p.name).toLowerCase() === String(data.name).toLowerCase() &&
             ((!p.brand && !data.brand) || (p.brand && data.brand && String(p.brand).toLowerCase() === String(data.brand).toLowerCase()))) {
-            // Add existing variants
+            
             if (p.variants && p.variants.length > 0) {
               p.variants.forEach(v => {
-                if (!allVariants.find(ev => ev.size === v.size)) {
-                  allVariants.push(v);
-                }
+                if (!allVariants.find(ev => ev.size === v.size)) allVariants.push(v);
               });
             } else if (p.volume) {
-              // Add virtual variant for the product record itself
               if (!allVariants.find(ev => ev.size === p.volume)) {
                 allVariants.push({
                   id: `v_${p.id}`,
@@ -117,45 +173,25 @@ export default function ProductDetail() {
 
         const sortedVariants = sortVariants(allVariants);
         setMergedVariants(sortedVariants);
-
-        // Auto-select first available variant
         const firstAvailable = sortedVariants.find(v => v.active && v.stock > 0) || sortedVariants[0];
         setSelectedVariant(firstAvailable);
       } catch (err) {
-        console.error('Failed to fetch related products for variants:', err);
-        // Fallback to current product variants
         if (data.variants && data.variants.length > 0) {
           const sortedV = sortVariants(data.variants);
           setSelectedVariant(sortedV.find(v => v.active && v.stock > 0) || sortedV[0]);
           setMergedVariants(sortedV);
         } else if (data.volume) {
-          const virtualV = {
-            id: `v_${data.id}`,
-            productId: data.id,
-            size: data.volume,
-            price: data.price,
-            discountPrice: data.discountPrice,
-            stock: data.stock,
-            active: data.active
-          };
+          const virtualV = { id: `v_${data.id}`, productId: data.id, size: data.volume, price: data.price, discountPrice: data.discountPrice, stock: data.stock, active: data.active };
           setSelectedVariant(virtualV);
           setMergedVariants([virtualV]);
         }
       }
     } catch (error) {
       console.error('Failed to load product:', error);
-      const status = error.response?.status;
-      if (status === 404 || status === 500) {
-        // Product doesn't exist - redirect to products page
-        setTimeout(() => {
-          toast.error('Product not found. Redirecting to products...');
-          navigate('/products');
-        }, 1500);
-      } else {
-        toast.error('Failed to load product');
+      if (error.response?.status === 404) {
+        toast.error('Product not found');
+        navigate('/products');
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -308,28 +344,7 @@ export default function ProductDetail() {
   };
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-4">
-            <Skeleton className="w-full aspect-square rounded-lg" />
-            <div className="grid grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="aspect-square rounded-lg" />
-              ))}
-            </div>
-          </div>
-          <div className="space-y-6">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-6 w-1/2" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        </div>
-      </div>
-    );
+    return <ProductSkeleton />;
   }
 
   if (!product) {
@@ -385,6 +400,7 @@ export default function ProductDetail() {
                   <img 
                     src={img} 
                     alt={`${product.name} ${idx + 1}`}
+                    loading="lazy"
                     className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
                   />
                 </button>
@@ -430,7 +446,7 @@ export default function ProductDetail() {
                         : "border-border/50"
                     )}
                   >
-                    <img src={img} alt="" className="w-full h-full object-contain" />
+                    <img src={img} alt="" loading="lazy" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>
