@@ -37,6 +37,7 @@ export const useAuthStore = create(
       isAuthenticated: false,
       sessionInitialized: false,
       authState: 'guest', // 'guest' | 'authenticating' | 'authenticated' | 'expired'
+      _refreshPromise: null, // Holds active deduplicated session refresh promise
 
       /**
        * Set user and tokens after successful login
@@ -88,8 +89,125 @@ export const useAuthStore = create(
           tokenExpiresAt: null,
           isAuthenticated: false,
           sessionInitialized: true,
-          authState: 'guest'
+          authState: 'guest',
+          _refreshPromise: null
         });
+      },
+
+      /**
+       * Synchronize tokens across store and storage
+       */
+      updateTokens: (accessToken, refreshToken, expiresIn) => {
+        console.log('🔄 Syncing store tokens...');
+        const tokenExpiresAt = Date.now() + (expiresIn * 1000);
+        
+        safeLs.setItem('accessToken', accessToken);
+        safeLs.setItem('token', accessToken);
+        if (refreshToken) safeLs.setItem('refreshToken', refreshToken);
+        safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
+
+        set({
+          accessToken,
+          refreshToken: refreshToken || get().refreshToken,
+          tokenExpiresAt,
+          isAuthenticated: true,
+          authState: 'authenticated'
+        });
+      },
+
+      /**
+       * Unified, centralized session refresh function.
+       * Can be safely called concurrently by Axios interceptors, page bootstrap hooks, etc.
+       * Prevents duplicate network requests by caching and returning a single active promise.
+       */
+      refreshSession: async () => {
+        const state = get();
+        if (state._refreshPromise) {
+          console.log('🔄 Reusing active session refresh promise...');
+          return state._refreshPromise;
+        }
+
+        const refreshToken = state.refreshToken || safeLs.getItem('refreshToken');
+        if (!refreshToken) {
+          console.warn('⚠️ No refresh token available for session refresh.');
+          throw new Error('No refresh token available');
+        }
+
+        console.log('🔄 Initiating centralized session refresh...');
+        
+        const refreshPromise = (async () => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout protection
+
+          try {
+            const refreshUrl = `/api/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`;
+            const response = await window.fetch(refreshUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+              throw new Error(`Refresh request failed with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (!data || !data.token) {
+              throw new Error('Invalid response payload from token refresh endpoint');
+            }
+
+            const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = data;
+
+            // Sync localStorage keys
+            safeLs.setItem('accessToken', newAccessToken);
+            safeLs.setItem('token', newAccessToken);
+            if (newRefreshToken) safeLs.setItem('refreshToken', newRefreshToken);
+
+            const tokenExpiresAt = Date.now() + (expiresIn * 1000);
+            safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
+
+            set({
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken || state.refreshToken,
+              tokenExpiresAt,
+              isAuthenticated: true,
+              authState: 'authenticated',
+              _refreshPromise: null // Release active promise cache
+            });
+
+            console.log('✅ Centralized session refresh successful.');
+            return newAccessToken;
+          } catch (err) {
+            clearTimeout(timeoutId);
+            console.error('❌ Centralized session refresh failed:', err.name === 'AbortError' ? 'Timeout (15s)' : err.message);
+
+            // Clean up invalid session
+            safeLs.removeItem('accessToken');
+            safeLs.removeItem('token');
+            safeLs.removeItem('refreshToken');
+            safeLs.removeItem('user');
+            safeLs.removeItem('tokenExpiresAt');
+
+            set({
+              user: null,
+              accessToken: null,
+              refreshToken: null,
+              tokenExpiresAt: null,
+              isAuthenticated: false,
+              authState: 'expired',
+              _refreshPromise: null // Release active promise cache
+            });
+
+            throw err;
+          }
+        })();
+
+        set({ _refreshPromise: refreshPromise });
+        return refreshPromise;
       },
 
       /**
@@ -112,6 +230,8 @@ export const useAuthStore = create(
         }
 
         const profileUrl = '/api/users/profile';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout protection
 
         try {
           console.log('🔄 Validating session with profile fetch...');
@@ -120,8 +240,11 @@ export const useAuthStore = create(
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${state.accessToken}`
-            }
+            },
+            signal: controller.signal
           });
+
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const userData = await response.json();
@@ -132,79 +255,42 @@ export const useAuthStore = create(
               authState: 'authenticated'
             });
           } else if (response.status === 401 || response.status === 403) {
-            console.warn('⚠️ Session validation failed with auth error. Attempting token refresh...');
+            console.warn('⚠️ Session validation failed with auth error. Attempting centralized token refresh...');
             
-            const refreshToken = state.refreshToken || safeLs.getItem('refreshToken');
-            if (refreshToken) {
-              try {
-                const refreshUrl = `/api/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`;
-                const refreshRes = await window.fetch(refreshUrl, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  }
+            try {
+              const newAccessToken = await state.refreshSession();
+              
+              // Retry profile fetch with new token
+              console.log('🔄 Retrying profile fetch with fresh token...');
+              const retryController = new AbortController();
+              const retryTimeoutId = setTimeout(() => retryController.abort(), 15000);
+
+              const retryRes = await window.fetch(profileUrl, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${newAccessToken}`
+                },
+                signal: retryController.signal
+              });
+
+              clearTimeout(retryTimeoutId);
+
+              if (retryRes.ok) {
+                const userData = await retryRes.json();
+                console.log('✅ Session validated after refresh for:', userData.email);
+                set({
+                  user: userData,
+                  isAuthenticated: true,
+                  authState: 'authenticated'
                 });
-
-                if (refreshRes.ok) {
-                  const refreshData = await refreshRes.json();
-                  const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = refreshData;
-
-                  // Sync keys
-                  safeLs.setItem('accessToken', newAccessToken);
-                  safeLs.setItem('token', newAccessToken);
-                  if (newRefreshToken) safeLs.setItem('refreshToken', newRefreshToken);
-
-                  const tokenExpiresAt = Date.now() + (expiresIn * 1000);
-                  safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
-
-                  set({
-                    accessToken: newAccessToken,
-                    refreshToken: newRefreshToken || state.refreshToken,
-                    tokenExpiresAt
-                  });
-
-                  // Retry profile fetch with new token
-                  console.log('🔄 Retrying profile fetch with fresh token...');
-                  const retryRes = await window.fetch(profileUrl, {
-                    method: 'GET',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${newAccessToken}`
-                    }
-                  });
-
-                  if (retryRes.ok) {
-                    const userData = await retryRes.json();
-                    console.log('✅ Session validated after refresh for:', userData.email);
-                    set({
-                      user: userData,
-                      isAuthenticated: true,
-                      authState: 'authenticated'
-                    });
-                    return;
-                  }
-                }
-              } catch (refreshErr) {
-                console.error('❌ Token refresh failed during bootstrap:', refreshErr);
+              } else {
+                throw new Error('Profile fetch failed on retry');
               }
+            } catch (refreshErr) {
+              console.error('❌ Centralized refresh & retry failed during bootstrap:', refreshErr);
+              // Store is already cleaned up inside refreshSession()'s catch block
             }
-
-            // Cleanup invalid session
-            console.log('❌ Session invalid/expired, logging out');
-            safeLs.removeItem('accessToken');
-            safeLs.removeItem('token');
-            safeLs.removeItem('refreshToken');
-            safeLs.removeItem('user');
-            safeLs.removeItem('tokenExpiresAt');
-
-            set({
-              user: null,
-              accessToken: null,
-              refreshToken: null,
-              tokenExpiresAt: null,
-              isAuthenticated: false,
-              authState: 'expired'
-            });
           } else {
             // Keep user from persisted store if server is offline or returned other error codes (e.g. 500)
             console.warn('📡 Server or network error during bootstrap validation. Falling back to cached session.');
@@ -214,7 +300,8 @@ export const useAuthStore = create(
             });
           }
         } catch (err) {
-          console.warn('📡 Network error during bootstrap. Falling back to cached session.', err);
+          clearTimeout(timeoutId);
+          console.warn('📡 Network error or timeout during bootstrap. Falling back to cached session.', err.name === 'AbortError' ? 'Timeout' : err.message);
           set({
             isAuthenticated: true,
             authState: 'authenticated'

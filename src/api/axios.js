@@ -57,26 +57,7 @@ const api = axios.create({
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // 1 second
 
-let isRefreshing = false;
-let failedQueue = [];
-
-/**
- * Process queued requests after token refresh
- * @param {Error|null} error - Error if refresh failed, null if successful
- * @param {string|null} token - New access token if successful
- */
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  isRefreshing = false;
-  failedQueue = [];
-};
+// Remove isRefreshing, failedQueue, processQueue entirely as they are handled by centralized store!
 
 /**
  * Request interceptor - Inject JWT token into Authorization header
@@ -90,6 +71,10 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
+    if (import.meta.env.DEV) {
+      console.log(`📡 [API Request Start] ${config.method?.toUpperCase()} ${config.url}`, accessToken ? 'with token' : 'no token');
+    }
+
     return config;
   },
   (error) => {
@@ -98,232 +83,57 @@ api.interceptors.request.use(
 );
 
 /**
- * Response interceptor - Handle errors and token refresh
+ * Response interceptor - Handle errors and token refresh via centralized authStore
  */
 api.interceptors.response.use(
   (response) => {
-    // Success: Return response as-is
     if (import.meta.env.DEV) {
-      console.log('✅ API Response:', response.config?.url, response.status);
+      console.log('✅ [API Response Success] :', response.config?.url, response.status);
     }
     return response;
   },
-  (error) => {
-    if (import.meta.env.DEV) {
-      console.error('❌ API Error:', error.config?.url, error.response?.status);
-    }
+  async (error) => {
     const { config, response } = error;
     const originalRequest = config;
 
+    if (import.meta.env.DEV) {
+      console.error('❌ [API Response Error] :', originalRequest?.url, response?.status || 'Network Error / Timeout');
+    }
+
     /**
-     * Handle 401 Unauthorized
+     * Handle 401 Unauthorized or 403 Forbidden
      * Attempts to refresh token if available, otherwise redirects to login
      * SKIP for login/register endpoints - let the component handle the error
      */
-    if (response?.status === 401 && !originalRequest._retry) {
-      // Don't try to refresh tokens for login/register - these are initial auth attempts
+    if ((response?.status === 401 || response?.status === 403) && originalRequest && !originalRequest._retry) {
       const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
         originalRequest.url?.includes('/auth/register') ||
         originalRequest.url?.includes('/auth/refresh-token');
 
       if (isAuthEndpoint) {
-        // Let the auth component handle the error directly
         return Promise.reject(error);
-      }
-
-      if (isRefreshing) {
-        // Token refresh already in progress - queue this request
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
       }
 
       originalRequest._retry = true;
-      isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
-
-      if (refreshToken) {
-        // Attempt to refresh the access token
-        return axios
-          .post(`${API_URL.endsWith('/') ? API_URL : API_URL + '/'}auth/refresh-token`, null, {
-            params: { refreshToken },
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-          .then((res) => {
-            if (!res.data || !res.data.token) {
-              throw new Error('Invalid refresh token response');
-            }
-            const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = res.data;
-
-            // Update tokens in localStorage
-            localStorage.setItem('accessToken', newAccessToken);
-            localStorage.setItem('token', newAccessToken); // For backward compatibility
-            if (newRefreshToken) {
-              localStorage.setItem('refreshToken', newRefreshToken);
-            }
-
-            // Update auth store tokens
-            try {
-              const authStore = useAuthStore.getState();
-              if (authStore.updateTokens) {
-                authStore.updateTokens(newAccessToken, newRefreshToken, expiresIn);
-              }
-            } catch (e) {
-              // Silent fail if auth store not initialized
-              if (import.meta.env.DEV) {
-                console.debug('Auth store update failed during token refresh:', e);
-              }
-            }
-
-            // Update original request header and retry
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            processQueue(null, newAccessToken);
-
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            // Token refresh failed - clear all auth data
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            localStorage.removeItem('tokenExpiresAt');
-            localStorage.removeItem('auth-storage');
-
-            // Clear auth store
-            try {
-              const authStore = useAuthStore.getState();
-              if (authStore.logout) {
-                authStore.logout();
-              }
-            } catch (e) {
-              // Silent fail if auth store not initialized
-              if (import.meta.env.DEV) {
-                console.debug('Auth store logout failed:', e);
-              }
-            }
-
-            processQueue(err, null);
-
-            // Redirect to login with session expired message (only if not already there)
-            if (!window.location.pathname.includes('/login')) {
-              window.location.href = '/login?session=expired';
-            }
-            return Promise.reject(err);
-          });
-      } else {
-        // No refresh token available - user must re-authenticate
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('tokenExpiresAt');
-        localStorage.removeItem('auth-storage');
-
-        try {
-          const authStore = useAuthStore.getState();
-          if (authStore.logout) {
-            authStore.logout();
-          }
-        } catch (e) {
-          // Silent fail if auth store not initialized
-          if (import.meta.env.DEV) {
-            console.debug('Auth store logout failed:', e);
-          }
-        }
-
-        if (!window.location.pathname.includes('/login')) {
+      try {
+        console.log('🔄 Interceptor caught 401/403. Initiating centralized session refresh...');
+        const newAccessToken = await useAuthStore.getState().refreshSession();
+        
+        // Update authorization header on the retried request
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        console.log('✅ Centralized refresh completed. Retrying request:', originalRequest.url);
+        return api(originalRequest);
+      } catch (refreshErr) {
+        console.error('❌ Centralized refresh failed during request retry:', refreshErr.message);
+        
+        // Redirect to login only if not already on the login page and on a key route
+        if (!window.location.pathname.includes('/login') && 
+            (originalRequest.url?.includes('profile') || originalRequest.url?.includes('orders') || originalRequest.url?.includes('admin') || originalRequest.url?.includes('cart'))) {
           window.location.href = '/login?session=expired';
         }
-        return Promise.reject(error);
-      }
-    }
-
-    /**
-     * Handle 403 Forbidden
-     * Could be an expired token that wasn't caught as 401 (e.g., anonymous auth).
-     * Try token refresh before giving up.
-     */
-    if (response?.status === 403 && !originalRequest._retry) {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        originalRequest._retry = true;
-
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          })
-            .then((token) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              return api(originalRequest);
-            })
-            .catch((err) => Promise.reject(err));
-        }
-
-        isRefreshing = true;
-
-        return axios
-          .post(`${API_URL.endsWith('/') ? API_URL : API_URL + '/'}auth/refresh-token`, null, {
-            params: { refreshToken },
-            headers: { 'Content-Type': 'application/json' },
-          })
-          .then((res) => {
-            const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = res.data;
-
-            localStorage.setItem('accessToken', newAccessToken);
-            localStorage.setItem('token', newAccessToken);
-            if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
-
-            try {
-              const authStore = useAuthStore.getState();
-              if (authStore.updateTokens) authStore.updateTokens(newAccessToken, newRefreshToken, expiresIn);
-            } catch (e) { /* silent */ }
-
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            processQueue(null, newAccessToken);
-            return api(originalRequest);
-          })
-          .catch((refreshErr) => {
-            // Token refresh failed - clear all auth data
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            localStorage.removeItem('tokenExpiresAt');
-            localStorage.removeItem('auth-storage');
-
-            // Clear auth store
-            try {
-              const authStore = useAuthStore.getState();
-              if (authStore.logout) {
-                authStore.logout();
-              }
-            } catch (e) {
-              // Silent fail if auth store not initialized
-              if (import.meta.env.DEV) {
-                console.debug('Auth store logout failed:', e);
-              }
-            }
-
-            processQueue(refreshErr, null);
-            console.warn('403 token refresh failed, session cleared');
-            
-            // Redirect to login with session expired message
-            if (!window.location.pathname.includes('/login')) {
-              window.location.href = '/login?session=expired';
-            }
-            return Promise.reject(refreshErr);
-          });
+        
+        return Promise.reject(refreshErr);
       }
     }
 
