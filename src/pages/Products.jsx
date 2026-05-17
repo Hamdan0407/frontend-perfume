@@ -77,7 +77,20 @@ export default function Products() {
         content = content.filter(p => p.stock > 0);
       }
 
-      setProducts(groupProducts(content));
+      let grouped = groupProducts(content);
+
+      // Apply frontend sorting for alphabetical ordering (Name: A to Z)
+      if (sortBy === 'name') {
+        grouped = [...grouped].sort((a, b) => {
+          const nameA = a.name || '';
+          const nameB = b.name || '';
+          return sortDir === 'DESC'
+            ? nameB.localeCompare(nameA)
+            : nameA.localeCompare(nameB);
+        });
+      }
+
+      setProducts(grouped);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -182,7 +195,7 @@ export default function Products() {
                 <option value="createdAt-DESC">Newest</option>
                 <option value="price-ASC">Price: Low</option>
                 <option value="price-DESC">Price: High</option>
-                <option value="name-ASC">Name: A-Z</option>
+                <option value="name-ASC">Name: A to Z</option>
                 <option value="rating-DESC">Rating</option>
               </select>
             </div>
@@ -319,16 +332,15 @@ function FiltersContent({
           <Label htmlFor="category" className="text-sm font-semibold">Category</Label>
           <select
             id="category"
-            value={category}
+            value={category ? category.toUpperCase().replace(/ /g, '_').replace(/-/g, '_') : ''}
             onChange={(e) => handleFilterChange('category', e.target.value)}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Categories</option>
-            <option value="perfume">Parfum</option>
-            <option value="premium attars">Premium Attars</option>
-            <option value="oud reserve">Oud Reserve</option>
-            <option value="bakhoor">Bakhoor</option>
-            <option value="aroma chemicals">Aroma Chemicals</option>
+            <option value="PREMIUM_OIL">Premium Oil</option>
+            <option value="BAKHOOR">Bakhoor</option>
+            <option value="BOOSTERS_AND_BASES">Booster & Bases</option>
+            <option value="AROMA_CHEMICALS">Aroma Chemicals</option>
           </select>
         </div>
 
