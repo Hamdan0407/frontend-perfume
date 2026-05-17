@@ -270,20 +270,29 @@ export const useAuthStore = create(
 
           if (isValid) {
             console.log('✅ Session restored for:', state.user?.email);
+            
+            // Sync legacy keys BEFORE triggering re-render to avoid race conditions
+            safeLs.setItem('accessToken', state.accessToken);
+            safeLs.setItem('token', state.accessToken);
+            if (state.refreshToken) safeLs.setItem('refreshToken', state.refreshToken);
+            safeLs.setItem('tokenExpiresAt', expiresAt.toString());
+
             useAuthStore.setState({
               sessionInitialized: true,
               isAuthenticated: true,
               tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt
             });
 
-            // Sync legacy keys
-            safeLs.setItem('accessToken', state.accessToken);
-            safeLs.setItem('token', state.accessToken);
-            if (state.refreshToken) safeLs.setItem('refreshToken', state.refreshToken);
-            safeLs.setItem('tokenExpiresAt', expiresAt.toString());
-
           } else {
-            console.log('âŒ Session expired or invalid, logging out');
+            console.log('❌ Session expired or invalid, logging out');
+            
+            // Clear legacy keys BEFORE triggering re-render to avoid race conditions
+            safeLs.removeItem('accessToken');
+            safeLs.removeItem('token');
+            safeLs.removeItem('refreshToken');
+            safeLs.removeItem('user');
+            safeLs.removeItem('tokenExpiresAt');
+
             useAuthStore.setState({
               sessionInitialized: true,
               isAuthenticated: false,
@@ -292,12 +301,6 @@ export const useAuthStore = create(
               refreshToken: null,
               tokenExpiresAt: null
             });
-            // Clear legacy keys
-            safeLs.removeItem('accessToken');
-            safeLs.removeItem('token');
-            safeLs.removeItem('refreshToken');
-            safeLs.removeItem('user');
-            safeLs.removeItem('tokenExpiresAt');
           }
         };
       },
