@@ -36,7 +36,7 @@ export const useAuthStore = create(
       tokenExpiresAt: null,
       isAuthenticated: false,
       sessionInitialized: false,
-      bootstrapStatus: 'INIT', // 'INIT' | 'HYDRATING' | 'AUTHENTICATING' | 'AUTHENTICATED' | 'FAILED' | 'GUEST'
+      authState: 'guest', // 'guest' | 'authenticating' | 'authenticated' | 'expired'
 
       /**
        * Set user and tokens after successful login
@@ -64,7 +64,7 @@ export const useAuthStore = create(
           tokenExpiresAt,
           isAuthenticated: true,
           sessionInitialized: true,
-          bootstrapStatus: 'AUTHENTICATED'
+          authState: 'authenticated'
         });
       },
 
@@ -88,25 +88,23 @@ export const useAuthStore = create(
           tokenExpiresAt: null,
           isAuthenticated: false,
           sessionInitialized: true,
-          bootstrapStatus: 'GUEST'
+          authState: 'guest'
         });
       },
 
       /**
-       * Bootstrap session on startup.
+       * Bootstrap session silently in the background on startup.
        * Restores tokens, validates session with profile request, retries expired sessions once,
        * and transitions the bootstrap lifecycle state. Uses fetch to bypass circular dependencies.
        */
       bootstrap: async () => {
         const state = get();
-        if (state.bootstrapStatus !== 'INIT' && state.bootstrapStatus !== 'FAILED') return;
-
-        set({ bootstrapStatus: 'AUTHENTICATING' });
+        if (state.authState !== 'authenticating') return;
 
         if (!state.accessToken) {
-          console.log('📋 No access token found during bootstrap. Booting as GUEST');
+          console.log('📋 No access token found during bootstrap. Booting as guest');
           set({
-            bootstrapStatus: 'GUEST',
+            authState: 'guest',
             isAuthenticated: false,
             user: null
           });
@@ -131,7 +129,7 @@ export const useAuthStore = create(
             set({
               user: userData,
               isAuthenticated: true,
-              bootstrapStatus: 'AUTHENTICATED'
+              authState: 'authenticated'
             });
           } else if (response.status === 401 || response.status === 403) {
             console.warn('⚠️ Session validation failed with auth error. Attempting token refresh...');
@@ -181,7 +179,7 @@ export const useAuthStore = create(
                     set({
                       user: userData,
                       isAuthenticated: true,
-                      bootstrapStatus: 'AUTHENTICATED'
+                      authState: 'authenticated'
                     });
                     return;
                   }
@@ -205,21 +203,21 @@ export const useAuthStore = create(
               refreshToken: null,
               tokenExpiresAt: null,
               isAuthenticated: false,
-              bootstrapStatus: 'FAILED'
+              authState: 'expired'
             });
           } else {
             // Keep user from persisted store if server is offline or returned other error codes (e.g. 500)
             console.warn('📡 Server or network error during bootstrap validation. Falling back to cached session.');
             set({
               isAuthenticated: true,
-              bootstrapStatus: 'AUTHENTICATED'
+              authState: 'authenticated'
             });
           }
         } catch (err) {
           console.warn('📡 Network error during bootstrap. Falling back to cached session.', err);
           set({
             isAuthenticated: true,
-            bootstrapStatus: 'AUTHENTICATED'
+            authState: 'authenticated'
           });
         }
       },
@@ -319,7 +317,7 @@ export const useAuthStore = create(
               useAuthStore.setState({ 
                 sessionInitialized: true, 
                 isAuthenticated: false,
-                bootstrapStatus: 'FAILED'
+                authState: 'expired'
               });
               return;
             }
@@ -351,7 +349,7 @@ export const useAuthStore = create(
                 accessToken: null,
                 refreshToken: null,
                 tokenExpiresAt: null,
-                bootstrapStatus: 'GUEST'
+                authState: 'guest'
               });
               return;
             }
@@ -396,7 +394,7 @@ export const useAuthStore = create(
                 sessionInitialized: true,
                 isAuthenticated: true,
                 tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt,
-                bootstrapStatus: 'INIT'
+                authState: 'authenticating'
               });
 
             } else {
@@ -416,7 +414,7 @@ export const useAuthStore = create(
                 accessToken: null,
                 refreshToken: null,
                 tokenExpiresAt: null,
-                bootstrapStatus: 'FAILED'
+                authState: 'expired'
               });
             }
           } catch (e) {
@@ -429,7 +427,7 @@ export const useAuthStore = create(
               accessToken: null,
               refreshToken: null,
               tokenExpiresAt: null,
-              bootstrapStatus: 'FAILED'
+              authState: 'expired'
             });
           }
         };

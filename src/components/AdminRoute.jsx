@@ -2,9 +2,9 @@ import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function AdminRoute({ children }) {
-  const { isAuthenticated, user, sessionInitialized, bootstrapStatus } = useAuthStore();
+  const { isAuthenticated, user, sessionInitialized, authState } = useAuthStore();
 
-  const isRestoring = !sessionInitialized || bootstrapStatus === 'INIT' || bootstrapStatus === 'AUTHENTICATING';
+  const isRestoring = !sessionInitialized || authState === 'authenticating';
 
   // Wait for background session bootstrap to resolve before deciding
   if (isRestoring) {
@@ -16,7 +16,7 @@ export default function AdminRoute({ children }) {
   }
 
   // Not logged in - redirect to login
-  if (!isAuthenticated) {
+  if (!isAuthenticated || authState === 'expired' || authState === 'guest') {
     return <Navigate to="/login" replace />;
   }
 
