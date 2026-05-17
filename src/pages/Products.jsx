@@ -32,10 +32,8 @@ export default function Products() {
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortDir = searchParams.get('sortDir') || 'DESC';
 
-  const sortedProducts = useMemo(() => {
+  const finalProducts = useMemo(() => {
     const result = [...products];
-    console.log('[Products Sort Debug] SortBy:', sortBy, 'SortDir:', sortDir);
-    console.log('[Products Sort Debug] Before sorting names:', products.map(p => p.name));
     if (sortBy === 'name') {
       result.sort((a, b) => {
         const nameA = a.name || '';
@@ -45,7 +43,8 @@ export default function Products() {
           : nameA.localeCompare(nameB);
       });
     }
-    console.log('[Products Sort Debug] After sorting names:', result.map(p => p.name));
+    console.log("SORT VALUE:", sortBy);
+    console.log("FINAL PRODUCTS:", result.map(p => p.name));
     return result;
   }, [products, sortBy, sortDir]);
 
@@ -106,7 +105,7 @@ export default function Products() {
         });
       }
 
-      setProducts(grouped);
+      setProducts([...grouped]);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -251,10 +250,10 @@ export default function Products() {
                   </div>
                 ))}
               </div>
-            ) : (Array.isArray(sortedProducts) && sortedProducts.length > 0) ? (
+            ) : (Array.isArray(finalProducts) && finalProducts.length > 0) ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {sortedProducts.map((product) => (
+                  {finalProducts.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
