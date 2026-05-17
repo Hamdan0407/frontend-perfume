@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
@@ -43,27 +42,13 @@ function App() {
     bootstrap
   } = useAuthStore();
   const { initWishlist } = useWishlistStore();
-  const [forceReady, setForceReady] = useState(false);
 
-  // Bootstrap the authentication session once store hydration finishes
+  // Bootstrap the authentication session silently in the background once store hydration finishes
   useEffect(() => {
     if (authReady && (bootstrapStatus === 'INIT' || bootstrapStatus === 'FAILED' && token)) {
       bootstrap();
     }
   }, [authReady, bootstrapStatus, bootstrap, token]);
-
-  // Safety fallback: Guarantee the website never gets stuck on the loader forever
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const isReady = authReady && (bootstrapStatus === 'AUTHENTICATED' || bootstrapStatus === 'FAILED' || bootstrapStatus === 'GUEST');
-      if (!isReady) {
-        console.warn("⚠️ Auth bootstrap timed out, forcing application load.");
-        setForceReady(true);
-      }
-    }, 2500);
-
-    return () => clearTimeout(timer);
-  }, [authReady, bootstrapStatus]);
 
   // Temporary logging for auth persistence debugging
   useEffect(() => {
@@ -89,18 +74,6 @@ function App() {
       initWishlist();
     }
   }, [isAuthenticated, initWishlist]);
-
-  const isReady = authReady && (bootstrapStatus === 'AUTHENTICATED' || bootstrapStatus === 'FAILED' || bootstrapStatus === 'GUEST');
-
-  // Loading guard: Prevent rendering empty/stale layout or firing requests before auth bootstrap completes
-  if (!isReady && !forceReady) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground font-medium">Restoring your session...</p>
-      </div>
-    );
-  }
 
   return (
     <ToastProvider>
