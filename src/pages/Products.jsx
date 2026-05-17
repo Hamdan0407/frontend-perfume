@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, X, Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import api from '../api/axios';
@@ -32,6 +32,22 @@ export default function Products() {
   const sortBy = searchParams.get('sortBy') || 'createdAt';
   const sortDir = searchParams.get('sortDir') || 'DESC';
 
+  const sortedProducts = useMemo(() => {
+    const result = [...products];
+    console.log('[Products Sort Debug] SortBy:', sortBy, 'SortDir:', sortDir);
+    console.log('[Products Sort Debug] Before sorting names:', products.map(p => p.name));
+    if (sortBy === 'name') {
+      result.sort((a, b) => {
+        const nameA = a.name || '';
+        const nameB = b.name || '';
+        return sortDir === 'DESC'
+          ? nameB.localeCompare(nameA)
+          : nameA.localeCompare(nameB);
+      });
+    }
+    console.log('[Products Sort Debug] After sorting names:', result.map(p => p.name));
+    return result;
+  }, [products, sortBy, sortDir]);
 
   useEffect(() => {
     fetchProducts();
@@ -235,10 +251,10 @@ export default function Products() {
                   </div>
                 ))}
               </div>
-            ) : (Array.isArray(products) && products.length > 0) ? (
+            ) : (Array.isArray(sortedProducts) && sortedProducts.length > 0) ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {products.map((product) => (
+                  {sortedProducts.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
