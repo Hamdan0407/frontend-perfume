@@ -138,12 +138,14 @@ export default function AdminPanel() {
   };
 
   // Fetch dashboard stats from backend (accurate DB-level calculations)
-  const fetchDashboardStats = React.useCallback(async (silent = false) => {
+  const fetchDashboardStats = React.useCallback(async (silent = false, signal) => {
     try {
-      const { data } = await api.get('admin/stats');
+      const { data } = await api.get('admin/stats', { signal });
       setDashboardStats(data);
     } catch (err) {
-      if (!silent) console.error('Error loading dashboard stats:', err);
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError' && !silent) {
+        console.error('Error loading dashboard stats:', err);
+      }
     }
   }, []);
 
@@ -275,29 +277,33 @@ export default function AdminPanel() {
   };
 
   // Fetch Products
-  const fetchProducts = React.useCallback(async () => {
+  const fetchProducts = React.useCallback(async (signal) => {
     setLoading(true);
     try {
       // Use admin endpoint to ensure we see all products (active/inactive)
-      const { data } = await api.get('admin/products?size=50');
+      const { data } = await api.get('admin/products?size=50', { signal });
       setProducts(data.content || data || []);
     } catch (err) {
-      console.error('Error loading products:', err);
-      toast.error('Failed to load products');
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('Error loading products:', err);
+        toast.error('Failed to load products');
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   // Fetch Orders
-  const fetchOrders = React.useCallback(async () => {
+  const fetchOrders = React.useCallback(async (signal) => {
     setLoading(true);
     try {
-      const { data } = await api.get('admin/orders?size=50');
+      const { data } = await api.get('admin/orders?size=50', { signal });
       setOrders(data.content || data || []);
     } catch (err) {
-      console.error('Error loading orders:', err);
-      toast.error('Failed to load orders');
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('Error loading orders:', err);
+        toast.error('Failed to load orders');
+      }
     } finally {
       setLoading(false);
     }
@@ -352,49 +358,57 @@ export default function AdminPanel() {
   };
 
   // Fetch Users
-  const fetchUsers = React.useCallback(async () => {
+  const fetchUsers = React.useCallback(async (signal) => {
     setLoading(true);
     try {
-      const { data } = await api.get('admin/users?size=50');
+      const { data } = await api.get('admin/users?size=50', { signal });
       setUsers(data.content || data || []);
     } catch (err) {
-      console.error('Error loading users:', err);
-      toast.error('Failed to load users');
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('Error loading users:', err);
+        toast.error('Failed to load users');
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   // Fetch Coupons
-  const fetchCoupons = React.useCallback(async () => {
+  const fetchCoupons = React.useCallback(async (signal) => {
     setLoading(true);
     try {
-      const { data } = await api.get('admin/coupons');
+      const { data } = await api.get('admin/coupons', { signal });
       setCoupons(data || []);
     } catch (err) {
-      console.error('Error loading coupons:', err);
-      toast.error('Failed to load coupons');
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('Error loading coupons:', err);
+        toast.error('Failed to load coupons');
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const fetchLeads = React.useCallback(async () => {
+  const fetchLeads = React.useCallback(async (signal) => {
     try {
-      const { data } = await api.get('leads/all');
+      const { data } = await api.get('leads/all', { signal });
       setLeads(data || []);
     } catch (err) {
-      console.error('Error loading leads:', err);
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('Error loading leads:', err);
+      }
     }
   }, []);
 
   // Fetch Category Settings
-  const fetchCategorySettings = React.useCallback(async () => {
+  const fetchCategorySettings = React.useCallback(async (signal) => {
     try {
-      const { data } = await api.get('categories/settings');
+      const { data } = await api.get('categories/settings', { signal });
       setCategorySettings(data || []);
     } catch (err) {
-      console.error('Error loading category settings:', err);
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('Error loading category settings:', err);
+      }
     }
   }, []);
 
@@ -411,8 +425,10 @@ export default function AdminPanel() {
 
   // Fetch initial dashboard data on mount
   useEffect(() => {
-    fetchDashboardStats();
-    fetchCategorySettings();
+    const controller = new AbortController();
+    fetchDashboardStats(false, controller.signal);
+    fetchCategorySettings(controller.signal);
+    return () => controller.abort();
   }, [fetchDashboardStats, fetchCategorySettings]);
 
   // Real-time auto-refresh every 10 seconds for dashboard
@@ -452,12 +468,14 @@ export default function AdminPanel() {
   }, [activeTab, isLive]);
 
   useEffect(() => {
-    if (activeTab === 'products') fetchProducts();
-    if (activeTab === 'orders') fetchOrders();
-    if (activeTab === 'users') fetchUsers();
-    if (activeTab === 'coupons') fetchCoupons();
-    if (activeTab === 'leads') fetchLeads();
-  }, [activeTab, fetchProducts, fetchOrders, fetchUsers, fetchCoupons]);
+    const controller = new AbortController();
+    if (activeTab === 'products') fetchProducts(controller.signal);
+    if (activeTab === 'orders') fetchOrders(controller.signal);
+    if (activeTab === 'users') fetchUsers(controller.signal);
+    if (activeTab === 'coupons') fetchCoupons(controller.signal);
+    if (activeTab === 'leads') fetchLeads(controller.signal);
+    return () => controller.abort();
+  }, [activeTab, fetchProducts, fetchOrders, fetchUsers, fetchCoupons, fetchLeads]);
 
   const handleLogout = React.useCallback(() => {
     logout();

@@ -51,37 +51,19 @@ export default function Profile() {
 
   // Fetch user profile on mount
   useEffect(() => {
-    // 10-second request timeout fallback to prevent infinite spinner
-    const timeoutId = setTimeout(() => {
-      if (loading) {
-        console.log("PROFILE FETCH TIMEOUT TRIGGERED");
-        setError('Connection timed out. The profile request is taking too long to respond.');
-        setLoading(false);
-      }
-    }, 10000);
-
-    return () => clearTimeout(timeoutId);
-  }, [loading]);
-
-  useEffect(() => {
-    // Strict loading guard: wait for auth state to fully initialize and authenticate
-    if (!authReady || !isAuthenticated || !token) {
-      console.log("PROFILE FETCH GUARD ACTIVE:", { authReady, isAuthenticated, hasToken: !!token });
-      if (authReady && (!isAuthenticated || !token)) {
-        setLoading(false);
-        navigate('/login');
-      }
+    if (!isAuthenticated) {
+      setLoading(false);
+      navigate('/login');
       return;
     }
 
+    const controller = new AbortController();
+
     const fetchProfile = async () => {
-      console.log("TOKEN:", token);
-      console.log("AUTH READY:", authReady);
-      console.log("PROFILE FETCH START");
+      setLoading(true);
+      setError(null);
       try {
-        setError(null);
-        const response = await api.get('users/profile');
-        console.log("PROFILE FETCH RESPONSE:", response);
+        const response = await api.get('users/profile', { signal: controller.signal });
         const data = response.data;
         setProfileData({
           firstName: data.firstName || '',
@@ -98,14 +80,14 @@ export default function Profile() {
         if (data.zipCode && /^[1-9][0-9]{5}$/.test(data.zipCode) && data.city && data.state) {
           setPincodeValidated(true);
         }
-      } catch (error) {
-        console.log("PROFILE FETCH ERROR:", error);
-        console.error('Failed to fetch profile:', error);
-        setError(error.response?.data?.message || error.message || 'Failed to load profile');
-        toast.error(error.response?.data?.message || 'Failed to load profile');
-        // Let the user retry or redirect if token is completely unauthorized
-        if (error.response?.status === 401) {
-          navigate('/login');
+      } catch (err) {
+        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+          console.error('Failed to fetch profile:', err);
+          setError(err.response?.data?.message || err.message || 'Failed to load profile');
+          toast.error(err.response?.data?.message || 'Failed to load profile');
+          if (err.response?.status === 401) {
+            navigate('/login');
+          }
         }
       } finally {
         setLoading(false);
@@ -113,7 +95,8 @@ export default function Profile() {
     };
 
     fetchProfile();
-  }, [authReady, isAuthenticated, token, navigate, refetchCount]);
+    return () => controller.abort();
+  }, [isAuthenticated, navigate, refetchCount]);
 
   // Auto-fill city/state when pincode changes (6 digits) using postal API
   useEffect(() => {

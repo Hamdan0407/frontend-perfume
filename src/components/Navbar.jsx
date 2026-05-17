@@ -38,12 +38,6 @@ export default function Navbar() {
     fetchEnabledCategories();
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCart();
-    }
-  }, [isAuthenticated]);
-
   const fetchEnabledCategories = async () => {
     try {
       const { data } = await api.get('categories/enabled');
@@ -64,19 +58,6 @@ export default function Navbar() {
       console.warn('Failed to fetch enabled categories:', error.message);
     }
   };
-
-  const fetchCart = async () => {
-    try {
-      const { data } = await api.get('cart');
-      setCart(data);
-    } catch (error) {
-      // Don't log full error for 401 as it's handled by interceptor
-      if (error.response?.status !== 401) {
-        console.error('Failed to fetch cart:', error);
-      }
-    }
-  };
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery.trim().length >= 2) {

@@ -12,21 +12,32 @@ export default function Cart() {
   const navigate = useNavigate();
   const { cart, setCart } = useCartStore();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refetchCount, setRefetchCount] = useState(0);
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    const controller = new AbortController();
 
-  const fetchCart = async () => {
-    try {
-      const { data } = await api.get('cart');
-      setCart(data);
-    } catch (error) {
-      toast.error('Failed to load cart');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchCart = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data } = await api.get('cart', { signal: controller.signal });
+        setCart(data);
+      } catch (err) {
+        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+          console.error('Failed to fetch cart:', err);
+          setError(err.response?.data?.message || err.message || 'Failed to load cart');
+          toast.error('Failed to load cart');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+    return () => controller.abort();
+  }, [refetchCount]);
 
   const updateQuantity = async (itemId, quantity) => {
     try {
@@ -70,6 +81,26 @@ export default function Cart() {
           </div>
           <div>
             <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="text-red-500 mb-4 text-4xl">⚠️</div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Failed to Load Your Cart</h1>
+          <p className="text-muted-foreground mb-6 max-w-md">There was an error communicating with the server. Please check your connection and try again.</p>
+          <div className="flex gap-4">
+            <Button onClick={() => setRefetchCount(prev => prev + 1)}>
+              Retry Fetching Cart
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/products">Continue Shopping</Link>
+            </Button>
           </div>
         </div>
       </div>

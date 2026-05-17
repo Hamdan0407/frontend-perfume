@@ -219,8 +219,8 @@ export const useAuthStore = create(
         const state = get();
         if (state.authState !== 'authenticating') return;
 
-        if (!state.accessToken) {
-          console.log('📋 No access token found during bootstrap. Booting as guest');
+        if (!state.accessToken || state.isTokenExpired()) {
+          console.log('📋 No access token or token expired during bootstrap. Booting as guest');
           set({
             authState: 'guest',
             isAuthenticated: false,
@@ -229,84 +229,11 @@ export const useAuthStore = create(
           return;
         }
 
-        const profileUrl = '/api/users/profile';
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout protection
-
-        try {
-          console.log('🔄 Validating session with profile fetch...');
-          const response = await window.fetch(profileUrl, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${state.accessToken}`
-            },
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('✅ Session validated successfully for:', userData.email);
-            set({
-              user: userData,
-              isAuthenticated: true,
-              authState: 'authenticated'
-            });
-          } else if (response.status === 401 || response.status === 403) {
-            console.warn('⚠️ Session validation failed with auth error. Attempting centralized token refresh...');
-            
-            try {
-              const newAccessToken = await state.refreshSession();
-              
-              // Retry profile fetch with new token
-              console.log('🔄 Retrying profile fetch with fresh token...');
-              const retryController = new AbortController();
-              const retryTimeoutId = setTimeout(() => retryController.abort(), 15000);
-
-              const retryRes = await window.fetch(profileUrl, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${newAccessToken}`
-                },
-                signal: retryController.signal
-              });
-
-              clearTimeout(retryTimeoutId);
-
-              if (retryRes.ok) {
-                const userData = await retryRes.json();
-                console.log('✅ Session validated after refresh for:', userData.email);
-                set({
-                  user: userData,
-                  isAuthenticated: true,
-                  authState: 'authenticated'
-                });
-              } else {
-                throw new Error('Profile fetch failed on retry');
-              }
-            } catch (refreshErr) {
-              console.error('❌ Centralized refresh & retry failed during bootstrap:', refreshErr);
-              // Store is already cleaned up inside refreshSession()'s catch block
-            }
-          } else {
-            // Keep user from persisted store if server is offline or returned other error codes (e.g. 500)
-            console.warn('📡 Server or network error during bootstrap validation. Falling back to cached session.');
-            set({
-              isAuthenticated: true,
-              authState: 'authenticated'
-            });
-          }
-        } catch (err) {
-          clearTimeout(timeoutId);
-          console.warn('📡 Network error or timeout during bootstrap. Falling back to cached session.', err.name === 'AbortError' ? 'Timeout' : err.message);
-          set({
-            isAuthenticated: true,
-            authState: 'authenticated'
-          });
-        }
+        console.log('✅ Stateless bootstrap successful. Restored session for:', state.user?.email);
+        set({
+          isAuthenticated: true,
+          authState: 'authenticated'
+        });
       },
 
       /**
