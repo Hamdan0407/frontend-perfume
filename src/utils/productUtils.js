@@ -8,17 +8,17 @@ import { sortVariants } from '../lib/utils';
 export const groupProducts = (products) => {
     if (!Array.isArray(products)) return [];
 
-    const groups = {};
+    const groups = new Map();
 
     products.filter(p => p && (p.id || p.name)).forEach(product => {
         // Use brand + name as key to grouping
         const key = `${product.brand || ''}-${product.name}`.trim();
 
-        if (!groups[key]) {
+        if (!groups.has(key)) {
             const productSize = product.size || product.volume || (product.variants && product.variants.length > 0 ? product.variants[0].size : null);
             const productUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (product.category === 'aroma chemicals' ? 'g' : 'ml'));
 
-            groups[key] = {
+            const groupedProduct = {
                 ...product,
                 size: productSize,
                 unit: productUnit,
@@ -37,16 +37,19 @@ export const groupProducts = (products) => {
 
             // If the product already has variants from the backend, use those too
             if (product.variants && product.variants.length > 0) {
-                groups[key].allVariants = sortVariants(product.variants);
+                groupedProduct.allVariants = sortVariants(product.variants);
             } else {
-                groups[key].allVariants = groups[key].variants;
+                groupedProduct.allVariants = groupedProduct.variants;
             }
+
+            groups.set(key, groupedProduct);
         } else {
+            const existing = groups.get(key);
             const variantSize = product.size || product.volume || (product.variants && product.variants.length > 0 ? product.variants[0].size : null);
             const variantUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (product.category === 'aroma chemicals' ? 'g' : 'ml'));
 
             // Add variant to existing group
-            groups[key].variants.push({
+            existing.variants.push({
                 id: product.id,
                 size: variantSize,
                 unit: variantUnit,
@@ -58,24 +61,24 @@ export const groupProducts = (products) => {
 
             // Update allVariants for the card to use for price displaying
             if (product.variants && product.variants.length > 0) {
-                const uniqueVariants = [...(groups[key].allVariants || [])];
+                const uniqueVariants = [...(existing.allVariants || [])];
                 product.variants.forEach(v => {
                     if (!uniqueVariants.find(uv => uv.id === v.id)) {
                         uniqueVariants.push(v);
                     }
                 });
-                groups[key].allVariants = sortVariants(uniqueVariants);
+                existing.allVariants = sortVariants(uniqueVariants);
             } else {
-                groups[key].allVariants = sortVariants(groups[key].variants);
+                existing.allVariants = sortVariants(existing.variants);
             }
 
             // Update group price to lowest available variant price
-            if (product.price < groups[key].price) {
-                groups[key].price = product.price;
-                groups[key].discountPrice = product.discountPrice;
+            if (product.price < existing.price) {
+                existing.price = product.price;
+                existing.discountPrice = product.discountPrice;
             }
         }
     });
 
-    return Object.values(groups);
+    return Array.from(groups.values());
 };

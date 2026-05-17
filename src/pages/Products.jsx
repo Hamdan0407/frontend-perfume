@@ -34,15 +34,16 @@ export default function Products() {
 
   const finalProducts = useMemo(() => {
     const result = [...products];
-    if (sortBy === 'name') {
+
+    if (sortBy === "name") {
       result.sort((a, b) => {
-        const nameA = a.name || '';
-        const nameB = b.name || '';
-        return sortDir === 'DESC'
-          ? nameB.localeCompare(nameA)
-          : nameA.localeCompare(nameB);
+        const comp = (a.name || "").localeCompare(b.name || "", undefined, {
+          sensitivity: "base",
+        });
+        return sortDir === "DESC" ? -comp : comp;
       });
     }
+
     console.log("SORT VALUE:", sortBy);
     console.log("FINAL PRODUCTS:", result.map(p => p.name));
     return result;
