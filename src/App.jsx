@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
@@ -33,8 +34,15 @@ import ScrollToTop from './components/ScrollToTop';
 
 
 function App() {
-  const { isAuthenticated, sessionInitialized } = useAuthStore();
+  const { isAuthenticated, sessionInitialized: authReady, accessToken: token, user } = useAuthStore();
   const { initWishlist } = useWishlistStore();
+
+  // Temporary logging for auth persistence debugging
+  useEffect(() => {
+    console.log("TOKEN:", token);
+    console.log("USER RESTORED:", user);
+    console.log("AUTH READY:", authReady);
+  }, [token, user, authReady]);
 
   // Force Light Theme Static Only - Removing Dark Mode Support
   useEffect(() => {
@@ -52,6 +60,16 @@ function App() {
       initWishlist();
     }
   }, [isAuthenticated, initWishlist]);
+
+  // Loading guard: Prevent rendering empty/stale layout or firing requests before auth hydration completes
+  if (!authReady) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground font-medium">Restoring your session...</p>
+      </div>
+    );
+  }
 
   return (
     <ToastProvider>
