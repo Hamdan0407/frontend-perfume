@@ -13,9 +13,11 @@ import { useAuthStore } from '../store/authStore';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { updateUser } = useAuthStore();
+  const { updateUser, accessToken: token, sessionInitialized: authReady, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [refetchCount, setRefetchCount] = useState(0);
   const [profileData, setProfileData] = useState({
     firstName: '',
     lastName: '',
@@ -49,9 +51,34 @@ export default function Profile() {
 
   // Fetch user profile on mount
   useEffect(() => {
+    // 10-second request timeout fallback to prevent infinite spinner
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.log("PROFILE FETCH TIMEOUT TRIGGERED");
+        setError('Connection timed out. The profile request is taking too long to respond.');
+        setLoading(false);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeoutId);
+  }, [loading]);
+
+  useEffect(() => {
+    // Strict loading guard: wait for auth state to fully initialize and authenticate
+    if (!authReady || !isAuthenticated || !token) {
+      console.log("PROFILE FETCH GUARD ACTIVE:", { authReady, isAuthenticated, hasToken: !!token });
+      return;
+    }
+
     const fetchProfile = async () => {
+      console.log("TOKEN:", token);
+      console.log("AUTH READY:", authReady);
+      console.log("PROFILE FETCH START");
       try {
-        const { data } = await api.get('users/profile');
+        setError(null);
+        const response = await api.get('users/profile');
+        console.log("PROFILE FETCH RESPONSE:", response);
+        const data = response.data;
         setProfileData({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
@@ -68,16 +95,21 @@ export default function Profile() {
           setPincodeValidated(true);
         }
       } catch (error) {
+        console.log("PROFILE FETCH ERROR:", error);
         console.error('Failed to fetch profile:', error);
-        toast.error('Failed to load profile');
-        navigate('/login');
+        setError(error.response?.data?.message || error.message || 'Failed to load profile');
+        toast.error(error.response?.data?.message || 'Failed to load profile');
+        // Let the user retry or redirect if token is completely unauthorized
+        if (error.response?.status === 401) {
+          navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [authReady, isAuthenticated, token, navigate, refetchCount]);
 
   // Auto-fill city/state when pincode changes (6 digits) using postal API
   useEffect(() => {
@@ -264,6 +296,41 @@ export default function Profile() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <LoadingSpinner text="Loading your profile..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-border rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center space-y-6 animate-in fade-in-50 zoom-in-95 duration-200">
+          <div className="h-16 w-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle className="h-8 w-8 text-destructive animate-bounce" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-foreground">Failed to Load Profile</h2>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                setRefetchCount(prev => prev + 1);
+              }}
+              className="flex-1 h-11"
+            >
+              Retry Connection
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="flex-1 h-11"
+            >
+              Go to Home
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

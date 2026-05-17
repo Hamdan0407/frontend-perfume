@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, X, Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Filter, X, SlidersHorizontal } from 'lucide-react';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
+import ProductSort from '../components/ProductSort';
 import { groupProducts } from '../utils/productUtils';
+import { sortProducts } from '../utils/sortUtils';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
@@ -29,47 +31,69 @@ export default function Products() {
   const brand = searchParams.get('brand') || '';
   const type = searchParams.get('type') || '';
   const search = searchParams.get('search') || '';
-  const sortBy = searchParams.get('sortBy') || 'createdAt';
-  const sortDir = searchParams.get('sortDir') || 'DESC';
 
-  const finalProducts = useMemo(() => {
-    const result = [...products];
+  // Derive sortType from either new 'sort' parameter or legacy 'sortBy/sortDir'
+  const sortType = useMemo(() => {
+    const sortParam = searchParams.get('sort');
+    if (sortParam) return sortParam;
 
-    if (sortBy === "name") {
-      result.sort((a, b) => {
-        const comp = (a.name || "").localeCompare(b.name || "", undefined, {
-          sensitivity: "base",
-        });
-        return sortDir === "DESC" ? -comp : comp;
-      });
+    const legacySortBy = searchParams.get('sortBy');
+    const legacySortDir = searchParams.get('sortDir');
+    if (legacySortBy && legacySortDir) {
+      if (legacySortBy === 'price' && legacySortDir === 'ASC') return 'price-asc';
+      if (legacySortBy === 'price' && legacySortDir === 'DESC') return 'price-desc';
+      if (legacySortBy === 'name' && legacySortDir === 'ASC') return 'name-asc';
+      if (legacySortBy === 'rating' && legacySortDir === 'DESC') return 'rating-desc';
+      if (legacySortBy === 'createdAt' && legacySortDir === 'DESC') return 'newest';
     }
+    return 'featured';
+  }, [searchParams]);
 
-    console.log("SORT VALUE:", sortBy);
-    console.log("FINAL PRODUCTS:", result.map(p => p.name));
-    return result;
-  }, [products, sortBy, sortDir]);
+  // Map sortType to backend sorting fields
+  const [backendSortBy, backendSortDir] = useMemo(() => {
+    switch (sortType) {
+      case 'featured':
+        return ['featured', 'DESC'];
+      case 'newest':
+        return ['createdAt', 'DESC'];
+      case 'price-asc':
+        return ['price', 'ASC'];
+      case 'price-desc':
+        return ['price', 'DESC'];
+      case 'name-asc':
+        return ['name', 'ASC'];
+      case 'rating-desc':
+        return ['rating', 'DESC'];
+      default:
+        return ['createdAt', 'DESC'];
+    }
+  }, [sortType]);
+
+  // Premium Client-Side Sorting on the final rendered products array
+  const finalProducts = useMemo(() => {
+    return sortProducts(products, sortType);
+  }, [products, sortType]);
 
   useEffect(() => {
     fetchProducts();
     fetchBrands();
-  }, [category, brand, type, search, page, sortBy, sortDir, minPrice, maxPrice, inStockOnly]);
+  }, [category, brand, type, search, page, sortType, minPrice, maxPrice, inStockOnly]);
 
   const fetchProducts = async () => {
     setLoading(true);
     setProducts([]); // Clear existing products
     try {
-      let url = `/products?page=${page}&size=12&sortBy=${sortBy}&sortDir=${sortDir}`;
-
-      // Add price range if specified
+      // Build request params with backend-supported sort fields
       const params = new URLSearchParams();
       params.append('page', page);
       params.append('size', 12);
-      params.append('sortBy', sortBy);
-      params.append('sortDir', sortDir);
+      params.append('sortBy', backendSortBy);
+      params.append('sortDir', backendSortDir);
 
       if (minPrice) params.append('minPrice', minPrice);
       if (maxPrice) params.append('maxPrice', maxPrice);
 
+      let url;
       if (search) {
         url = `/products/search?query=${search}&${params.toString()}`;
       } else if (category) {
@@ -85,28 +109,18 @@ export default function Products() {
       console.log(`[Products] Requesting: ${url}`);
       const { data } = await api.get(url);
 
-      // Standardize response content - handle both paginated content and direct list
+      // Standardize response content
       let content = data.content || (Array.isArray(data) ? data : []);
 
-      // Filter by stock if checkbox is checked
+      // Filter by stock if checked
       if (inStockOnly) {
         content = content.filter(p => p.stock > 0);
       }
 
-      let grouped = groupProducts(content);
+      // Group variants
+      const grouped = groupProducts(content);
 
-      // Apply frontend sorting for alphabetical ordering (Name: A to Z)
-      if (sortBy === 'name') {
-        grouped = [...grouped].sort((a, b) => {
-          const nameA = a.name || '';
-          const nameB = b.name || '';
-          return sortDir === 'DESC'
-            ? nameB.localeCompare(nameA)
-            : nameA.localeCompare(nameB);
-        });
-      }
-
-      setProducts([...grouped]);
+      setProducts(grouped);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -163,60 +177,6 @@ export default function Products() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Mobile Filters Trigger */}
-          <div className="lg:hidden flex items-center justify-between gap-4 mb-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="flex-1 gap-2 border-slate-200">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] overflow-y-auto">
-                <SheetHeader className="text-left mb-4">
-                  <SheetTitle className="flex items-center gap-2">
-                    <Filter className="h-5 w-5" />
-                    Filters
-                  </SheetTitle>
-                </SheetHeader>
-                <FiltersContent
-                  category={category}
-                  brand={brand}
-                  brands={brands}
-                  sortBy={sortBy}
-                  sortDir={sortDir}
-                  minPrice={minPrice}
-                  maxPrice={maxPrice}
-                  inStockOnly={inStockOnly}
-                  setMinPrice={setMinPrice}
-                  setMaxPrice={setMaxPrice}
-                  setInStockOnly={setInStockOnly}
-                  handleFilterChange={handleFilterChange}
-                  handlePriceFilter={handlePriceFilter}
-                  clearAllFilters={clearAllFilters}
-                />
-              </SheetContent>
-            </Sheet>
-
-            <div className="flex-1">
-              <select
-                value={`${sortBy}-${sortDir}`}
-                onChange={(e) => {
-                  const [newSortBy, newSortDir] = e.target.value.split('-');
-                  handleFilterChange('sortBy', newSortBy);
-                  handleFilterChange('sortDir', newSortDir);
-                }}
-                className="w-full h-10 rounded-md border border-slate-200 bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring"
-              >
-                <option value="createdAt-DESC">Newest</option>
-                <option value="price-ASC">Price: Low</option>
-                <option value="price-DESC">Price: High</option>
-                <option value="name-ASC">Name: A to Z</option>
-                <option value="rating-DESC">Rating</option>
-              </select>
-            </div>
-          </div>
-
           {/* Filters Sidebar (Desktop) */}
           <div className="hidden lg:block lg:w-64 flex-shrink-0">
             <Card className="sticky top-24 border-slate-100 shadow-sm">
@@ -224,8 +184,6 @@ export default function Products() {
                 category={category}
                 brand={brand}
                 brands={brands}
-                sortBy={sortBy}
-                sortDir={sortDir}
                 minPrice={minPrice}
                 maxPrice={maxPrice}
                 inStockOnly={inStockOnly}
@@ -239,8 +197,52 @@ export default function Products() {
             </Card>
           </div>
 
-          {/* Products Grid */}
+          {/* Products Grid Column */}
           <div className="flex-1">
+            {/* Custom Premium Actions Bar (Unified for Desktop and Mobile) */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+              <div className="text-sm font-semibold text-slate-800 tracking-tight">
+                {finalProducts.length} {finalProducts.length === 1 ? 'Product' : 'Products'}
+              </div>
+              
+              <div className="flex items-center gap-3">
+                {/* Mobile Filter Button */}
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="lg:hidden gap-2 border-slate-200 rounded-full px-4 h-10 text-sm font-medium">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[300px] overflow-y-auto">
+                    <SheetHeader className="text-left mb-4">
+                      <SheetTitle className="flex items-center gap-2">
+                        <Filter className="h-5 w-5" />
+                        Filters
+                      </SheetTitle>
+                    </SheetHeader>
+                    <FiltersContent
+                      category={category}
+                      brand={brand}
+                      brands={brands}
+                      minPrice={minPrice}
+                      maxPrice={maxPrice}
+                      inStockOnly={inStockOnly}
+                      setMinPrice={setMinPrice}
+                      setMaxPrice={setMaxPrice}
+                      setInStockOnly={setInStockOnly}
+                      handleFilterChange={handleFilterChange}
+                      handlePriceFilter={handlePriceFilter}
+                      clearAllFilters={clearAllFilters}
+                    />
+                  </SheetContent>
+                </Sheet>
+
+                {/* Custom premium dropdown */}
+                <ProductSort currentSort={sortType} onSortChange={(val) => handleFilterChange('sort', val)} />
+              </div>
+            </div>
+
             {loading ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {[...Array(9)].map((_, i) => (
@@ -322,8 +324,6 @@ function FiltersContent({
   category,
   brand,
   brands,
-  sortBy,
-  sortDir,
   minPrice,
   maxPrice,
   inStockOnly,
@@ -373,27 +373,6 @@ function FiltersContent({
             {brands.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
-          </select>
-        </div>
-
-        {/* Sort Filter (Desktop Only) */}
-        <div className="hidden lg:block space-y-2">
-          <Label htmlFor="sort" className="text-sm font-semibold">Sort By</Label>
-          <select
-            id="sort"
-            value={`${sortBy}-${sortDir}`}
-            onChange={(e) => {
-              const [newSortBy, newSortDir] = e.target.value.split('-');
-              handleFilterChange('sortBy', newSortBy);
-              handleFilterChange('sortDir', newSortDir);
-            }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="createdAt-DESC">Newest First</option>
-            <option value="price-ASC">Price: Low to High</option>
-            <option value="price-DESC">Price: High to Low</option>
-            <option value="name-ASC">Name: A to Z</option>
-            <option value="rating-DESC">Highest Rated</option>
           </select>
         </div>
 

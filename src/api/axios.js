@@ -273,7 +273,7 @@ api.interceptors.response.use(
         isRefreshing = true;
 
         return axios
-          .post(`${API_URL.endsWith('/') ? API_URL : API_URL + '/'}auth/refresh-token/`, null, {
+          .post(`${API_URL.endsWith('/') ? API_URL : API_URL + '/'}auth/refresh-token`, null, {
             params: { refreshToken },
             headers: { 'Content-Type': 'application/json' },
           })
@@ -294,9 +294,35 @@ api.interceptors.response.use(
             return api(originalRequest);
           })
           .catch((refreshErr) => {
+            // Token refresh failed - clear all auth data
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('tokenExpiresAt');
+            localStorage.removeItem('auth-storage');
+
+            // Clear auth store
+            try {
+              const authStore = useAuthStore.getState();
+              if (authStore.logout) {
+                authStore.logout();
+              }
+            } catch (e) {
+              // Silent fail if auth store not initialized
+              if (import.meta.env.DEV) {
+                console.debug('Auth store logout failed:', e);
+              }
+            }
+
             processQueue(refreshErr, null);
-            console.warn('403 token refresh failed, access denied');
-            return Promise.reject(error);
+            console.warn('403 token refresh failed, session cleared');
+            
+            // Redirect to login with session expired message
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login?session=expired';
+            }
+            return Promise.reject(refreshErr);
           });
       }
     }
