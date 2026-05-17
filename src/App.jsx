@@ -34,28 +34,44 @@ import ScrollToTop from './components/ScrollToTop';
 
 
 function App() {
-  const { isAuthenticated, sessionInitialized: authReady, accessToken: token, user } = useAuthStore();
+  const { 
+    isAuthenticated, 
+    sessionInitialized: authReady, 
+    accessToken: token, 
+    user,
+    bootstrapStatus,
+    bootstrap
+  } = useAuthStore();
   const { initWishlist } = useWishlistStore();
   const [forceReady, setForceReady] = useState(false);
+
+  // Bootstrap the authentication session once store hydration finishes
+  useEffect(() => {
+    if (authReady && (bootstrapStatus === 'INIT' || bootstrapStatus === 'FAILED' && token)) {
+      bootstrap();
+    }
+  }, [authReady, bootstrapStatus, bootstrap, token]);
 
   // Safety fallback: Guarantee the website never gets stuck on the loader forever
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!authReady) {
-        console.warn("⚠️ Auth hydration timed out, forcing application load.");
+      const isReady = authReady && (bootstrapStatus === 'AUTHENTICATED' || bootstrapStatus === 'FAILED' || bootstrapStatus === 'GUEST');
+      if (!isReady) {
+        console.warn("⚠️ Auth bootstrap timed out, forcing application load.");
         setForceReady(true);
       }
-    }, 1500);
+    }, 2500);
 
     return () => clearTimeout(timer);
-  }, [authReady]);
+  }, [authReady, bootstrapStatus]);
 
   // Temporary logging for auth persistence debugging
   useEffect(() => {
     console.log("TOKEN:", token);
     console.log("USER RESTORED:", user);
     console.log("AUTH READY:", authReady);
-  }, [token, user, authReady]);
+    console.log("BOOTSTRAP STATUS:", bootstrapStatus);
+  }, [token, user, authReady, bootstrapStatus]);
 
   // Force Light Theme Static Only - Removing Dark Mode Support
   useEffect(() => {
@@ -74,8 +90,10 @@ function App() {
     }
   }, [isAuthenticated, initWishlist]);
 
-  // Loading guard: Prevent rendering empty/stale layout or firing requests before auth hydration completes
-  if (!authReady && !forceReady) {
+  const isReady = authReady && (bootstrapStatus === 'AUTHENTICATED' || bootstrapStatus === 'FAILED' || bootstrapStatus === 'GUEST');
+
+  // Loading guard: Prevent rendering empty/stale layout or firing requests before auth bootstrap completes
+  if (!isReady && !forceReady) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
