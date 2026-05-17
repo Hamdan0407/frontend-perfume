@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
@@ -36,6 +36,19 @@ import ScrollToTop from './components/ScrollToTop';
 function App() {
   const { isAuthenticated, sessionInitialized: authReady, accessToken: token, user } = useAuthStore();
   const { initWishlist } = useWishlistStore();
+  const [forceReady, setForceReady] = useState(false);
+
+  // Safety fallback: Guarantee the website never gets stuck on the loader forever
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!authReady) {
+        console.warn("⚠️ Auth hydration timed out, forcing application load.");
+        setForceReady(true);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [authReady]);
 
   // Temporary logging for auth persistence debugging
   useEffect(() => {
@@ -62,7 +75,7 @@ function App() {
   }, [isAuthenticated, initWishlist]);
 
   // Loading guard: Prevent rendering empty/stale layout or firing requests before auth hydration completes
-  if (!authReady) {
+  if (!authReady && !forceReady) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

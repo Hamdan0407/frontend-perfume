@@ -206,93 +206,108 @@ export const useAuthStore = create(
       // Mark session as initialized once hydration completes
       onRehydrateStorage: () => {
         return (state, error) => {
-          if (error) {
-            console.error('❌ Error rehydrating auth store:', error);
-            useAuthStore.setState({ sessionInitialized: true, isAuthenticated: false });
-            return;
-          }
-
-          // Helper to parse JWT
-          const parseJwt = (token) => {
-            try {
-              return JSON.parse(atob(token.split('.')[1]));
-            } catch (e) {
-              return null;
-            }
-          };
-
-          // Defensive: If no state, treat as logged out
-          if (!state || !state.accessToken) {
-            console.log('📋 No persisted session found');
-            useAuthStore.setState({
-              sessionInitialized: true,
-              isAuthenticated: false,
-              user: null,
-              accessToken: null,
-              refreshToken: null,
-              tokenExpiresAt: null
-            });
-            // Clear legacy keys
-            safeLs.removeItem('accessToken');
-            safeLs.removeItem('token');
-            safeLs.removeItem('refreshToken');
-            safeLs.removeItem('user');
-            safeLs.removeItem('tokenExpiresAt');
-            return;
-          }
-
-          // Validate token via JWT exp claim (more robust than stored timestamp)
-          let isValid = false;
-          let expiresAt = state.tokenExpiresAt;
-
           try {
-            const decoded = parseJwt(state.accessToken);
-            if (decoded && decoded.exp) {
-              // JWT exp is in seconds, convert to ms
-              const jwtExpiresAt = decoded.exp * 1000;
-              // Check if expired (with 1 minute buffer)
-              isValid = jwtExpiresAt - Date.now() > 60 * 1000;
-              expiresAt = jwtExpiresAt; // Sync stored expiry with actual token
+            if (error) {
+              console.error('❌ Error rehydrating auth store:', error);
+              useAuthStore.setState({ sessionInitialized: true, isAuthenticated: false });
+              return;
+            }
 
-              if (!isValid) {
-                console.warn('⚠️  Persisted JWT is expired:', new Date(jwtExpiresAt).toISOString());
+            // Helper to parse JWT
+            const parseJwt = (token) => {
+              try {
+                return JSON.parse(atob(token.split('.')[1]));
+              } catch (e) {
+                return null;
               }
+            };
+
+            // Defensive: If no state, treat as logged out
+            if (!state || !state.accessToken) {
+              console.log('📋 No persisted session found');
+              
+              // Clear legacy keys BEFORE triggering re-render to avoid race conditions
+              safeLs.removeItem('accessToken');
+              safeLs.removeItem('token');
+              safeLs.removeItem('refreshToken');
+              safeLs.removeItem('user');
+              safeLs.removeItem('tokenExpiresAt');
+
+              useAuthStore.setState({
+                sessionInitialized: true,
+                isAuthenticated: false,
+                user: null,
+                accessToken: null,
+                refreshToken: null,
+                tokenExpiresAt: null
+              });
+              return;
+            }
+
+            // Validate token via JWT exp claim (more robust than stored timestamp)
+            let isValid = false;
+            let expiresAt = state.tokenExpiresAt;
+
+            try {
+              const decoded = parseJwt(state.accessToken);
+              if (decoded && decoded.exp) {
+                // JWT exp is in seconds, convert to ms
+                const jwtExpiresAt = decoded.exp * 1000;
+                // Check if expired (with 1 minute buffer)
+                isValid = jwtExpiresAt - Date.now() > 60 * 1000;
+                expiresAt = jwtExpiresAt; // Sync stored expiry with actual token
+
+                if (!isValid) {
+                  console.warn('⚠️  Persisted JWT is expired:', new Date(jwtExpiresAt).toISOString());
+                }
+              } else {
+                // Fallback to stored timestamp if parsing fails
+                const storedExp = Number(state.tokenExpiresAt);
+                isValid = !isNaN(storedExp) && (storedExp - Date.now() > 60 * 1000);
+                expiresAt = storedExp;
+              }
+            } catch (e) {
+              console.error('Error validating persisted token:', e);
+              isValid = false;
+            }
+
+            if (isValid) {
+              console.log('✅ Session restored for:', state.user?.email);
+              
+              // Sync legacy keys BEFORE triggering re-render to avoid race conditions
+              safeLs.setItem('accessToken', state.accessToken);
+              safeLs.setItem('token', state.accessToken);
+              if (state.refreshToken) safeLs.setItem('refreshToken', state.refreshToken);
+              safeLs.setItem('tokenExpiresAt', expiresAt.toString());
+
+              useAuthStore.setState({
+                sessionInitialized: true,
+                isAuthenticated: true,
+                tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt
+              });
+
             } else {
-              // Fallback to stored timestamp if parsing fails
-              const storedExp = Number(state.tokenExpiresAt);
-              isValid = !isNaN(storedExp) && (storedExp - Date.now() > 60 * 1000);
-              expiresAt = storedExp;
+              console.log('❌ Session expired or invalid, logging out');
+              
+              // Clear legacy keys BEFORE triggering re-render to avoid race conditions
+              safeLs.removeItem('accessToken');
+              safeLs.removeItem('token');
+              safeLs.removeItem('refreshToken');
+              safeLs.removeItem('user');
+              safeLs.removeItem('tokenExpiresAt');
+
+              useAuthStore.setState({
+                sessionInitialized: true,
+                isAuthenticated: false,
+                user: null,
+                accessToken: null,
+                refreshToken: null,
+                tokenExpiresAt: null
+              });
             }
           } catch (e) {
-            console.error('Error validating persisted token:', e);
-            isValid = false;
-          }
-
-          if (isValid) {
-            console.log('✅ Session restored for:', state.user?.email);
-            
-            // Sync legacy keys BEFORE triggering re-render to avoid race conditions
-            safeLs.setItem('accessToken', state.accessToken);
-            safeLs.setItem('token', state.accessToken);
-            if (state.refreshToken) safeLs.setItem('refreshToken', state.refreshToken);
-            safeLs.setItem('tokenExpiresAt', expiresAt.toString());
-
-            useAuthStore.setState({
-              sessionInitialized: true,
-              isAuthenticated: true,
-              tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt
-            });
-
-          } else {
-            console.log('❌ Session expired or invalid, logging out');
-            
-            // Clear legacy keys BEFORE triggering re-render to avoid race conditions
-            safeLs.removeItem('accessToken');
-            safeLs.removeItem('token');
-            safeLs.removeItem('refreshToken');
-            safeLs.removeItem('user');
-            safeLs.removeItem('tokenExpiresAt');
-
+            console.error('🔥 Fatal error during auth store rehydration:', e);
+            // GUARANTEE authReady is set to true even on fatal errors
             useAuthStore.setState({
               sessionInitialized: true,
               isAuthenticated: false,
