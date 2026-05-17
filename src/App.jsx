@@ -1,92 +1,39 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import AnnouncementBar from './components/AnnouncementBar';
 import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
-import ErrorBoundary from './components/ErrorBoundary';
-import PrivateRoute from './components/PrivateRoute';
-import AdminRoute from './components/AdminRoute';
-import ScrollToTop from './components/ScrollToTop';
-import { useAuthStore } from './store/authStore';
-import { useWishlistStore } from './store/wishlistStore';
-
-// Synchronous imports for critical paths to prevent chunk loading issues
+import { ToastProvider } from './context/ToastContext';
 import Home from './pages/Home';
 import Products from './pages/Products';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-
-// Version-safe lazy loading with retry logic
-const lazyRetry = (componentImport) =>
-  lazy(async () => {
-    // try-catch for sessionStorage access (fails in some private/incognito modes)
-    let pageHasAlreadyBeenForceRefreshed = false;
-    try {
-      pageHasAlreadyBeenForceRefreshed = JSON.parse(
-        window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
-      );
-    } catch (e) {
-      console.warn('Storage access failed:', e);
-    }
-
-    try {
-      const component = await componentImport();
-      try {
-        window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
-      } catch (e) {}
-      return component;
-    } catch (error) {
-      if (!pageHasAlreadyBeenForceRefreshed) {
-        // Log the error and refresh the page to fetch new chunks
-        console.error('Dynamic import failed, refreshing page...', error);
-        try {
-          window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
-        } catch (e) {}
-        
-        // Immediate reload to recover
-        window.location.reload();
-        
-        // Return a promise that never resolves - browser will reload anyway
-        return new Promise(() => {});
-      }
-
-      // If we already tried to refresh and it still fails, throw the error
-      console.error('Dynamic import failed twice, app cannot continue:', error);
-      throw error;
-    }
-  });
-
-// Lazy load non-critical pages with retry handling
-const ProductDetail = lazyRetry(() => import('./pages/ProductDetail'));
-const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
-const Orders = lazyRetry(() => import('./pages/Orders'));
-const OrderDetail = lazyRetry(() => import('./pages/OrderDetail'));
-const InvoicePage = lazyRetry(() => import('./pages/InvoicePage'));
-const Dashboard = lazyRetry(() => import('./pages/Dashboard'));
-const AdminPanel = lazyRetry(() => import('./pages/AdminPanel'));
-const Profile = lazyRetry(() => import('./pages/Profile'));
-const ForgotPassword = lazyRetry(() => import('./pages/ForgotPassword'));
-const ResetPassword = lazyRetry(() => import('./pages/ResetPassword'));
-const ContactUs = lazyRetry(() => import('./pages/ContactUs'));
-const ShippingInfo = lazyRetry(() => import('./pages/ShippingInfo'));
-const ReturnsExchange = lazyRetry(() => import('./pages/ReturnsExchange'));
-const FAQ = lazyRetry(() => import('./pages/FAQ'));
-
-// Loading fallback component
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
-  </div>
-);
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Wishlist from './pages/Wishlist';
+import Orders from './pages/Orders';
+import OrderDetail from './pages/OrderDetail';
+import InvoicePage from './pages/InvoicePage';
+import Dashboard from './pages/Dashboard';
+import AdminPanel from './pages/AdminPanel';
+import Profile from './pages/Profile';
+import PrivateRoute from './components/PrivateRoute';
+import AdminRoute from './components/AdminRoute';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ContactUs from './pages/ContactUs';
+import ShippingInfo from './pages/ShippingInfo';
+import ReturnsExchange from './pages/ReturnsExchange';
+import FAQ from './pages/FAQ';
+import { useAuthStore } from './store/authStore';
+import { useWishlistStore } from './store/wishlistStore';
+import ScrollToTop from './components/ScrollToTop';
 
 
 function App() {
   const { isAuthenticated, sessionInitialized } = useAuthStore();
-  // Trigger Fresh Deployment - Syncing with updated Railway backend (Force redeploy)
   const { initWishlist } = useWishlistStore();
 
   // Force Light Theme Static Only - Removing Dark Mode Support
@@ -107,72 +54,43 @@ function App() {
   }, [isAuthenticated, initWishlist]);
 
   return (
-    <>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            borderRadius: '10px',
-            padding: '12px 16px',
-            fontSize: '14px',
-            background: '#fff',
-            color: '#1a1a1a',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          },
-          success: { icon: '✅' },
-          error: { icon: '❌' },
-        }}
-      />
+    <ToastProvider>
       <div className="flex flex-col min-h-screen overflow-x-hidden">
-        <ErrorBoundary fallback={<div className="p-4 text-center">Loading error recovery...</div>}>
-          <ScrollToTop />
-        <ErrorBoundary fallback={<div className="h-1 bg-amber-500" />}>
-          <AnnouncementBar />
-        </ErrorBoundary>
-        <ErrorBoundary>
-          <Navbar />
-        </ErrorBoundary>
+        <ScrollToTop />
+        <AnnouncementBar />
+        <Navbar />
         <main className="flex-grow overflow-x-hidden">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
-              <Route path="/products" element={<ErrorBoundary><Products /></ErrorBoundary>} />
-              <Route path="/products/:id" element={<ErrorBoundary><ProductDetail /></ErrorBoundary>} />
-              <Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
-              <Route path="/register" element={<ErrorBoundary><Register /></ErrorBoundary>} />
-              <Route path="/forgot-password" element={<ErrorBoundary><ForgotPassword /></ErrorBoundary>} />
-              <Route path="/reset-password" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />
-              <Route path="/contact" element={<ErrorBoundary><ContactUs /></ErrorBoundary>} />
-              <Route path="/shipping" element={<ErrorBoundary><ShippingInfo /></ErrorBoundary>} />
-              <Route path="/returns" element={<ErrorBoundary><ReturnsExchange /></ErrorBoundary>} />
-              <Route path="/faq" element={<ErrorBoundary><FAQ /></ErrorBoundary>} />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/shipping" element={<ShippingInfo />} />
+            <Route path="/returns" element={<ReturnsExchange />} />
+            <Route path="/faq" element={<FAQ />} />
 
-              {/* Protected Routes */}
-              <Route path="/wishlist" element={<PrivateRoute><ErrorBoundary><Wishlist /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/cart" element={<PrivateRoute><ErrorBoundary><Cart /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/checkout" element={<PrivateRoute><ErrorBoundary><Checkout /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/orders" element={<PrivateRoute><ErrorBoundary><Orders /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/orders/:id" element={<PrivateRoute><ErrorBoundary><OrderDetail /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/invoice/:id" element={<PrivateRoute><ErrorBoundary><InvoicePage /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/profile" element={<PrivateRoute><ErrorBoundary><Profile /></ErrorBoundary></PrivateRoute>} />
-              <Route path="/dashboard" element={<AdminRoute><ErrorBoundary><Dashboard /></ErrorBoundary></AdminRoute>} />
-              <Route path="/admin" element={<AdminRoute><ErrorBoundary><AdminPanel /></ErrorBoundary></AdminRoute>} />
-            </Routes>
-          </Suspense>
+            {/* Protected Routes */}
+            <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
+            <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
+            <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+            <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
+            <Route path="/orders/:id" element={<PrivateRoute><OrderDetail /></PrivateRoute>} />
+            <Route path="/invoice/:id" element={<PrivateRoute><InvoicePage /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+          </Routes>
         </main>
-        <ErrorBoundary fallback={<div className="py-8 text-center text-slate-400">© 2026 Muwas Perfumes</div>}>
-          <Footer />
-        </ErrorBoundary>
+        <Footer />
 
         {/* Chatbot Widget */}
-        <ErrorBoundary fallback={null}>
-          <Chatbot />
-        </ErrorBoundary>
-      </ErrorBoundary>
+        <Chatbot />
       </div>
-    </>
+    </ToastProvider>
   );
 }
 

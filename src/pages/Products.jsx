@@ -1,7 +1,6 @@
-// Parfum category is now live - products render normally
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link as RouterLink } from 'react-router-dom';
-import { Filter, X, Search, ChevronDown, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Filter, X, Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
@@ -12,9 +11,6 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
-import { CATEGORY_LIST, mapToCategoryEnum } from '../constants/productCategories';
-import { formatCategory, toCategoryEnum } from '../lib/utils';
-import SplitText from '../components/ui/SplitText';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,7 +24,6 @@ export default function Products() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [error, setError] = useState(null); // Added error state
 
   const category = searchParams.get('category') || '';
   const brand = searchParams.get('brand') || '';
@@ -39,74 +34,66 @@ export default function Products() {
 
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchProducts(controller.signal);
+    fetchProducts();
     fetchBrands();
-    return () => controller.abort();
   }, [category, brand, type, search, page, sortBy, sortDir, minPrice, maxPrice, inStockOnly]);
 
-  const fetchProducts = async (signal) => {
+  const fetchProducts = async () => {
     setLoading(true);
-    setError(null);
-    setProducts([]); // Clear products before fetching as requested
-
+    setProducts([]); // Clear existing products
     try {
-      let response;
-      // If we only have a category filter, use the standard GET /products?category=...
-      if (category && !search && !brand && !type && !minPrice && !maxPrice && !inStockOnly) {
-        const categoryEnum = toCategoryEnum(category);
-        console.log(`[Products] Requesting: GET /api/products?category=${categoryEnum}`);
+      let url = `/products?page=${page}&size=12&sortBy=${sortBy}&sortDir=${sortDir}`;
 
-        response = await api.get('products', {
-          signal,
-          params: {
-            category: categoryEnum,
-            page,
-            size: 15,
-            sortBy,
-            sortDir
-          }
-        });
+      // Add price range if specified
+      const params = new URLSearchParams();
+      params.append('page', page);
+      params.append('size', 12);
+      params.append('sortBy', sortBy);
+      params.append('sortDir', sortDir);
+
+      if (minPrice) params.append('minPrice', minPrice);
+      if (maxPrice) params.append('maxPrice', maxPrice);
+
+      if (search) {
+        url = `/products/search?query=${search}&${params.toString()}`;
+      } else if (category) {
+        url = `/products/category/${category}?${params.toString()}`;
+      } else if (brand) {
+        url = `/products/brand/${brand}?${params.toString()}`;
+      } else if (type) {
+        url = `/products/type/${type}?${params.toString()}`;
       } else {
-        // Use the unified filtering system for complex filters (POST products/filter)
-        const filterBody = {
-          searchQuery: search || null,
-          category: category ? toCategoryEnum(category) : null,
-          type: type || null,
-          brands: brand ? [brand] : null,
-          minPrice: minPrice ? parseFloat(minPrice) : null,
-          maxPrice: maxPrice ? parseFloat(maxPrice) : null,
-          inStock: inStockOnly || null,
-          page: page,
-          size: 12,
-          sortBy: sortBy,
-          sortDir: sortDir
-        };
-
-        console.log(`[Products] Requesting: POST products/filter`);
-        response = await api.post('products/filter', filterBody, { signal });
+        url = `/products?${params.toString()}`;
       }
 
-      const { data } = response;
+      console.log(`[Products] Requesting: ${url}`);
+      const { data } = await api.get(url);
+
+      // Standardize response content - handle both paginated content and direct list
       let content = data.content || (Array.isArray(data) ? data : []);
-      const grouped = groupProducts(content);
+
+      // Filter by stock if checkbox is checked
+      if (inStockOnly) {
+        content = content.filter(p => p.stock > 0);
+      }
+
+      let grouped = groupProducts(content);
+
+      // Apply frontend sorting for alphabetical ordering (Name: A to Z)
+      if (sortBy === 'name') {
+        grouped = [...grouped].sort((a, b) => {
+          const nameA = a.name || '';
+          const nameB = b.name || '';
+          return sortDir === 'DESC'
+            ? nameB.localeCompare(nameA)
+            : nameA.localeCompare(nameB);
+        });
+      }
+
       setProducts(grouped);
       setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      if (err.name === 'CanceledError') return;
-      
-      console.error('Failed to fetch products:', err);
-      let message = 'Failed to load products. Please try again.';
-      
-      if (!window.navigator.onLine) {
-        message = 'No internet connection. Please check your network.';
-      } else if (err.code === 'ECONNABORTED') {
-        message = 'Request timed out. The server is taking too long to respond.';
-      } else if (err.response?.status >= 500) {
-        message = 'Server error occurred. Our team has been notified.';
-      }
-      
-      setError(message);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
     } finally {
       setLoading(false);
     }
@@ -132,14 +119,6 @@ export default function Products() {
     setPage(0);
   };
 
-  const handleSortChange = (newSortBy, newSortDir) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('sortBy', newSortBy);
-    newParams.set('sortDir', newSortDir);
-    setSearchParams(newParams);
-    setPage(0);
-  };
-
   const handlePriceFilter = () => {
     setPage(0);
     fetchProducts();
@@ -153,20 +132,12 @@ export default function Products() {
     setInStockOnly(false);
   };
 
-  // Parfum category products are now live and will be rendered normally below
-
-  // Show category-wise "All Products" view when no category/search is selected
-  const isAllProducts = !category && !search && !brand && !type;
-  if (isAllProducts) {
-    return <AllProductsByCategory />;
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="mb-8 lg:mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 capitalize">
-            {category ? (CATEGORY_LIST.find(c => c.value === category)?.label || formatCategory(category)) : search ? 'Search Results' : 'All Products'}
+            {category ? category : search ? 'Search Results' : 'All Products'}
           </h1>
           {search && (
             <p className="text-muted-foreground">
@@ -216,14 +187,15 @@ export default function Products() {
                 value={`${sortBy}-${sortDir}`}
                 onChange={(e) => {
                   const [newSortBy, newSortDir] = e.target.value.split('-');
-                  handleSortChange(newSortBy, newSortDir);
+                  handleFilterChange('sortBy', newSortBy);
+                  handleFilterChange('sortDir', newSortDir);
                 }}
                 className="w-full h-10 rounded-md border border-slate-200 bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring"
               >
                 <option value="createdAt-DESC">Newest</option>
                 <option value="price-ASC">Price: Low</option>
                 <option value="price-DESC">Price: High</option>
-                <option value="name-ASC">Name: A-Z</option>
+                <option value="name-ASC">Name: A to Z</option>
                 <option value="rating-DESC">Rating</option>
               </select>
             </div>
@@ -263,23 +235,6 @@ export default function Products() {
                   </div>
                 ))}
               </div>
-            ) : error ? (
-              <Card className="border-destructive/20 bg-destructive/5">
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-                    <X className="h-6 w-6 text-destructive" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-destructive mb-2">Error Loading Products</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => fetchProducts()}
-                    className="gap-2"
-                  >
-                    Try Again
-                  </Button>
-                </CardContent>
-              </Card>
             ) : (Array.isArray(products) && products.length > 0) ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
@@ -377,14 +332,15 @@ function FiltersContent({
           <Label htmlFor="category" className="text-sm font-semibold">Category</Label>
           <select
             id="category"
-            value={category}
+            value={category ? category.toUpperCase().replace(/ /g, '_').replace(/-/g, '_') : ''}
             onChange={(e) => handleFilterChange('category', e.target.value)}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">All Categories</option>
-            {CATEGORY_LIST.map(cat => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
-            ))}
+            <option value="PREMIUM_OIL">Premium Oil</option>
+            <option value="BAKHOOR">Bakhoor</option>
+            <option value="BOOSTERS_AND_BASES">Booster & Bases</option>
+            <option value="AROMA_CHEMICALS">Aroma Chemicals</option>
           </select>
         </div>
 
@@ -412,7 +368,8 @@ function FiltersContent({
             value={`${sortBy}-${sortDir}`}
             onChange={(e) => {
               const [newSortBy, newSortDir] = e.target.value.split('-');
-              handleSortChange(newSortBy, newSortDir);
+              handleFilterChange('sortBy', newSortBy);
+              handleFilterChange('sortDir', newSortDir);
             }}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -480,107 +437,6 @@ function FiltersContent({
         </div>
       </CardContent>
     </>
-  );
-}
-
-// Categories to show in the "All Products" view
-const ALL_PRODUCT_CATEGORIES = CATEGORY_LIST;
-
-function CategorySection({ cat }) {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchCategoryProducts = async () => {
-      try {
-        const categoryEnum = toCategoryEnum(cat.value);
-        const { data } = await api.get('products', {
-          params: { category: categoryEnum, page: 0, size: 50, sortBy: 'createdAt', sortDir: 'DESC' }
-        });
-        const content = data.content || (Array.isArray(data) ? data : []);
-        setProducts(groupProducts(content));
-      } catch (err) {
-        console.error(`Failed to fetch ${cat.label}:`, err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategoryProducts();
-  }, [cat.value]);
-
-  if (!loading && products.length === 0) return null;
-
-  return (
-    <section className="mb-16">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{cat.label}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {loading ? 'Loading...' : `${products.length} product${products.length !== 1 ? 's' : ''}`}
-          </p>
-        </div>
-        <RouterLink
-          to={cat.path}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent/80 transition-colors group/link"
-        >
-          View All
-          <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
-        </RouterLink>
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="aspect-[3/4] w-full rounded-lg" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onQuickView={(p) => {
-                setQuickViewProduct(p);
-                setIsQuickViewOpen(true);
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      <ProductQuickView
-        product={quickViewProduct}
-        isOpen={isQuickViewOpen}
-        onClose={() => {
-          setIsQuickViewOpen(false);
-          setQuickViewProduct(null);
-        }}
-      />
-    </section>
-  );
-}
-
-function AllProductsByCategory() {
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="mb-10 lg:mb-14">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">All Collections</h1>
-          <p className="text-muted-foreground">Explore our premium fragrance collections</p>
-        </div>
-
-        {ALL_PRODUCT_CATEGORIES.map((cat) => (
-          <CategorySection key={cat.value} cat={cat} />
-        ))}
-      </div>
-    </div>
   );
 }
 
