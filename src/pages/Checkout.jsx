@@ -767,11 +767,19 @@ export default function Checkout() {
                             </p>
                           </div>
                         )}
+                        {shippingError && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-destructive flex items-start gap-1">
+                              <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                              <span>{shippingError}</span>
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <Button
                         type="button"
                         onClick={handleShippingSubmit}
-                        disabled={loading || shippingLoading}
+                        disabled={loading || shippingLoading || !!shippingError}
                         className="w-full h-11 sm:h-12 text-base font-semibold"
                         size="lg"
                       >
@@ -995,7 +1003,7 @@ export default function Checkout() {
                     <div className="pt-4">
                       <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || shippingLoading || !!shippingError}
                         className="w-full h-11 sm:h-12 text-base font-semibold"
                         size="lg"
                       >
