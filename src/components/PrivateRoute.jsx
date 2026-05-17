@@ -2,9 +2,9 @@ import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function PrivateRoute({ children }) {
-  const { isAuthenticated, sessionInitialized, bootstrapStatus } = useAuthStore();
+  const { isAuthenticated, sessionInitialized, authState } = useAuthStore();
 
-  const isRestoring = !sessionInitialized || bootstrapStatus === 'INIT' || bootstrapStatus === 'AUTHENTICATING';
+  const isRestoring = !sessionInitialized || authState === 'authenticating';
 
   // Wait for background session bootstrap to resolve before deciding
   if (isRestoring) {
@@ -15,7 +15,7 @@ export default function PrivateRoute({ children }) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || authState === 'expired' || authState === 'guest') {
     return <Navigate to="/login" replace />;
   }
 

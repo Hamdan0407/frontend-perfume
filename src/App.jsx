@@ -38,25 +38,25 @@ function App() {
     sessionInitialized: authReady, 
     accessToken: token, 
     user,
-    bootstrapStatus,
+    authState,
     bootstrap
   } = useAuthStore();
   const { initWishlist } = useWishlistStore();
 
   // Bootstrap the authentication session silently in the background once store hydration finishes
   useEffect(() => {
-    if (authReady && (bootstrapStatus === 'INIT' || bootstrapStatus === 'FAILED' && token)) {
+    if (authReady && authState === 'authenticating') {
       bootstrap();
     }
-  }, [authReady, bootstrapStatus, bootstrap, token]);
+  }, [authReady, authState, bootstrap]);
 
   // Temporary logging for auth persistence debugging
   useEffect(() => {
     console.log("TOKEN:", token);
     console.log("USER RESTORED:", user);
     console.log("AUTH READY:", authReady);
-    console.log("BOOTSTRAP STATUS:", bootstrapStatus);
-  }, [token, user, authReady, bootstrapStatus]);
+    console.log("AUTH STATE:", authState);
+  }, [token, user, authReady, authState]);
 
   // Force Light Theme Static Only - Removing Dark Mode Support
   useEffect(() => {
