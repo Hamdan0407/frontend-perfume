@@ -67,6 +67,10 @@ export default function Profile() {
     // Strict loading guard: wait for auth state to fully initialize and authenticate
     if (!authReady || !isAuthenticated || !token) {
       console.log("PROFILE FETCH GUARD ACTIVE:", { authReady, isAuthenticated, hasToken: !!token });
+      if (authReady && (!isAuthenticated || !token)) {
+        setLoading(false);
+        navigate('/login');
+      }
       return;
     }
 

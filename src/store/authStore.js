@@ -36,6 +36,7 @@ export const useAuthStore = create(
       tokenExpiresAt: null,
       isAuthenticated: false,
       sessionInitialized: false,
+      bootstrapStatus: 'INIT', // 'INIT' | 'HYDRATING' | 'AUTHENTICATING' | 'AUTHENTICATED' | 'FAILED' | 'GUEST'
 
       /**
        * Set user and tokens after successful login
@@ -63,6 +64,7 @@ export const useAuthStore = create(
           tokenExpiresAt,
           isAuthenticated: true,
           sessionInitialized: true,
+          bootstrapStatus: 'AUTHENTICATED'
         });
       },
 
@@ -70,7 +72,7 @@ export const useAuthStore = create(
        * Clear all authentication state and tokens
        */
       logout: () => {
-        console.log('ðŸ” User logged out');
+        console.log('ðŸ”  User logged out');
 
         // Clear legacy localStorage keys
         safeLs.removeItem('accessToken');
@@ -86,48 +88,153 @@ export const useAuthStore = create(
           tokenExpiresAt: null,
           isAuthenticated: false,
           sessionInitialized: true,
+          bootstrapStatus: 'GUEST'
         });
       },
 
       /**
-       * Initialize session after Zustand hydration completes.
-       * Validates the hydrated token and marks session as initialized.
-       * Does NOT read from raw localStorage — Zustand persist is the source of truth.
+       * Bootstrap session on startup.
+       * Restores tokens, validates session with profile request, retries expired sessions once,
+       * and transitions the bootstrap lifecycle state. Uses fetch to bypass circular dependencies.
+       */
+      bootstrap: async () => {
+        const state = get();
+        if (state.bootstrapStatus !== 'INIT' && state.bootstrapStatus !== 'FAILED') return;
+
+        set({ bootstrapStatus: 'AUTHENTICATING' });
+
+        if (!state.accessToken) {
+          console.log('📋 No access token found during bootstrap. Booting as GUEST');
+          set({
+            bootstrapStatus: 'GUEST',
+            isAuthenticated: false,
+            user: null
+          });
+          return;
+        }
+
+        const profileUrl = '/api/users/profile';
+
+        try {
+          console.log('🔄 Validating session with profile fetch...');
+          const response = await window.fetch(profileUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${state.accessToken}`
+            }
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            console.log('✅ Session validated successfully for:', userData.email);
+            set({
+              user: userData,
+              isAuthenticated: true,
+              bootstrapStatus: 'AUTHENTICATED'
+            });
+          } else if (response.status === 401 || response.status === 403) {
+            console.warn('⚠️ Session validation failed with auth error. Attempting token refresh...');
+            
+            const refreshToken = state.refreshToken || safeLs.getItem('refreshToken');
+            if (refreshToken) {
+              try {
+                const refreshUrl = `/api/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`;
+                const refreshRes = await window.fetch(refreshUrl, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                });
+
+                if (refreshRes.ok) {
+                  const refreshData = await refreshRes.json();
+                  const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = refreshData;
+
+                  // Sync keys
+                  safeLs.setItem('accessToken', newAccessToken);
+                  safeLs.setItem('token', newAccessToken);
+                  if (newRefreshToken) safeLs.setItem('refreshToken', newRefreshToken);
+
+                  const tokenExpiresAt = Date.now() + (expiresIn * 1000);
+                  safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
+
+                  set({
+                    accessToken: newAccessToken,
+                    refreshToken: newRefreshToken || state.refreshToken,
+                    tokenExpiresAt
+                  });
+
+                  // Retry profile fetch with new token
+                  console.log('🔄 Retrying profile fetch with fresh token...');
+                  const retryRes = await window.fetch(profileUrl, {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${newAccessToken}`
+                    }
+                  });
+
+                  if (retryRes.ok) {
+                    const userData = await retryRes.json();
+                    console.log('✅ Session validated after refresh for:', userData.email);
+                    set({
+                      user: userData,
+                      isAuthenticated: true,
+                      bootstrapStatus: 'AUTHENTICATED'
+                    });
+                    return;
+                  }
+                }
+              } catch (refreshErr) {
+                console.error('❌ Token refresh failed during bootstrap:', refreshErr);
+              }
+            }
+
+            // Cleanup invalid session
+            console.log('❌ Session invalid/expired, logging out');
+            safeLs.removeItem('accessToken');
+            safeLs.removeItem('token');
+            safeLs.removeItem('refreshToken');
+            safeLs.removeItem('user');
+            safeLs.removeItem('tokenExpiresAt');
+
+            set({
+              user: null,
+              accessToken: null,
+              refreshToken: null,
+              tokenExpiresAt: null,
+              isAuthenticated: false,
+              bootstrapStatus: 'FAILED'
+            });
+          } else {
+            // Keep user from persisted store if server is offline or returned other error codes (e.g. 500)
+            console.warn('📡 Server or network error during bootstrap validation. Falling back to cached session.');
+            set({
+              isAuthenticated: true,
+              bootstrapStatus: 'AUTHENTICATED'
+            });
+          }
+        } catch (err) {
+          console.warn('📡 Network error during bootstrap. Falling back to cached session.', err);
+          set({
+            isAuthenticated: true,
+            bootstrapStatus: 'AUTHENTICATED'
+          });
+        }
+      },
+
+      /**
+       * Initialize session (Legacy wrapper, deprecated but kept for backwards compatibility)
        */
       initializeSession: () => {
         const state = get();
-
-        if (state.accessToken && state.user && state.tokenExpiresAt) {
-          const isExpired = state.tokenExpiresAt - Date.now() < 60 * 1000;
-
-          console.log('📋 Session restore:', {
-            email: state.user.email,
-            role: state.user.role,
-            tokenExpired: isExpired,
-            expiresIn: Math.max(0, (state.tokenExpiresAt - Date.now()) / 1000)
-          });
-
-          // Sync legacy localStorage keys in case they got out of sync
-          safeLs.setItem('accessToken', state.accessToken);
-          safeLs.setItem('token', state.accessToken);
-          if (state.refreshToken) {
-            safeLs.setItem('refreshToken', state.refreshToken);
-          }
-          safeLs.setItem('tokenExpiresAt', state.tokenExpiresAt.toString());
-
+        if (state.accessToken && state.user) {
           set({
-            isAuthenticated: !isExpired,
+            isAuthenticated: true,
             sessionInitialized: true,
           });
         } else {
-          console.log('📋 No existing session found');
-          // Clear any stale legacy keys
-          safeLs.removeItem('accessToken');
-          safeLs.removeItem('token');
-          safeLs.removeItem('refreshToken');
-          safeLs.removeItem('user');
-          safeLs.removeItem('tokenExpiresAt');
-
           set({ sessionInitialized: true });
         }
       },
@@ -209,7 +316,11 @@ export const useAuthStore = create(
           try {
             if (error) {
               console.error('❌ Error rehydrating auth store:', error);
-              useAuthStore.setState({ sessionInitialized: true, isAuthenticated: false });
+              useAuthStore.setState({ 
+                sessionInitialized: true, 
+                isAuthenticated: false,
+                bootstrapStatus: 'FAILED'
+              });
               return;
             }
 
@@ -239,7 +350,8 @@ export const useAuthStore = create(
                 user: null,
                 accessToken: null,
                 refreshToken: null,
-                tokenExpiresAt: null
+                tokenExpiresAt: null,
+                bootstrapStatus: 'GUEST'
               });
               return;
             }
@@ -283,7 +395,8 @@ export const useAuthStore = create(
               useAuthStore.setState({
                 sessionInitialized: true,
                 isAuthenticated: true,
-                tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt
+                tokenExpiresAt: Number(expiresAt) || state.tokenExpiresAt,
+                bootstrapStatus: 'INIT'
               });
 
             } else {
@@ -302,7 +415,8 @@ export const useAuthStore = create(
                 user: null,
                 accessToken: null,
                 refreshToken: null,
-                tokenExpiresAt: null
+                tokenExpiresAt: null,
+                bootstrapStatus: 'FAILED'
               });
             }
           } catch (e) {
@@ -314,7 +428,8 @@ export const useAuthStore = create(
               user: null,
               accessToken: null,
               refreshToken: null,
-              tokenExpiresAt: null
+              tokenExpiresAt: null,
+              bootstrapStatus: 'FAILED'
             });
           }
         };
