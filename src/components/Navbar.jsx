@@ -293,7 +293,7 @@ export default function Navbar() {
                     {suggestions.map((product) => (
                       <Link
                         key={product.id}
-                        to={`/products/${product.id}`}
+                        to={`/products/${product.slug || product.id}`}
                         onClick={() => {
                           setSearchQuery('');
                           setShowSuggestions(false);

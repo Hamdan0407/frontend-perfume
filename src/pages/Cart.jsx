@@ -139,7 +139,7 @@ export default function Cart() {
               <Card key={item.id}>
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <Link to={`/products/${item.productId}`} className="shrink-0">
+                    <Link to={`/products/${item.productSlug || item.productId}`} className="shrink-0">
                       <img
                         src={item.productImage || '/placeholder-product.svg'}
                         alt={item.productName}
@@ -149,7 +149,7 @@ export default function Cart() {
 
                     <div className="flex-1 min-w-0">
                       <Link
-                        to={`/products/${item.productId}`}
+                        to={`/products/${item.productSlug || item.productId}`}
                         className="font-semibold text-foreground hover:text-primary line-clamp-2 mb-1"
                       >
                         {item.productName} {item.variantSize ? `(${item.variantSize})` : ''}

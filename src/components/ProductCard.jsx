@@ -17,10 +17,10 @@ export default function ProductCard({ product, onQuickView }) {
     ? Math.round(((price - discountPrice) / price) * 100)
     : 0;
 
-  console.log(`[ProductCard] Rendering product: ${product.id} - ${product.name}`);
+  console.log(`[ProductCard] Rendering product: ${product.slug || product.id} - ${product.name}`);
   return (
     <Card className="overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1 border-border/40 group h-full flex flex-col shadow-sm bg-white rounded-2xl">
-      <Link to={`/products/${product.id}`} className="block flex-1 flex flex-col" onClick={() => console.log(`[ProductCard] Clicking product ID: ${product.id}`)}>
+      <Link to={`/products/${product.slug || product.id}`} className="block flex-1 flex flex-col" onClick={() => console.log(`[ProductCard] Clicking product slug: ${product.slug || product.id}`)}>
         <div className="relative aspect-[3/4] overflow-hidden bg-muted sm:aspect-[3/4]">
           <img
             src={product.imageUrl || 'https://placehold.co/600x400?text=Perfume'}

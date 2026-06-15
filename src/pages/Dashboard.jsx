@@ -412,7 +412,7 @@ export default function Dashboard() {
               {topProducts.map((product, index) => (
                 <Link
                   key={product.id}
-                  to={`/products/${product.id}`}
+                  to={`/products/${product.slug || product.id}`}
                   className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary hover:shadow-md transition-all"
                 >
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">
