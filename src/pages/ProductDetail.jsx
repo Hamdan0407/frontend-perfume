@@ -54,7 +54,7 @@ const ProductSkeleton = () => (
 );
 
 export default function ProductDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { setCart } = useCartStore();
@@ -85,7 +85,34 @@ export default function ProductDetail() {
   // Scroll to top on mount/route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [id]);
+  }, [slug]);
+
+  // Dynamic SEO Metadata & Canonical URL
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.name} | Premium Perfumes`;
+      
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', product.description ? product.description.substring(0, 160) : '');
+
+      let canonicalLink = document.querySelector('link[rel="canonical"]');
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.setAttribute('href', `${window.location.origin}/products/${product.slug}`);
+    }
+    
+    return () => {
+      document.title = 'Premium Perfumes & Fragrances';
+    };
+  }, [product]);
 
   useEffect(() => {
     // Reset state and scroll to top
@@ -98,12 +125,40 @@ export default function ProductDetail() {
     
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchProduct(),
-        fetchReviews(0, false),
-        isAuthenticated ? checkPurchaseStatus() : Promise.resolve()
-      ]);
-      setLoading(false);
+      try {
+        const isNumeric = /^\d+$/.test(slug);
+        const { data } = await api.get(isNumeric ? `products/${slug}` : `products/slug/${slug}`);
+        
+        if (isNumeric && data.slug) {
+          navigate(`/products/${data.slug}`, { replace: true });
+          return;
+        }
+
+        setProduct(data);
+        setSelectedImage(data.imageUrl);
+
+        // Preload the main hero image for LCP optimization
+        const link = document.createElement('link');
+        link.id = 'hero-image-preload';
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = data.imageUrl;
+        document.head.appendChild(link);
+
+        // Fetch reviews and purchase status using the real product ID!
+        await Promise.all([
+          fetchReviews(data.id, 0, false),
+          isAuthenticated ? checkPurchaseStatus(data.id) : Promise.resolve()
+        ]);
+      } catch (error) {
+        console.error('Failed to load product:', error);
+        if (error.response?.status === 404) {
+          toast.error('Product not found');
+          navigate('/products');
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadData();
@@ -112,13 +167,13 @@ export default function ProductDetail() {
       const existingLink = document.getElementById('hero-image-preload');
       if (existingLink) existingLink.remove();
     };
-  }, [id, isAuthenticated]);
+  }, [slug, isAuthenticated]);
 
-  const checkPurchaseStatus = async () => {
+  const checkPurchaseStatus = async (productId) => {
     try {
       const { data } = await api.get('orders/my-orders');
       const purchased = data.some(order =>
-        order.items.some(item => item.product.id === parseInt(id))
+        order.items.some(item => item.product.id === parseInt(productId))
       );
       setHasPurchased(purchased);
     } catch (error) {
@@ -126,78 +181,10 @@ export default function ProductDetail() {
     }
   };
 
-  const fetchProduct = async () => {
-    try {
-      const { data } = await api.get(`products/${id}`);
-      setProduct(data);
-      setSelectedImage(data.imageUrl);
-
-      // Preload the main hero image for LCP optimization
-      const link = document.createElement('link');
-      link.id = 'hero-image-preload';
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = data.imageUrl;
-      document.head.appendChild(link);
-
-      // Fetch related products to merge variants
-      try {
-        const { data: relatedData } = await api.get(`products/search?query=${encodeURIComponent(data.name)}&brand=${encodeURIComponent(data.brand)}&size=50`);
-        const relatedProducts = relatedData.content || relatedData || [];
-
-        let allVariants = [];
-        relatedProducts.forEach(p => {
-          if (p.name && data.name && String(p.name).toLowerCase() === String(data.name).toLowerCase() &&
-            ((!p.brand && !data.brand) || (p.brand && data.brand && String(p.brand).toLowerCase() === String(data.brand).toLowerCase()))) {
-            
-            if (p.variants && p.variants.length > 0) {
-              p.variants.forEach(v => {
-                if (!allVariants.find(ev => ev.size === v.size)) allVariants.push(v);
-              });
-            } else if (p.volume) {
-              if (!allVariants.find(ev => ev.size === p.volume)) {
-                allVariants.push({
-                  id: `v_${p.id}`,
-                  productId: p.id,
-                  size: p.volume,
-                  price: p.price,
-                  discountPrice: p.discountPrice,
-                  stock: p.stock,
-                  active: p.active
-                });
-              }
-            }
-          }
-        });
-
-        const sortedVariants = sortVariants(allVariants);
-        setMergedVariants(sortedVariants);
-        const firstAvailable = sortedVariants.find(v => v.active && v.stock > 0) || sortedVariants[0];
-        setSelectedVariant(firstAvailable);
-      } catch (err) {
-        if (data.variants && data.variants.length > 0) {
-          const sortedV = sortVariants(data.variants);
-          setSelectedVariant(sortedV.find(v => v.active && v.stock > 0) || sortedV[0]);
-          setMergedVariants(sortedV);
-        } else if (data.volume) {
-          const virtualV = { id: `v_${data.id}`, productId: data.id, size: data.volume, price: data.price, discountPrice: data.discountPrice, stock: data.stock, active: data.active };
-          setSelectedVariant(virtualV);
-          setMergedVariants([virtualV]);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load product:', error);
-      if (error.response?.status === 404) {
-        toast.error('Product not found');
-        navigate('/products');
-      }
-    }
-  };
-
-  const fetchReviews = async (page = 0, append = false) => {
+  const fetchReviews = async (productId, page = 0, append = false) => {
     try {
       if (page > 0) setLoadingMoreReviews(true);
-      const { data } = await api.get(`products/${id}/reviews?page=${page}&size=10`);
+      const { data } = await api.get(`products/${productId}/reviews?page=${page}&size=10`);
       if (append) {
         setReviews(prev => [...prev, ...(data.reviews || [])]);
       } else {
@@ -215,7 +202,7 @@ export default function ProductDetail() {
   };
 
   const handleLoadMoreReviews = () => {
-    fetchReviews(reviewPage + 1, true);
+    fetchReviews(product.id, reviewPage + 1, true);
   };
 
   const handleAddToCart = async () => {
@@ -860,7 +847,7 @@ export default function ProductDetail() {
 
       {/* Related Products Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <RelatedProducts productId={id} />
+        <RelatedProducts productId={product.id} />
       </div>
     </div>
   );

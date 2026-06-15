@@ -95,7 +95,7 @@ export default function Wishlist() {
                   src={product.imageUrl || '/placeholder-product.svg'}
                   alt={product.name}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
-                  onClick={() => navigate(`/products/${product.id}`)}
+                  onClick={() => navigate(`/products/${product.slug || product.id}`)}
                 />
 
                 {/* Remove Button */}
@@ -133,7 +133,7 @@ export default function Wishlist() {
 
                 <h3
                   className="font-semibold line-clamp-2 cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => navigate(`/products/${product.id}`)}
+                  onClick={() => navigate(`/products/${product.slug || product.id}`)}
                 >
                   {product.name}
                 </h3>
@@ -150,7 +150,7 @@ export default function Wishlist() {
                 </div>
 
                 <Button
-                  onClick={() => navigate(`/products/${product.id}`)}
+                  onClick={() => navigate(`/products/${product.slug || product.id}`)}
                   className="w-full"
                   disabled={product.stockQuantity === 0}
                 >

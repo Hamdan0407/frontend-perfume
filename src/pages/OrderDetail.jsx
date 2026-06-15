@@ -162,7 +162,7 @@ export default function OrderDetail() {
                 {order.items.map((item, index) => (
                   <div key={item.id}>
                     <div className="flex items-center gap-4">
-                      <Link to={`/products/${item.product.id}`}>
+                      <Link to={`/products/${item.product.slug || item.product.id}`}>
                         <img
                           src={item.product.imageUrl || '/placeholder-product.svg'}
                           alt={item.product.name}
@@ -171,7 +171,7 @@ export default function OrderDetail() {
                       </Link>
                       <div className="flex-1">
                         <Link
-                          to={`/products/${item.product.id}`}
+                          to={`/products/${item.product.slug || item.product.id}`}
                           className="font-medium hover:text-primary"
                         >
                           {item.product.name}

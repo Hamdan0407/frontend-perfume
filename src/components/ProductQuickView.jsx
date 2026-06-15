@@ -257,7 +257,7 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
 
               {/* View Full Details Link */}
               <Link
-                to={`/products/${fullProduct.id}`}
+                to={`/products/${fullProduct.slug || fullProduct.id}`}
                 onClick={onClose}
                 className="mt-8 flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-slate-900 transition-colors group"
               >

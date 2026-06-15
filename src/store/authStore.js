@@ -37,6 +37,7 @@ export const useAuthStore = create(
       isAuthenticated: false,
       sessionInitialized: false,
       authState: 'guest', // 'guest' | 'authenticating' | 'authenticated' | 'expired'
+      _refreshPromise: null, // Holds active deduplicated session refresh promise
 
       /**
        * Set user and tokens after successful login
@@ -88,109 +89,103 @@ export const useAuthStore = create(
           tokenExpiresAt: null,
           isAuthenticated: false,
           sessionInitialized: true,
-          authState: 'guest'
+          authState: 'guest',
+          _refreshPromise: null
         });
       },
 
       /**
-       * Bootstrap session silently in the background on startup.
-       * Restores tokens, validates session with profile request, retries expired sessions once,
-       * and transitions the bootstrap lifecycle state. Uses fetch to bypass circular dependencies.
+       * Synchronize tokens across store and storage
        */
-      bootstrap: async () => {
-        const state = get();
-        if (state.authState !== 'authenticating') return;
+      updateTokens: (accessToken, refreshToken, expiresIn) => {
+        console.log('🔄 Syncing store tokens...');
+        const tokenExpiresAt = Date.now() + (expiresIn * 1000);
+        
+        safeLs.setItem('accessToken', accessToken);
+        safeLs.setItem('token', accessToken);
+        if (refreshToken) safeLs.setItem('refreshToken', refreshToken);
+        safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
 
-        if (!state.accessToken) {
-          console.log('📋 No access token found during bootstrap. Booting as guest');
-          set({
-            authState: 'guest',
-            isAuthenticated: false,
-            user: null
-          });
-          return;
+        set({
+          accessToken,
+          refreshToken: refreshToken || get().refreshToken,
+          tokenExpiresAt,
+          isAuthenticated: true,
+          authState: 'authenticated'
+        });
+      },
+
+      /**
+       * Unified, centralized session refresh function.
+       * Can be safely called concurrently by Axios interceptors, page bootstrap hooks, etc.
+       * Prevents duplicate network requests by caching and returning a single active promise.
+       */
+      refreshSession: async () => {
+        const state = get();
+        if (state._refreshPromise) {
+          console.log('🔄 Reusing active session refresh promise...');
+          return state._refreshPromise;
         }
 
-        const profileUrl = '/api/users/profile';
+        const refreshToken = state.refreshToken || safeLs.getItem('refreshToken');
+        if (!refreshToken) {
+          console.warn('⚠️ No refresh token available for session refresh.');
+          throw new Error('No refresh token available');
+        }
 
-        try {
-          console.log('🔄 Validating session with profile fetch...');
-          const response = await window.fetch(profileUrl, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${state.accessToken}`
-            }
-          });
+        console.log('🔄 Initiating centralized session refresh...');
+        
+        const refreshPromise = (async () => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout protection
 
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('✅ Session validated successfully for:', userData.email);
-            set({
-              user: userData,
-              isAuthenticated: true,
-              authState: 'authenticated'
+          try {
+            const refreshUrl = `/api/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`;
+            const response = await window.fetch(refreshUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              signal: controller.signal
             });
-          } else if (response.status === 401 || response.status === 403) {
-            console.warn('⚠️ Session validation failed with auth error. Attempting token refresh...');
-            
-            const refreshToken = state.refreshToken || safeLs.getItem('refreshToken');
-            if (refreshToken) {
-              try {
-                const refreshUrl = `/api/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`;
-                const refreshRes = await window.fetch(refreshUrl, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  }
-                });
 
-                if (refreshRes.ok) {
-                  const refreshData = await refreshRes.json();
-                  const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = refreshData;
+            clearTimeout(timeoutId);
 
-                  // Sync keys
-                  safeLs.setItem('accessToken', newAccessToken);
-                  safeLs.setItem('token', newAccessToken);
-                  if (newRefreshToken) safeLs.setItem('refreshToken', newRefreshToken);
-
-                  const tokenExpiresAt = Date.now() + (expiresIn * 1000);
-                  safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
-
-                  set({
-                    accessToken: newAccessToken,
-                    refreshToken: newRefreshToken || state.refreshToken,
-                    tokenExpiresAt
-                  });
-
-                  // Retry profile fetch with new token
-                  console.log('🔄 Retrying profile fetch with fresh token...');
-                  const retryRes = await window.fetch(profileUrl, {
-                    method: 'GET',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${newAccessToken}`
-                    }
-                  });
-
-                  if (retryRes.ok) {
-                    const userData = await retryRes.json();
-                    console.log('✅ Session validated after refresh for:', userData.email);
-                    set({
-                      user: userData,
-                      isAuthenticated: true,
-                      authState: 'authenticated'
-                    });
-                    return;
-                  }
-                }
-              } catch (refreshErr) {
-                console.error('❌ Token refresh failed during bootstrap:', refreshErr);
-              }
+            if (!response.ok) {
+              throw new Error(`Refresh request failed with status: ${response.status}`);
             }
 
-            // Cleanup invalid session
-            console.log('❌ Session invalid/expired, logging out');
+            const data = await response.json();
+            if (!data || !data.token) {
+              throw new Error('Invalid response payload from token refresh endpoint');
+            }
+
+            const { token: newAccessToken, refreshToken: newRefreshToken, expiresIn } = data;
+
+            // Sync localStorage keys
+            safeLs.setItem('accessToken', newAccessToken);
+            safeLs.setItem('token', newAccessToken);
+            if (newRefreshToken) safeLs.setItem('refreshToken', newRefreshToken);
+
+            const tokenExpiresAt = Date.now() + (expiresIn * 1000);
+            safeLs.setItem('tokenExpiresAt', tokenExpiresAt.toString());
+
+            set({
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken || state.refreshToken,
+              tokenExpiresAt,
+              isAuthenticated: true,
+              authState: 'authenticated',
+              _refreshPromise: null // Release active promise cache
+            });
+
+            console.log('✅ Centralized session refresh successful.');
+            return newAccessToken;
+          } catch (err) {
+            clearTimeout(timeoutId);
+            console.error('❌ Centralized session refresh failed:', err.name === 'AbortError' ? 'Timeout (15s)' : err.message);
+
+            // Clean up invalid session
             safeLs.removeItem('accessToken');
             safeLs.removeItem('token');
             safeLs.removeItem('refreshToken');
@@ -203,23 +198,42 @@ export const useAuthStore = create(
               refreshToken: null,
               tokenExpiresAt: null,
               isAuthenticated: false,
-              authState: 'expired'
+              authState: 'expired',
+              _refreshPromise: null // Release active promise cache
             });
-          } else {
-            // Keep user from persisted store if server is offline or returned other error codes (e.g. 500)
-            console.warn('📡 Server or network error during bootstrap validation. Falling back to cached session.');
-            set({
-              isAuthenticated: true,
-              authState: 'authenticated'
-            });
+
+            throw err;
           }
-        } catch (err) {
-          console.warn('📡 Network error during bootstrap. Falling back to cached session.', err);
+        })();
+
+        set({ _refreshPromise: refreshPromise });
+        return refreshPromise;
+      },
+
+      /**
+       * Bootstrap session silently in the background on startup.
+       * Restores tokens, validates session with profile request, retries expired sessions once,
+       * and transitions the bootstrap lifecycle state. Uses fetch to bypass circular dependencies.
+       */
+      bootstrap: async () => {
+        const state = get();
+        if (state.authState !== 'authenticating') return;
+
+        if (!state.accessToken || state.isTokenExpired()) {
+          console.log('📋 No access token or token expired during bootstrap. Booting as guest');
           set({
-            isAuthenticated: true,
-            authState: 'authenticated'
+            authState: 'guest',
+            isAuthenticated: false,
+            user: null
           });
+          return;
         }
+
+        console.log('✅ Stateless bootstrap successful. Restored session for:', state.user?.email);
+        set({
+          isAuthenticated: true,
+          authState: 'authenticated'
+        });
       },
 
       /**
