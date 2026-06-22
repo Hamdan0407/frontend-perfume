@@ -103,12 +103,24 @@ export default function ProductManagement() {
 
   const handleEdit = (product) => {
     setEditingProduct(product);
+    
+    // Safely extract and normalize category to the expected string option format (e.g., "bakhoor", "premium oil")
+    let categoryString = '';
+    if (product.category) {
+      if (typeof product.category === 'object') {
+        categoryString = product.category.name || product.category.slug || '';
+      } else {
+        categoryString = String(product.category);
+      }
+    }
+    const normalizedCategory = categoryString.trim().toLowerCase().replace(/_/g, ' ');
+
     setFormData({
       name: product.name,
       description: product.description,
       price: product.price,
       stock: product.stock,
-      category: product.category,
+      category: normalizedCategory,
       brand: product.brand,
       imageUrl: product.imageUrl,
       featured: product.featured || false,

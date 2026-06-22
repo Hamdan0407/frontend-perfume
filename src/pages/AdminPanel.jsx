@@ -44,6 +44,17 @@ export default function AdminPanel() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
 
+  // Helper: always extract the enum-name string from any category value
+  // Handles objects like {name:"PREMIUM_OIL",label:"Premium Oil"}, plain strings, etc.
+  const extractCategoryName = (cat) => {
+    if (!cat) return 'PREMIUM_OIL';
+    if (typeof cat === 'object') {
+      return cat.name || cat.id || 'PREMIUM_OIL';
+    }
+    // Already a string — normalize to uppercase enum format
+    return String(cat).trim().toUpperCase().replace(/[\s-]+/g, '_');
+  };
+
   // Product form
   const [productForm, setProductForm] = useState({
     name: '',
@@ -51,7 +62,7 @@ export default function AdminPanel() {
     price: '',
     mrp: '',
     stock: '',
-    category: 'perfume',
+    category: 'PREMIUM_OIL',
     brand: '',
     imageUrl: '',
     size: '30ml', // default for perfume
@@ -190,15 +201,13 @@ export default function AdminPanel() {
     };
   }, [dashboardStats, products]);
 
-  // Categories for dropdown
-  // Categories for dropdown
-  // Dynamically derived categories from backend settings
+  // Categories for dropdown — always produce string enum names
   const safeCategories = React.useMemo(() => {
     // If settings from API exist, use those that are enabled
     if (categorySettings && categorySettings.length > 0) {
       const fromSettings = categorySettings
         .filter(s => s && s.enabled)
-        .map(s => s.category);
+        .map(s => extractCategoryName(s.category));
       if (fromSettings.length > 0) return fromSettings;
     }
     // Fallback to constants if API empty/failed
@@ -208,18 +217,24 @@ export default function AdminPanel() {
   const getCategoryDisplayName = (cat) => {
     if (!cat) return "N/A";
     
-    // Extract string value if cat is an object
-    const catValue = typeof cat === 'object' 
-      ? (cat.name || cat.displayName || cat.label || cat.id || "")
-      : cat;
-    
-    if (!catValue) return "N/A";
+    // Normalize to enum name string
+    const catName = extractCategoryName(cat);
+    if (!catName) return "N/A";
 
-    const setting = categorySettings.find(s => 
-      String(s?.category || '').toLowerCase().replace(/_/g, ' ') === String(catValue || '').toLowerCase() || 
-      s.category === catValue
-    );
-    return setting?.label || formatCategory(catValue);
+    // Try to find label from category settings
+    const setting = categorySettings.find(s => {
+      const settingName = extractCategoryName(s?.category);
+      return settingName === catName;
+    });
+    // The label lives on the category object (serialized enum), not on the setting itself
+    const settingLabel = setting?.category?.label || setting?.label;
+    if (settingLabel) return settingLabel;
+    
+    // Try to find label from CATEGORY_LIST constants
+    const constEntry = CATEGORY_LIST.find(c => String(c.value).toUpperCase().replace(/ /g, '_') === catName);
+    if (constEntry?.label) return constEntry.label;
+    
+    return formatCategory(catName);
   };
 
   // Product Types state with persistence
@@ -257,23 +272,22 @@ export default function AdminPanel() {
 
   // Size options based on category
   const getSizeOptions = (category) => {
-    if (category === 'attar' || category === 'premium attars' || category === 'oud reserve') {
-      return ['6ml', '12ml'];
-    } else if (category === 'perfume') {
-      return ['30ml', '50ml', '100ml'];
-    } else if (category === 'aroma chemicals') {
+    const cat = extractCategoryName(category);
+    if (cat === 'PREMIUM_OIL') {
+      return ['6ml', '12ml', '30ml', '50ml', '100ml'];
+    } else if (cat === 'AROMA_CHEMICALS') {
       return ['50g', '100g', '250g', '500g', '1kg'];
-    } else if (category === 'sample collections') {
-      return ['2ml', '3ml', '5ml', '10ml', 'Kit'];
-    } else if (category === 'boosters and bases') {
+    } else if (cat === 'BOOSTERS_AND_BASES') {
       return ['50ml', '100ml', '250ml', '500ml', '1L'];
+    } else if (cat === 'BAKHOOR') {
+      return ['30ml', '50ml', '100ml'];
     }
-    return ['30ml', '50ml', '100ml']; // default for perfume
+    return ['30ml', '50ml', '100ml']; // default
   };
 
   // Get the unit label based on category
   const getUnitLabel = (category) => {
-    return category === 'aroma chemicals' ? 'g' : 'ml';
+    return extractCategoryName(category) === 'AROMA_CHEMICALS' ? 'g' : 'ml';
   };
 
   // Fetch Products
@@ -527,7 +541,7 @@ export default function AdminPanel() {
       description: '',
       price: '',
       stock: '',
-      category: 'perfume',
+      category: 'PREMIUM_OIL',
       brand: '',
       imageUrl: '',
       size: '30ml', // default for perfume
@@ -547,16 +561,17 @@ export default function AdminPanel() {
     setModalMode('edit');
     setSelectedItem(product);
     const hasDiscount = product.discountPrice && product.discountPrice < product.price;
+    const normalizedCategory = extractCategoryName(product.category);
     const initialForm = {
       name: product.name || '',
       description: product.description || '',
       price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
       mrp: hasDiscount ? product.price.toString() : '',
       stock: product.stock?.toString() || '',
-      category: typeof product.category === 'object' ? (product.category.name || product.category.id || '') : (product.category || 'perfume'),
+      category: normalizedCategory,
       brand: product.brand || '',
       imageUrl: product.imageUrl || '',
-      size: product.size || (product.category === 'attar' ? '6ml' : '30ml'),
+      size: product.size || (normalizedCategory === 'PREMIUM_OIL' ? '6ml' : '30ml'),
       type: product.type || 'Eau de Parfum',
       active: product.active !== false,
       featured: product.featured === true,
@@ -567,7 +582,7 @@ export default function AdminPanel() {
 
     // Handle legacy size selection based on category
     const currentCategory = initialForm.category;
-    const defaultSize = (currentCategory === 'attar' || currentCategory === 'premium attars' || currentCategory === 'oud reserve') ? '6ml' : '30ml';
+    const defaultSize = (currentCategory === 'PREMIUM_OIL') ? '6ml' : '30ml';
 
     let initialVariants = [];
     // Load existing variants or create default one
@@ -577,7 +592,7 @@ export default function AdminPanel() {
         return {
           id: v.id || Date.now() + Math.random(),
           size: v.size,
-          unit: v.unit || (product.category === 'aroma chemicals' ? 'g' : 'ml'),
+          unit: v.unit || (normalizedCategory === 'AROMA_CHEMICALS' ? 'g' : 'ml'),
           price: variantHasDiscount ? v.discountPrice.toString() : (v.price?.toString() || ''),
           mrp: variantHasDiscount ? v.price.toString() : '',
           stock: v.stock?.toString() || '',
@@ -592,7 +607,7 @@ export default function AdminPanel() {
       initialVariants = [{
         id: Date.now(),
         size: sizeNum,
-        unit: product.category === 'aroma chemicals' ? 'g' : 'ml',
+        unit: normalizedCategory === 'AROMA_CHEMICALS' ? 'g' : 'ml',
         price: hasDiscount ? product.discountPrice.toString() : (product.price?.toString() || ''),
         mrp: hasDiscount ? product.price.toString() : '',
         stock: product.stock?.toString() || '',
@@ -631,7 +646,7 @@ export default function AdminPanel() {
     // Build variants data and check for duplicate size+unit combinations
     const variantKeys = new Set();
     const hasDuplicateVariants = currentVariants.some(v => {
-      const key = `${v.size}-${v.unit || (currentForm.category === 'aroma chemicals' ? 'g' : 'ml')}`;
+      const key = `${v.size}-${v.unit || (extractCategoryName(currentForm.category) === 'AROMA_CHEMICALS' ? 'g' : 'ml')}`;
       if (variantKeys.has(key)) return true;
       variantKeys.add(key);
       return false;
@@ -656,7 +671,7 @@ export default function AdminPanel() {
         // Temporary IDs from Date.now() are > 10^10
         id: (v.id && v.id < 1000000000) ? v.id : null,
         size: parseInt(v.size) || 30,
-        unit: v.unit || (currentForm.category === 'aroma chemicals' ? 'g' : 'ml'),
+        unit: v.unit || (extractCategoryName(currentForm.category) === 'AROMA_CHEMICALS' ? 'g' : 'ml'),
         price: originalPrice > salePrice ? originalPrice : salePrice,
         discountPrice: originalPrice > salePrice ? salePrice : null,
         stock: parseInt(v.stock) || 0,
@@ -674,7 +689,7 @@ export default function AdminPanel() {
       price: primaryVariant.price,
       discountPrice: primaryVariant.discountPrice,
       stock: totalStock,
-      category: currentForm.category || 'perfume',
+      category: extractCategoryName(currentForm.category) || 'PREMIUM_OIL',
       brand: currentForm.brand?.trim() || 'Generic',
       imageUrl: currentForm.imageUrl?.startsWith('data:') ? currentForm.imageUrl : currentForm.imageUrl?.trim(),
       size: topLevelSize,
@@ -2746,11 +2761,12 @@ export default function AdminPanel() {
               <div className="categories-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
                 {categorySettings.map(setting => {
                   const cat = setting.category;
-                  const displayName = setting.label || formatCategory(cat);
+                  const catName = extractCategoryName(cat);
+                  const displayName = cat?.label || setting.label || formatCategory(catName);
                   const isEnabled = setting.enabled;
 
                   return (
-                    <div key={cat} className="category-setting-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                    <div key={catName} className="category-setting-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                       <div>
                         <h3 style={{ margin: 0, textTransform: 'capitalize', fontSize: '16px', fontWeight: '600' }}>{displayName}</h3>
                         <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>
@@ -2759,7 +2775,7 @@ export default function AdminPanel() {
                       </div>
                       <button
                         className={`status-toggle ${isEnabled ? 'active' : 'inactive'}`}
-                        onClick={() => handleToggleCategory(cat, !isEnabled)}
+                        onClick={() => handleToggleCategory(catName, !isEnabled)}
                         style={{ 
                           padding: '6px 16px', 
                           borderRadius: '20px', 
