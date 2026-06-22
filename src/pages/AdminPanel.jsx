@@ -240,7 +240,15 @@ export default function AdminPanel() {
   // Product Types state with persistence
   const [productTypes, setProductTypes] = useState(() => {
     const saved = localStorage.getItem('productTypes');
-    return saved ? JSON.parse(saved) : ['Eau de Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Parfum', 'Eau Fraiche'];
+    const defaultTypes = ['Eau de Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Parfum', 'Eau Fraiche', 'Incense'];
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (!parsed.includes('Incense')) {
+        parsed.push('Incense');
+      }
+      return parsed;
+    }
+    return defaultTypes;
   });
   const [newType, setNewType] = useState('');
 
@@ -297,13 +305,16 @@ export default function AdminPanel() {
       return ['50ml', '100ml', '250ml', '500ml', '1L'];
     } else if (cat === 'BAKHOOR') {
       return ['30ml', '50ml', '100ml'];
+    } else if (cat === 'INCENSE') {
+      return ['10g', '20g', '50g', '100g', '250g'];
     }
     return ['30ml', '50ml', '100ml']; // default
   };
 
   // Get the unit label based on category
   const getUnitLabel = (category) => {
-    return extractCategoryName(category) === 'AROMA_CHEMICALS' ? 'g' : 'ml';
+    const cat = extractCategoryName(category);
+    return (cat === 'AROMA_CHEMICALS' || cat === 'INCENSE') ? 'g' : 'ml';
   };
 
   // Fetch Products
@@ -1929,10 +1940,26 @@ export default function AdminPanel() {
                   <span className={`live-indicator ${isLive ? 'active' : ''}`}></span>
                   <span className="live-text">{isLive ? 'LIVE' : 'PAUSED'}</span>
                   <button
-                    className={`live-toggle ${isLive ? 'active'
+                    className={`live-toggle ${isLive ? 'active' : ''}`}
+                    onClick={() => setIsLive(!isLive)}
+                    title={isLive ? 'Pause auto-refresh' : 'Enable auto-refresh'}
+                  >
+                    {isLive ? '⏸' : '▶'}
+                  </button>
+                </div>
+                <div className="last-updated">
+                  Last updated: {lastUpdated.toLocaleTimeString('en-IN')}
+                </div>
                 <button
                   className="refresh-btn"
-                  onClick
+                  onClick={refreshStats}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    backgroundColor: '#7c3aed',
+                    color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     cursor: 'pointer',

@@ -31,7 +31,8 @@ export default function Navbar() {
     'AROMA_CHEMICALS',
     'BOOSTERS_AND_BASES',
     'PREMIUM_OIL',
-    'BAKHOOR'
+    'BAKHOOR',
+    'INCENSE'
   ];
 
   useEffect(() => {

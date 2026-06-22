@@ -28,7 +28,8 @@ export function formatCategory(category) {
     'BAKHOOR': 'Bakhoor',
     'AROMA_CHEMICALS': 'Aroma Chemicals',
     'SAMPLE_COLLECTIONS': 'Sample Collection',
-    'BOOSTERS_AND_BASES': 'Boosters & Bases'
+    'BOOSTERS_AND_BASES': 'Boosters & Bases',
+    'INCENSE': 'Incense'
   };
 
   const upperCat = String(catStr || '').toUpperCase().replace(/ /g, "_");

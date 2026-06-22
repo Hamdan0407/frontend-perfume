@@ -496,12 +496,12 @@ export default function ProductDetail() {
                   <p className="font-medium text-foreground">{product.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">{['aroma chemicals', 'bakhoor'].includes(product.category) ? 'Weight' : 'Volume'}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{['aroma chemicals', 'bakhoor', 'incense'].includes(product.category) ? 'Weight' : 'Volume'}</p>
                   <p className="font-medium text-foreground">
                     {selectedVariant
-                      ? `${selectedVariant.size}${selectedVariant.unit || (product?.category === 'aroma chemicals' ? 'g' : 'ml')}`
+                      ? `${selectedVariant.size}${selectedVariant.unit || (['aroma chemicals', 'incense'].includes(product?.category) ? 'g' : 'ml')}`
                       : (product.volume
-                        ? `${product.volume}${product.unit || (product.category === 'aroma chemicals' ? 'g' : 'ml')}`
+                        ? `${product.volume}${product.unit || (['aroma chemicals', 'incense'].includes(product.category) ? 'g' : 'ml')}`
                         : 'N/A')}
                   </p>
                 </div>

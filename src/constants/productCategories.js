@@ -22,6 +22,11 @@ export const PRODUCT_CATEGORIES = {
         label: 'Booster & Bases',
         value: 'boosters and bases',
         path: '/products?category=boosters and bases'
+    },
+    INCENSE: {
+        label: 'Incense',
+        value: 'incense',
+        path: '/products?category=incense'
     }
 };
 
@@ -32,7 +37,8 @@ export const CATEGORY_ORDER = [
     'AROMA_CHEMICALS',
     'BOOSTERS_AND_BASES',
     'PREMIUM_OIL',
-    'BAKHOOR'
+    'BAKHOOR',
+    'INCENSE'
 ];
 
 export const CATEGORY_LIST = Object.values(PRODUCT_CATEGORIES);

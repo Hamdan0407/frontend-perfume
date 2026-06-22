@@ -34,7 +34,7 @@ export default function Home() {
   const [siteStats, setSiteStats] = useState({ happyCustomers: 0, visitors: 0 });
   const [heroProductData, setHeroProductData] = useState(null);
   // Default to only requested categories
-  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases']);
+  const [enabledCategories, setEnabledCategories] = useState(['aroma chemicals', 'premium oil', 'bakhoor', 'boosters and bases', 'incense']);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -54,7 +54,8 @@ export default function Home() {
       'AROMA_CHEMICALS',
       'BOOSTERS_AND_BASES',
       'PREMIUM_OIL',
-      'BAKHOOR'
+      'BAKHOOR',
+      'INCENSE'
     ];
 
     try {
@@ -286,7 +287,8 @@ export default function Home() {
                 'BAKHOOR': { subtitle: 'Sacred Smoke', accent: '#ef4444' },
                 'AROMA_CHEMICALS': { subtitle: 'Raw Ingredients', accent: '#38bdf8' },
                 'SAMPLE_COLLECTIONS': { subtitle: 'Discovery Set', accent: '#f59e0b' },
-                'BOOSTERS_AND_BASES': { subtitle: 'Enhancers', accent: '#10b981' }
+                'BOOSTERS_AND_BASES': { subtitle: 'Enhancers', accent: '#10b981' },
+                'INCENSE': { subtitle: 'Aromatic Smoke', accent: '#fbbf24' }
               }[categoryKey] || { subtitle: 'Explore', accent: '#c9a96e' };
 
               return (

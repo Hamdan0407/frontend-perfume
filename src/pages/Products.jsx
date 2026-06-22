@@ -357,6 +357,7 @@ function FiltersContent({
             <option value="BAKHOOR">Bakhoor</option>
             <option value="BOOSTERS_AND_BASES">Booster & Bases</option>
             <option value="AROMA_CHEMICALS">Aroma Chemicals</option>
+            <option value="INCENSE">Incense</option>
           </select>
         </div>
 
