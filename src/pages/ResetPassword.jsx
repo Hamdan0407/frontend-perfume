@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import api from '../api/axios';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -35,22 +36,12 @@ export default function ResetPassword() {
     }
 
     try {
-      const res = await fetch('api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newPassword: password }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        console.error('Reset failed response:', { status: res.status, data });
-        throw new Error(data.message || data.error || `Reset failed (${res.status})`);
-      }
-
+      const res = await api.post('/auth/reset-password', { token, newPassword: password });
       setSuccess(true);
       // Don't auto-redirect, let user manually click button
     } catch (err) {
-      setError(err.message || 'Reset failed or token expired.');
+      console.error('Reset failed response:', err);
+      setError(err.response?.data?.message || err.response?.data?.error || err.message || 'Reset failed or token expired.');
     } finally {
       setLoading(false);
     }

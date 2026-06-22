@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axios';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -15,21 +16,12 @@ export default function ForgotPassword() {
     setError('');
 
     try {
-      const res = await fetch('api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (res.ok) {
-        setMessage('Password reset link sent to your email. Please check your inbox.');
-        setEmail('');
-        setTimeout(() => navigate('/login'), 3000);
-      } else {
-        setError('Failed to process request. Please try again.');
-      }
+      const res = await api.post('/auth/forgot-password', { email });
+      setMessage('Password reset link sent to your email. Please check your inbox.');
+      setEmail('');
+      setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
-      setError('An error occurred. Please try again later.');
+      setError(err.response?.data?.message || 'Failed to process request. Please try again.');
     } finally {
       setLoading(false);
     }
