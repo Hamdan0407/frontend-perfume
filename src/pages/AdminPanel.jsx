@@ -244,6 +244,15 @@ export default function AdminPanel() {
   });
   const [newType, setNewType] = useState('');
 
+  // This useEffect was causing the category to reset.
+  // The size logic is now correctly handled within the variant management system,
+  // so this effect is redundant and was causing the UI bug.
+  /*
+  useEffect(() => {
+    localStorage.setItem('productTypes', JSON.stringify(productTypes));
+  }, [productTypes]);
+  */
+
   useEffect(() => {
     localStorage.setItem('productTypes', JSON.stringify(productTypes));
   }, [productTypes]);
@@ -1913,16 +1922,7 @@ export default function AdminPanel() {
                   <span className={`live-indicator ${isLive ? 'active' : ''}`}></span>
                   <span className="live-text">{isLive ? 'LIVE' : 'PAUSED'}</span>
                   <button
-                    className={`live-toggle ${isLive ? 'active' : ''}`}
-                    onClick={() => setIsLive(!isLive)}
-                    title={isLive ? 'Pause auto-refresh' : 'Enable auto-refresh'}
-                  >
-                    {isLive ? '⏸' : '▶'}
-                  </button>
-                </div>
-                <div className="last-updated">
-                  Last updated: {lastUpdated.toLocaleTimeString('en-IN')}
-                </div>
+                    className={`live-toggle ${isLive ? 'active'
                 <button
                   className="refresh-btn"
                   onClick={refreshStats}
@@ -3130,11 +3130,12 @@ export default function AdminPanel() {
                         className="form-input"
                         value={productForm.category || ''}
                         onChange={(e) => {
-                          const val = e.target.value;
-                          setProductForm(prev => {
-                            const next = { ...prev, category: val };
-                            formRef.current = next;
-                            return next;
+                          const selectedCategory = e.target.value;
+                          setProductForm(prevForm => {
+                            const updatedForm = { ...prevForm, category: selectedCategory };
+                            // ALSO update the ref to prevent stale state
+                            formRef.current = updatedForm;
+                            return updatedForm;
                           });
                         }}
                         required
