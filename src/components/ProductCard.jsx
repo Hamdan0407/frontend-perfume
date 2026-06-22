@@ -3,7 +3,7 @@ import { Star, ShoppingCart, Eye } from 'lucide-react';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { cn } from '../lib/utils';
+import { cn, formatCategory } from '../lib/utils';
 import WishlistButton from './WishlistButton';
 import StarRating from './StarRating';
 import StockBadge from './StockBadge';
@@ -103,8 +103,20 @@ export default function ProductCard({ product, onQuickView }) {
               const displayVolume = product.size || product.volume || (product.variants && product.variants.length > 0 ? product.variants[0].size : null);
               if (!displayVolume) return null;
 
-              const currentCat = String(product.category || '').toLowerCase().replace(/_/g, ' ');
-              const displayUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (currentCat === 'aroma chemicals' ? 'g' : 'ml'));
+              const displayVolumeStr = String(displayVolume);
+              if (/[a-zA-Z]/.test(displayVolumeStr)) {
+                return (
+                  <div className="mb-2">
+                    <span className="text-[10px] sm:text-xs font-semibold bg-secondary/80 px-2 py-0.5 rounded text-secondary-foreground">
+                      {displayVolumeStr}
+                    </span>
+                  </div>
+                );
+              }
+
+              const categoryName = formatCategory(product.category).toLowerCase();
+              const displayUnit = product.unit || (product.variants && product.variants.length > 0 ? product.variants[0].unit : (['aroma chemicals', 'incense', 'bakhoor'].includes(categoryName) ? 'g' : 'ml'));
+              
               return (
                 <div className="mb-2">
                   <span className="text-[10px] sm:text-xs font-semibold bg-secondary/80 px-2 py-0.5 rounded text-secondary-foreground">

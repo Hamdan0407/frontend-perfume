@@ -3091,6 +3091,8 @@ export default function AdminPanel() {
                                 <option value="gms">gms</option>
                                 <option value="kg">kg</option>
                                 <option value="ltr">ltr</option>
+                                <option value="litre">litre</option>
+                                <option value="pcs">pcs</option>
                               </select>
                             </div>
                             <div>

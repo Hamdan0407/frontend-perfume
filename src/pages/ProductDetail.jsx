@@ -82,6 +82,17 @@ export default function ProductDetail() {
   const [deliveryError, setDeliveryError] = useState('');
   const [deliveryPercent] = useState(84);
 
+  const formatSizeAndUnit = (size, unit) => {
+    if (size === undefined || size === null) return '';
+    const sizeStr = String(size);
+    if (/[a-zA-Z]/.test(sizeStr)) {
+      return sizeStr;
+    }
+    const categoryName = product ? formatCategory(product.category).toLowerCase() : '';
+    const u = (unit && unit.trim()) ? unit.trim() : (['aroma chemicals', 'incense', 'bakhoor'].includes(categoryName) ? 'g' : 'ml');
+    return `${sizeStr} ${u}`;
+  };
+
   // Scroll to top on mount/route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -136,6 +147,54 @@ export default function ProductDetail() {
 
         setProduct(data);
         setSelectedImage(data.imageUrl);
+
+        // Fetch related products to merge variants
+        try {
+          const { data: relatedData } = await api.get(`products/search?query=${encodeURIComponent(data.name)}&brand=${encodeURIComponent(data.brand)}&size=50`);
+          const relatedProducts = relatedData.content || relatedData || [];
+
+          let allVariants = [];
+          relatedProducts.forEach(p => {
+            if (p.name && data.name && String(p.name).toLowerCase() === String(data.name).toLowerCase() &&
+              ((!p.brand && !data.brand) || (p.brand && data.brand && String(p.brand).toLowerCase() === String(data.brand).toLowerCase()))) {
+              
+              if (p.variants && p.variants.length > 0) {
+                p.variants.forEach(v => {
+                  if (!allVariants.find(ev => ev.size === v.size && ev.unit === v.unit)) allVariants.push(v);
+                });
+              } else if (p.volume) {
+                if (!allVariants.find(ev => ev.size === p.volume && ev.unit === p.unit)) {
+                  allVariants.push({
+                    id: `v_${p.id}`,
+                    productId: p.id,
+                    size: p.volume,
+                    unit: p.unit,
+                    price: p.price,
+                    discountPrice: p.discountPrice,
+                    stock: p.stock,
+                    active: p.active
+                  });
+                }
+              }
+            }
+          });
+
+          const sortedVariants = sortVariants(allVariants);
+          setMergedVariants(sortedVariants);
+          const firstAvailable = sortedVariants.find(v => v.active && v.stock > 0) || sortedVariants[0];
+          setSelectedVariant(firstAvailable);
+        } catch (err) {
+          console.error("Failed to load variants/related products:", err);
+          if (data.variants && data.variants.length > 0) {
+            const sortedV = sortVariants(data.variants);
+            setSelectedVariant(sortedV.find(v => v.active && v.stock > 0) || sortedV[0]);
+            setMergedVariants(sortedV);
+          } else if (data.volume) {
+            const virtualV = { id: `v_${data.id}`, productId: data.id, size: data.volume, unit: data.unit, price: data.price, discountPrice: data.discountPrice, stock: data.stock, active: data.active };
+            setSelectedVariant(virtualV);
+            setMergedVariants([virtualV]);
+          }
+        }
 
         // Preload the main hero image for LCP optimization
         const link = document.createElement('link');
@@ -231,7 +290,7 @@ export default function ProductDetail() {
 
       const { data } = await api.post('cart/items', requestData);
       setCart(data);
-      toast.success(`Added ${selectedVariant ? `${selectedVariant.size}${selectedVariant.unit || 'ml'}` : ''} to cart!`);
+      toast.success(`Added ${selectedVariant ? formatSizeAndUnit(selectedVariant.size, selectedVariant.unit) : ''} to cart!`);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add to cart');
     }
@@ -351,6 +410,8 @@ export default function ProductDetail() {
       </div>
     );
   }
+
+  const categoryName = formatCategory(product.category).toLowerCase();
 
   // Use variant pricing if selected, otherwise use product pricing
   const displayPrice = selectedVariant
@@ -496,12 +557,12 @@ export default function ProductDetail() {
                   <p className="font-medium text-foreground">{product.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">{['aroma chemicals', 'bakhoor', 'incense'].includes(product.category) ? 'Weight' : 'Volume'}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{['aroma chemicals', 'bakhoor', 'incense'].includes(categoryName) ? 'Weight' : 'Volume'}</p>
                   <p className="font-medium text-foreground">
                     {selectedVariant
-                      ? `${selectedVariant.size}${selectedVariant.unit || (['aroma chemicals', 'incense'].includes(product?.category) ? 'g' : 'ml')}`
+                      ? formatSizeAndUnit(selectedVariant.size, selectedVariant.unit)
                       : (product.volume
-                        ? `${product.volume}${product.unit || (['aroma chemicals', 'incense'].includes(product.category) ? 'g' : 'ml')}`
+                        ? formatSizeAndUnit(product.volume, product.unit)
                         : 'N/A')}
                   </p>
                 </div>
@@ -529,7 +590,7 @@ export default function ProductDetail() {
             {mergedVariants && mergedVariants.length > 0 && (
               <div className="space-y-4">
                 <p className="text-sm font-semibold uppercase tracking-widest text-slate-500">
-                  {String(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'Select Weight' : 'Select Size'}
+                  {['aroma chemicals', 'incense', 'bakhoor'].includes(categoryName) ? 'Select Weight' : 'Select Size'}
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {mergedVariants.map((variant) => (
@@ -545,7 +606,7 @@ export default function ProductDetail() {
                           : "bg-white text-slate-900 border-slate-200 hover:border-slate-400 hover:bg-slate-50"
                       )}
                     >
-                      {variant.size}{variant.unit || (String(product?.category || '').toLowerCase().replace(/_/g, ' ') === 'aroma chemicals' ? 'g' : 'ml')}
+                      {formatSizeAndUnit(variant.size, variant.unit)}
                       {variant.stock === 0 && (
                         <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
                           Out

@@ -307,7 +307,18 @@ export default function ProductQuickView({ product, isOpen, onClose }) {
                         )}
                       >
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-900">{v.size}{v.unit || 'ml'}</span>
+                          <span className="text-sm font-bold text-slate-900">
+                            {(() => {
+                              const sizeStr = String(v.size || '');
+                              if (/[a-zA-Z]/.test(sizeStr)) {
+                                return sizeStr;
+                              }
+                              const categoryName = formatCategory(fullProduct.category).toLowerCase();
+                              const defaultUnit = ['aroma chemicals', 'incense', 'bakhoor'].includes(categoryName) ? 'g' : 'ml';
+                              const unit = (v.unit && v.unit.trim()) ? v.unit.trim() : defaultUnit;
+                              return `${sizeStr} ${unit}`;
+                            })()}
+                          </span>
                           <span className="text-xs font-medium text-slate-400">
                             {v.stock === 0 ? (
                               <span className="text-red-400">Sold Out</span>
