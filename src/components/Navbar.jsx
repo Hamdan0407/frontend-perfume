@@ -90,8 +90,18 @@ export default function Navbar() {
     }
   };
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-background/95 backdrop-blur-md shadow-sm border-b border-border/40 supports-[backdrop-filter]:bg-background/60' : 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'}`}>
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Row 1: Profile/Cart/Menu (left) | Logo (center) | Search (right) */}
         <div className="grid grid-cols-3 items-center h-[72px]">
