@@ -26,13 +26,11 @@ export default function Navbar() {
   // Default to only requested categories
   const [enabledCategories, setEnabledCategories] = useState([]);
 
-  // Fixed order for categories
   const CATEGORY_ORDER = [
     'AROMA_CHEMICALS',
     'BOOSTERS_AND_BASES',
     'PREMIUM_OIL',
-    'BAKHOOR',
-    'INCENSE'
+    'BAKHOOR'
   ];
 
   useEffect(() => {
