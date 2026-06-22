@@ -244,6 +244,22 @@ export default function AdminPanel() {
   });
   const [newType, setNewType] = useState('');
 
+  // This useEffect was the root cause of the category dropdown reverting.
+  // It was intended to reset the size when the category changed, but it created a race condition
+  // with the onChange handler, causing the category state to be overwritten.
+  // The logic for handling sizes is now managed within the variant system, making this effect obsolete.
+  /*
+  useEffect(() => {
+    if (productForm.category) {
+      const newSizeOptions = getSizeOptions(productForm.category);
+      // If the current size isn't in the new options, reset it
+      if (!newSizeOptions.includes(productForm.size)) {
+        setProductForm(prev => ({ ...prev, size: newSizeOptions[0] }));
+      }
+    }
+  }, [productForm.category]);
+  */
+
   useEffect(() => {
     localStorage.setItem('productTypes', JSON.stringify(productTypes));
   }, [productTypes]);
@@ -2077,8 +2093,8 @@ export default function AdminPanel() {
                               <span className="product-name">{product.name}</span>
                               <span className="product-brand">{product.brand}</span>
                             </div>
-                            <span className={`stock-count ${Number(product.stock || 0) === 0 ? 'danger' : 'warning'}`}>
-                              {product.stock} left
+                            <span className={`stock-count ${Number(product.stock || 0) === 0 ? 'danger' : Number(product.stock || 0) <= 10 ? 'warning' : 'in'}`}>
+                              {Number(product.stock || 0) <= 0 ? 'Out of Stock' : `${product.stock} in stock`}
                             </span>
                           </div>
                         ))}
@@ -3130,11 +3146,12 @@ export default function AdminPanel() {
                         className="form-input"
                         value={productForm.category || ''}
                         onChange={(e) => {
-                          const val = e.target.value;
-                          setProductForm(prev => {
-                            const next = { ...prev, category: val };
-                            formRef.current = next;
-                            return next;
+                          const selectedCategory = e.target.value;
+                          setProductForm(prevForm => {
+                            const updatedForm = { ...prevForm, category: selectedCategory };
+                            // ALSO update the ref to prevent stale state
+                            formRef.current = updatedForm;
+                            return updatedForm;
                           });
                         }}
                         required
