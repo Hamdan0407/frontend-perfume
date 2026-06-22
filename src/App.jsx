@@ -77,11 +77,11 @@ function App() {
 
   return (
     <ToastProvider>
-      <div className="flex flex-col min-h-screen overflow-x-clip">
+      <div className="flex flex-col min-h-screen">
         <ScrollToTop />
         <AnnouncementBar />
         <Navbar />
-        <main className="flex-grow overflow-x-clip">
+        <main className="flex-grow overflow-x-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
